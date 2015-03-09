@@ -261,4 +261,4 @@ function handlePlayer(input, ip, port){
 
 		player.save(function(err){if(err)throw err;});
 	});
-};
+}; 
