@@ -1,0 +1,10 @@
+{
+  "name": "worker",
+  "version": "0.0.0",
+  "description": "",
+  "main": "work.js",
+  "license": "ISC",
+  "dependencies": {
+    "mongoose": "^3.8.24"
+  }
+}
