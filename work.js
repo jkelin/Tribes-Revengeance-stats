@@ -210,7 +210,7 @@ var server = net.createServer(function(socket) {
 	socket.write('Echo server\r\n');
 });
  
-server.listen(443, 'localhost');
+server.listen(36845, '0.0.0.0');
 
 function handlePlayer(input, ip, port){
 	console.log(input);
