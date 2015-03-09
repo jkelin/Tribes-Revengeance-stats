@@ -151,7 +151,7 @@ function doAllTheWork(){
 	});
 }
 
-mongoose.connect('mongodb://localhost/tribesdb');
+mongoose.connect(process.env.dburl);
 
 var Server = mongoose.model('Server', {
 	_id: String,
