@@ -139,6 +139,7 @@ function handleData(data){
 }
 
 function timePlayer(player){
+	console.log("timing ", player.name)
 	Player.where({_id:player.name}).findOne(function(err, pl){
 		if(err)throw err;
 		if(pl === null) return;
@@ -219,8 +220,9 @@ function handlePlayer(input, ip, port){
 		player.style += input.style;
 		player.lastseen	 = Date.now();
 
-		if(parseInt(input["StatClasses.StatHighestSpeed"]) > player.stats.StatHighestSpeed){
-			player.stats.StatHighestSpeed = parseInt(input["StatClasses.StatHighestSpeed"]);
+		var highestSpeed = input["StatClasses.StatHighestSpeed"] === undefined ? 0 : parseInt(input["StatClasses.StatHighestSpeed"]);
+		if(highestSpeed > player.stats.StatHighestSpeed){
+			player.stats.StatHighestSpeed = highestSpeed;
 			player.markModified('stats');
 		}
 
