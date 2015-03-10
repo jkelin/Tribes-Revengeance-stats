@@ -5,6 +5,7 @@
   "main": "work.js",
   "license": "ISC",
   "dependencies": {
+    "atob": "^1.1.2",
     "express": "^4.12.2",
     "mongoose": "^3.8.24"
   }

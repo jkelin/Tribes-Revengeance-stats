@@ -4,6 +4,7 @@ var mongoose = require('mongoose');
 var net = require('net');
 var express = require('express')
 var app = express()
+var atob = require('atob')
 
 var timeoutMs = 1000;
 
