@@ -189,28 +189,6 @@ var Player = mongoose.model('Player', {
 
 //setInterval(doAllTheWork, 60 * 1000);
 //doAllTheWork();
-
-/*var server = net.createServer(function(socket) {
-	var data = '';
-	var ip = socket.remoteAddress;
-
-	socket.setEncoding('utf8');
-	socket.on('data', function(chunk) {
-	  data += chunk;
-	});
-
-	socket.on('end', function() {
-		console.log("Received data from ", ip);
-		console.log(data);
-		var json = JSON.parse(data);
-		var port = json.port;
-		json.players.forEach(function(player){
-			handlePlayer(player, ip, port);
-		});
-	});
-
-	socket.write('Echo server\r\n');
-});*/
  
 function handlePlayer(input, ip, port){
 	console.log(input);
@@ -286,9 +264,16 @@ app.get('/', function (req, res) {
 })
 
 app.post('/upload', function (req, res) {
-  res.send('Hello World!')
-  console.log("received upload request")
-  console.log(req.body)
+	var ip = req.connection.remoteAddress;
+  	res.send('Hello World!')
+  	console.log("received upload request from",ip)
+  	var decoded = atob(req.body);
+  	var object = JSON.parse(decoded);
+
+	var port = json.port;
+	json.players.forEach(function(player){
+		handlePlayer(player, ip, port);
+	});
 })
 
 app.set('port', (process.env.PORT || 5000));
