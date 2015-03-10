@@ -187,8 +187,8 @@ var Player = mongoose.model('Player', {
 	stats: mongoose.Schema.Types.Mixed
 });
 
-setInterval(doAllTheWork, 60 * 1000);
-doAllTheWork();
+//setInterval(doAllTheWork, 60 * 1000);
+//doAllTheWork();
 
 /*var server = net.createServer(function(socket) {
 	var data = '';
@@ -268,6 +268,18 @@ function handlePlayer(input, ip, port){
 // express
 // ----------------------------------------
 
+app.use (function(req, res, next) {
+    var data='';
+    req.setEncoding('utf8');
+    req.on('data', function(chunk) { 
+       data += chunk;
+    });
+
+    req.on('end', function() {
+        req.body = data;
+        next();
+    });
+});
 
 app.get('/', function (req, res) {
   res.send('Hello World!')
@@ -276,6 +288,7 @@ app.get('/', function (req, res) {
 app.post('/upload', function (req, res) {
   res.send('Hello World!')
   console.log("received upload request")
+  console.log(req.body)
 })
 
 app.set('port', (process.env.PORT || 5000));
