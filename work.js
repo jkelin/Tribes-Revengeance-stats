@@ -268,6 +268,7 @@ app.post('/upload', function (req, res) {
 	var ip = req.connection.remoteAddress;
   	res.send('Hello World!')
   	console.log("received upload request from",ip)
+  	console.log(req.body)
   	var decoded = atob(req.body);
   	var object = JSON.parse(decoded);
 
