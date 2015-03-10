@@ -2,6 +2,8 @@ var http = require("http");
 var dgram = require('dgram');
 var mongoose = require('mongoose');
 var net = require('net');
+var express = require('express')
+var app = express()
 
 var timeoutMs = 1000;
 
@@ -188,7 +190,7 @@ var Player = mongoose.model('Player', {
 setInterval(doAllTheWork, 60 * 1000);
 doAllTheWork();
 
-var server = net.createServer(function(socket) {
+/*var server = net.createServer(function(socket) {
 	var data = '';
 	var ip = socket.remoteAddress;
 
@@ -208,10 +210,8 @@ var server = net.createServer(function(socket) {
 	});
 
 	socket.write('Echo server\r\n');
-});
+});*/
  
-server.listen(36845, '0.0.0.0');
-
 function handlePlayer(input, ip, port){
 	console.log(input);
 	Player.where({_id:input.name}).findOne(function(err, player){
@@ -262,3 +262,27 @@ function handlePlayer(input, ip, port){
 		player.save(function(err){if(err)throw err;});
 	});
 }; 
+
+
+// ----------------------------------------
+// express
+// ----------------------------------------
+
+
+app.get('/', function (req, res) {
+  res.send('Hello World!')
+})
+
+app.post('/upload', function (req, res) {
+  res.send('Hello World!')
+  console.log("received upload request")
+})
+
+var server = app.listen(3000, function () {
+
+  var host = server.address().address
+  var port = server.address().port
+
+  console.log('Example app listening at http://%s:%s', host, port)
+
+})
