@@ -5,6 +5,8 @@ var net = require('net');
 var express = require('express')
 var app = express()
 var atob = require('atob')
+var exphbs  = require('express-handlebars');
+var url = require('url');
 
 var timeoutMs = 1000;
 
@@ -247,6 +249,11 @@ function handlePlayer(input, ip, port){
 // express
 // ----------------------------------------
 
+app.engine('handlebars', exphbs({defaultLayout: 'main'}));
+app.set('view engine', 'handlebars');
+
+app.use(express.static('public', options));
+
 app.use (function(req, res, next) {
     var data='';
     req.setEncoding('utf8');
@@ -261,7 +268,30 @@ app.use (function(req, res, next) {
 });
 
 app.get('/', function (req, res) {
-  res.send('Hello World!')
+  res.render('home');
+})
+
+app.get('/players', function (req, res) {
+	Player.find(function(err,data){
+		if(err) throw err;
+		res.render('players',{
+			data:data,
+			helpers:{
+				json: function (context) { return JSON.stringify(context); }
+		}});
+	});
+})
+
+app.get('/search', function (req, res) {
+	var name = req.query.name !== undefined ? req.query.name : "";
+	Player.where({_id: new RegExp(name, "i")}).find(function(err,data){
+		if(err) throw err;
+		res.render('players',{
+			data:data,
+			helpers:{
+				json: function (context) { return JSON.stringify(context); }
+		}});
+	});
 })
 
 app.post('/upload', function (req, res) {
@@ -284,6 +314,6 @@ var server = app.listen(app.get('port'), function () {
   var host = server.address().address
   var port = server.address().port
 
-  console.log('Example app listening at http://%s:%s', host, port)
+  console.log('App listening at http://%s:%s', host, port)
 
 })

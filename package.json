@@ -6,7 +6,9 @@
   "license": "ISC",
   "dependencies": {
     "atob": "^1.1.2",
+    "ejs": "^2.3.1",
     "express": "^4.12.2",
+    "express-handlebars": "^1.2.2",
     "mongoose": "^3.8.24"
   }
 }
