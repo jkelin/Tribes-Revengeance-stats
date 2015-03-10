@@ -139,8 +139,8 @@ function handleData(data){
 }
 
 function timePlayer(player){
-	console.log("timing ", player.name)
-	Player.where({_id:player.name}).findOne(function(err, pl){
+	console.log("timing ", player.player)
+	Player.where({_id:player.player}).findOne(function(err, pl){
 		if(err)throw err;
 		if(pl === null) return;
 
