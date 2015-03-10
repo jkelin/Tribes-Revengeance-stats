@@ -271,8 +271,8 @@ app.post('/upload', function (req, res) {
   	var decoded = atob(req.body);
   	var object = JSON.parse(decoded);
 
-	var port = json.port;
-	json.players.forEach(function(player){
+	var port = object.port;
+	object.players.forEach(function(player){
 		handlePlayer(player, ip, port);
 	});
 })
