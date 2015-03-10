@@ -190,8 +190,8 @@ var Player = mongoose.model('Player', {
 	stats: mongoose.Schema.Types.Mixed
 });
 
-//setInterval(doAllTheWork, 60 * 1000);
-//doAllTheWork();
+setInterval(doAllTheWork, 60 * 1000);
+doAllTheWork();
  
 function handlePlayer(input, ip, port){
 	console.log(input);
