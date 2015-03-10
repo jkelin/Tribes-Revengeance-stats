@@ -278,7 +278,8 @@ app.post('/upload', function (req, res) {
   console.log("received upload request")
 })
 
-var server = app.listen(80, function () {
+app.set('port', (process.env.PORT || 5000));
+var server = app.listen(app.get('port'), function () {
 
   var host = server.address().address
   var port = server.address().port
