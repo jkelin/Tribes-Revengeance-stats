@@ -10,6 +10,7 @@
 
 	<table class="table table-bordered">
 		<tr>
+			<th></th>
 			<th>Name</th>
 			<th>Address</th>
 			<th>Time online</th>
@@ -17,6 +18,7 @@
 		</tr>
 	{{#each data}}
 		<tr>
+			<td>{{> flag ip=ip}}</td>
 			<td><a href="/server/{{urlencode _id}}">{{name}}</a></td>
 			<td>{{_id}}</td>
 			<td>{{showMinutes minutesonline}}</td>
