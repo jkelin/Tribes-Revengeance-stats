@@ -140,12 +140,12 @@ function handleData(data){
 	});
 }
 
-function pushPlayersTrackings(serverId, data){
-	ServerTrack.where({serverId:serverId}).findOne(function(err, track){
+function pushPlayersTrackings(serverIdIn, data){
+	ServerTrack.where({serverId:serverIdIn}).findOne(function(err, track){
 		if(err) throw err;
 		else if(track === null){
 			track = new ServerTrack({ 
-				serverId: serverId,
+				serverId: serverIdIn,
 				players: []
 			});
 		}
@@ -247,7 +247,7 @@ function handlePlayer(input, ip, port){
 		player.defense += input.defense;
 		player.style += input.style;
 		player.lastseen	 = Date.now();
-		
+
 		if(player.stats.StatHighestSpeed == undefined) player.stats.StatHighestSpeed = 0;
 
 		var highestSpeed = input["StatClasses.StatHighestSpeed"] == undefined ? 0 : parseInt(input["StatClasses.StatHighestSpeed"]);
