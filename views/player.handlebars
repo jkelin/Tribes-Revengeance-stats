@@ -1,23 +1,34 @@
-{{#if data}}
-<h2>{{data._id}}</h2>
-<table class="table table-striped">
-	<tr><td>Kills</td><td>{{data.kills}}</td></tr>
-	<tr><td>Deaths</td><td>{{data.deaths}}</td></tr>
-	<tr><td>Offense</td><td>{{data.offense}}</td></tr>
-	<tr><td>Defense</td><td>{{data.defense}}</td></tr>
-	<tr><td>Style</td><td>{{data.style}}</td></tr>
-	<tr><td>Time played</td><td>{{data.minutesonline}} minutes</td></tr>
-	<tr><td>Last seen</td><td>{{showMoment data.lastseen}}</td></tr>
-</table>
-<br>
-<table class="table table-striped">
-	{{#each data.stats}}
-		<tr>
-			<td>{{@key}}</td>
-			<td>{{this}}</td>
-		</tr>
+<div class="main">
+    {{#if alerts}}
+    {{#each alerts}}
+  	<div class="alert alert-warning alert-dismissible" role="alert">
+	  <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+	  {{text}}
+	</div>
 	{{/each}}
-</table>
-{{else}}
-Player not found
-{{/if}}
+    {{/if}}
+
+	{{#if data}}
+	<h2>{{data._id}}</h2>
+	<table class="table table-striped">
+		<tr><td>Kills</td><td>{{data.kills}}</td></tr>
+		<tr><td>Deaths</td><td>{{data.deaths}}</td></tr>
+		<tr><td>Offense</td><td>{{data.offense}}</td></tr>
+		<tr><td>Defense</td><td>{{data.defense}}</td></tr>
+		<tr><td>Style</td><td>{{data.style}}</td></tr>
+		<tr><td>Time played</td><td>{{data.minutesonline}} minutes</td></tr>
+		<tr><td>Last seen</td><td>{{showMoment data.lastseen}}</td></tr>
+	</table>
+	<br>
+	<table class="table table-striped">
+		{{#each data.stats}}
+			<tr>
+				<td>{{@key}}</td>
+				<td>{{this}}</td>
+			</tr>
+		{{/each}}
+	</table>
+	{{else}}
+	Player not found
+	{{/if}}
+</div>

@@ -1,1 +1,56 @@
-Hello world
+<div class="col-sm-3 col-md-2 sidebar">
+  <ul class="nav nav-sidebar">
+    <li class="active"><a href="#overview">Overview <span class="sr-only">(current)</span></a></li>
+    <li><a href="#info">Info</a></li>
+    <li><a href="#top">Top players</a></li>
+  </ul>
+  <!--<ul class="nav nav-sidebar">
+    <li><a href="">Nav item</a></li>
+    <li><a href="">Nav item again</a></li>
+    <li><a href="">One more nav</a></li>
+    <li><a href="">Another nav item</a></li>
+    <li><a href="">More navigation</a></li>
+  </ul>
+  <ul class="nav nav-sidebar">
+    <li><a href="">Nav item again</a></li>
+    <li><a href="">One more nav</a></li>
+    <li><a href="">Another nav item</a></li>
+  </ul>-->
+</div>
+<div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
+    {{#if alerts}}
+    {{#each alerts}}
+  	<div class="alert alert-warning alert-dismissible" role="alert">
+	  <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+	  {{text}}
+	</div>
+	{{/each}}
+    {{/if}}
+
+	Hello world
+
+
+	<h2 name="top">Top players</h2>
+	<table class="table table-bordered">
+		<tr>
+			<th>Name</th>
+			<th>Kills</th>
+			<th>Deaths</th>
+			<th>Style</th>
+			<th>Flag captures</th>
+			<th>Time played</th>
+			<th>Last seen</th>
+		</tr>
+	{{#each data}}
+		<tr>
+			<td><a href="/player/{{urlencode _id}}">{{_id}}</a></td>
+			<td>{{kills}}</td>
+			<td>{{deaths}}</td>
+			<td>{{style}}</td>
+			<td></td>
+			<td>{{minutesonline}} minutes</td>
+			<td>{{showMoment lastseen}}</td>
+		</tr>
+	{{/each}}
+	</table>
+</div>

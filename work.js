@@ -280,7 +280,13 @@ app.use (function(req, res, next) {
 });
 
 app.get('/', function (req, res) {
-  	res.render('home');
+	Player.find().sort({kills:-1}).limit(20).exec(function(err,data){
+		if(err) throw err;
+		res.render('home', {
+			data:data,
+			helpers:helpers
+		});
+	});
 })
 
 app.get('/player/:name', function (req, res) {
