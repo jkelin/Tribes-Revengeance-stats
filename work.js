@@ -78,7 +78,7 @@ function talkToServer(ip, port){
 	var client = dgram.createSocket('udp4');
 	var timer = setTimeout(function(){
 		closeAll();
-		//console.log('Timeout on ' + ip + ":" + port);
+		console.log('Timeout on ' + ip + ":" + port);
 
 	}, timeoutMs);
 	var start = new Date().getTime();
@@ -88,7 +88,7 @@ function talkToServer(ip, port){
 	});
 
 	client.on('message', function (message, remote) {
-	    console.log("Response from",ip + ':' + port)
+	    //console.log("Response from",ip + ':' + port)
 	    closeAll();
 	    var end = new Date().getTime();
 	    var time = end - start;
@@ -134,7 +134,9 @@ function handleData(data){
 
 		server.save(function(err){
 			if(err) throw err;
-			else console.log("Saved", id);
+			else {
+				//console.log("Saved", id);
+			}
 		});
 	});
 }
