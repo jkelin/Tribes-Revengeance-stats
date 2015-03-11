@@ -149,6 +149,7 @@ function timePlayer(player){
 		if(pl === null) return;
 
 		pl.minutesonline++;
+		pl.lastseen = Date.now()
 		pl.save(function(err){if(err)throw err;});
 	});
 }
