@@ -212,7 +212,7 @@ var Player = mongoose.model('Player', {
 });
 
 var ServerTrack = mongoose.model('ServerTrack', {
-	serverid: String,
+	serverId: String,
 	players: [{
 		time: Date,
 		numplayers: Number
