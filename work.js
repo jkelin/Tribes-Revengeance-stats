@@ -247,8 +247,10 @@ function handlePlayer(input, ip, port){
 		player.defense += input.defense;
 		player.style += input.style;
 		player.lastseen	 = Date.now();
+		
+		if(player.stats.StatHighestSpeed == undefined) player.stats.StatHighestSpeed = 0;
 
-		var highestSpeed = input["StatClasses.StatHighestSpeed"] === undefined ? 0 : parseInt(input["StatClasses.StatHighestSpeed"]);
+		var highestSpeed = input["StatClasses.StatHighestSpeed"] == undefined ? 0 : parseInt(input["StatClasses.StatHighestSpeed"]);
 		if(highestSpeed > player.stats.StatHighestSpeed){
 			player.stats.StatHighestSpeed = highestSpeed;
 			player.markModified('stats');
@@ -257,7 +259,6 @@ function handlePlayer(input, ip, port){
 		for(var i in input){
 			var value = input[i];
 			console.log(i,value);
-			if(value === 0) continue;
 			if(i === "StatClasses.StatHighestSpeed") continue;
 			console.log("test");
 			if(i.indexOf('.') !== -1){
