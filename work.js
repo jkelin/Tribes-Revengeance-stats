@@ -126,10 +126,8 @@ function handleData(data){
 		server.maxplayers = data.maxplayers;
 		server.lastseen = Date.now();
 		server.lastdata = data;
-		server.players.push({
-			time: Date.now(),
-			numplayers: data.numplayers
-		});
+
+		pushPlayersTrackings(id, data);
 
 		data.players.forEach(timePlayer);
 
@@ -139,6 +137,26 @@ function handleData(data){
 				//console.log("Saved", id);
 			}
 		});
+	});
+}
+
+function pushPlayersTrackings(serverId, data){
+	ServerTrack.where({serverId:serverId}).findOne(function(err, track){
+		if(err) throw err;
+		else if(track === null){
+			track = new ServerTrack({ 
+				serverId: serverId,
+				players: []
+			});
+		}
+
+		track.players.push({
+			time: Date.now(),
+			numplayers: data.numplayers
+		});
+
+		track.markModified("players");
+		track.save(function(err){if(err)throw err;});
 	});
 }
 
@@ -175,10 +193,6 @@ var Server = mongoose.model('Server', {
 	minutesonline: Number,
 	maxplayers: Number,
 	lastseen: Date,
-	players: [{
-		time: Date,
-		numplayers: Number
-	}],
 	lastdata: mongoose.Schema.Types.Mixed
 });
 
@@ -195,6 +209,14 @@ var Player = mongoose.model('Player', {
 	lastseen: Date,
 	minutesonline: Number,
 	stats: mongoose.Schema.Types.Mixed
+});
+
+var ServerTrack = mongoose.model('ServerTrack', {
+	serverid: String,
+	players: [{
+		time: Date,
+		numplayers: Number
+	}]
 });
 
 setInterval(doAllTheWork, 60 * 1000);
