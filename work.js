@@ -7,6 +7,7 @@ var app = express()
 var atob = require('atob')
 var exphbs  = require('express-handlebars');
 var url = require('url');
+var moment = require('moment');
 
 var timeoutMs = 1000;
 
@@ -77,13 +78,13 @@ function talkToServer(ip, port){
 	var client = dgram.createSocket('udp4');
 	var timer = setTimeout(function(){
 		closeAll();
-		console.log('Timeout on ' + ip + ":" + port);
+		//console.log('Timeout on ' + ip + ":" + port);
 
 	}, timeoutMs);
 	var start = new Date().getTime();
 
 	client.on('listening', function () {
-	    console.log('Listening on ' + ip + ":" + port);
+	    //console.log('Listening on ' + ip + ":" + port);
 	});
 
 	client.on('message', function (message, remote) {
@@ -150,6 +151,7 @@ function timePlayer(player){
 }
 
 function doAllTheWork(){
+	console.log("Checking servers");
 	getServersFromMaster(function(servers){
 		servers.forEach(function(item){
 			talkToServer(item[0], parseInt(item[1]));
@@ -251,6 +253,12 @@ function handlePlayer(input, ip, port){
 // express
 // ----------------------------------------
 
+var helpers = {
+	json: function (context) { return JSON.stringify(context); },
+	urlencode: function (context) { return encodeURIComponent(context); },
+	showMoment: function(context) { return moment(context).fromNow(); }
+};
+
 app.engine('handlebars', exphbs({defaultLayout: 'main'}));
 app.set('view engine', 'handlebars');
 
@@ -270,7 +278,18 @@ app.use (function(req, res, next) {
 });
 
 app.get('/', function (req, res) {
-  res.render('home');
+  	res.render('home');
+})
+
+app.get('/player/:name', function (req, res) {
+  	var name = req.params["name"];
+	Player.where({_id: new RegExp(name, "i")}).findOne(function(err,data){
+		if(err) throw err;
+		res.render('player',{
+			data:data,
+			helpers:helpers
+		});
+	});
 })
 
 app.get('/players', function (req, res) {
@@ -278,9 +297,9 @@ app.get('/players', function (req, res) {
 		if(err) throw err;
 		res.render('players',{
 			data:data,
-			helpers:{
-				json: function (context) { return JSON.stringify(context); }
-		}});
+			alerts: [{text: data.length + " players total"}],
+			helpers:helpers
+		});
 	});
 })
 
@@ -290,9 +309,9 @@ app.get('/search', function (req, res) {
 		if(err) throw err;
 		res.render('players',{
 			data:data,
-			helpers:{
-				json: function (context) { return JSON.stringify(context); }
-		}});
+			alerts: [{text: data.length + " results"}],
+			helpers:helpers
+		});
 	});
 })
 

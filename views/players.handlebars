@@ -1,11 +1,23 @@
-{{json data}}
-<table>
+<span style="display:none">{{json data}}</span>
+<table class="table table-bordered">
 	<tr>
 		<th>Name</th>
+		<th>Kills</th>
+		<th>Deaths</th>
+		<th>Style</th>
+		<th>Flag captures</th>
+		<th>Time played</th>
+		<th>Last seen</th>
 	</tr>
 {{#each data}}
 	<tr>
-		<td>{{_id}}</td>
+		<td><a href="/player/{{urlencode _id}}">{{_id}}</a></td>
+		<td>{{kills}}</td>
+		<td>{{deaths}}</td>
+		<td>{{style}}</td>
+		<td></td>
+		<td>{{minutesonline}} minutes</td>
+		<td>{{showMoment lastseen}}</td>
 	</tr>
 {{/each}}
 </table>
