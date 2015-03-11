@@ -260,17 +260,15 @@ function handlePlayer(input, ip, port){
 			var value = input[i];
 			console.log(i,value);
 			if(i === "StatClasses.StatHighestSpeed") continue;
-			console.log("test");
 			if(i.indexOf('.') !== -1){
-				console.log("test");
 				var name = i.split('.')[1];
 				if(player.stats[name] === undefined) player.stats[name] = 0;
 				player.stats[name] += value;
-				console.log("addded",name,value);
+				//console.log("addded",name,value);
 				player.markModified('stats');
 			}
 		}
-
+		console.log("statted ",player.name);
 		player.save(function(err){if(err)throw err;});
 	});
 }; 
