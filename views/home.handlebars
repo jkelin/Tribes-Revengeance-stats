@@ -41,7 +41,7 @@
 		</tr>
 		{{#each servers}}
 		<tr>
-			<td><a href="/server/{{urlencode _id}}">{{name}} {{> flag ip=ip}}</a></td>
+			<td><a href="/server/{{urlencode _id}}">{{name}}</a> {{> flag country=country}}</td>
 			<td>{{_id}}</td>
 			<td>{{lastdata.mapname}}</td>
 			<td>{{lastdata.numplayers}}</td>

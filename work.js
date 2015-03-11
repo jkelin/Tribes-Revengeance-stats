@@ -10,6 +10,7 @@ var url = require('url');
 var moment = require('moment');
 var q = require('q');
 var timespan = require('timespan');
+var freegeoip = require('node-freegeoip');
 //var mongooseCachebox = require("mongoose-cachebox");
 
 var timeoutMs = 1000;
@@ -133,11 +134,14 @@ function handleData(data){
 
 		data.players.forEach(timePlayer);
 
-		server.save(function(err){
-			if(err) throw err;
-			else {
-				//console.log("Saved", id);
-			}
+		freegeoip.getLocation(server.ip, function(err, location) {
+			server.country = location["country_code"].toLowerCase();
+	  		server.save(function(err){
+				if(err) throw err;
+				else {
+					//console.log("Saved", id);
+				}
+			});
 		});
 	});
 }
@@ -190,6 +194,7 @@ var Server = mongoose.model('Server', {
 	name: String,
 	adminname: String,
 	adminemail: String,
+	country: String,
 	ip: String,
 	port: Number,
 	minutesonline: Number,
