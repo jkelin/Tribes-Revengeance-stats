@@ -3,6 +3,6 @@
 	float: right;
 }
 
-table.table.table-bordered td {
+table.table.table-bordered.servertable td {
 	line-height: 30px;
 }
