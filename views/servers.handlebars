@@ -17,7 +17,7 @@
 		</tr>
 	{{#each data}}
 		<tr>
-			<td><a href="/server/{{urlencode _id}}">{{name}}</a></td>
+			<td><a href="/server/{{urlencode _id}}">{{name}} {{> flag ip=ip}}</a></td>
 			<td>{{_id}}</td>
 			<td>{{showMinutes minutesonline}}</td>
 			<td>{{showMoment lastseen}}</td>
