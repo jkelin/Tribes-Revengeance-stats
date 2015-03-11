@@ -1,2 +1,11 @@
 {{json data}}
-{{test}}
+<table>
+	<tr>
+		<th>Name</th>
+	</tr>
+{{#each data}}
+	<tr>
+		<td>{{_id}}</td>
+	</tr>
+{{/each}}
+</table>
