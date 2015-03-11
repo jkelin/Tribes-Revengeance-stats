@@ -1,0 +1,27 @@
+<div class="main">
+    {{#if alerts}}
+    {{#each alerts}}
+  	<div class="alert alert-warning alert-dismissible" role="alert">
+	  <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+	  {{text}}
+	</div>
+	{{/each}}
+    {{/if}}
+
+	<table class="table table-bordered">
+		<tr>
+			<th>Name</th>
+			<th>Address</th>
+			<th>Time online</th>
+			<th>Last seen</th>
+		</tr>
+	{{#each data}}
+		<tr>
+			<td><a href="/server/{{urlencode _id}}">{{name}}</a></td>
+			<td>{{_id}}</td>
+			<td>{{minutesonline}} minutes</td>
+			<td>{{showMoment lastseen}}</td>
+		</tr>
+	{{/each}}
+	</table>
+</div>

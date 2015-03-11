@@ -322,6 +322,17 @@ app.get('/players', function (req, res) {
 	});
 })
 
+app.get('/servers', function (req, res) {
+	Server.find(function(err,data){
+		if(err) throw err;
+		res.render('servers',{
+			data:data,
+			alerts: [{text: data.length + " servers total"}],
+			helpers:helpers
+		});
+	});
+})
+
 app.get('/search', function (req, res) {
 	var name = req.query.name !== undefined ? req.query.name : "";
 	Player.where({_id: new RegExp(name, "i")}).find(function(err,data){
@@ -329,6 +340,21 @@ app.get('/search', function (req, res) {
 		res.render('players',{
 			data:data,
 			alerts: [{text: data.length + " results"}],
+			helpers:helpers
+		});
+	});
+})
+
+app.get('/server/:id', function (req, res) {
+	var id = req.params["id"];
+	Server.where({_id: id}).findOne(function(err,data){
+		if(err) throw err;
+		var compDate = new Date();
+		compDate.setMinutes(compDate.getMinutes() - 2);
+
+		res.render('server',{
+			data:data,
+			online:data != null && data.lastseen > compDate,
 			helpers:helpers
 		});
 	});
