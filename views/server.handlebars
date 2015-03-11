@@ -18,7 +18,7 @@
 	<table class="table table-bordered">
 		<tr><td>Admin name</td><td>{{data.adminname}}</td></tr>
 		<tr><td>Admin email</td><td>{{data.adminemail}}</td></tr>
-		<tr><td>Time online</td><td>{{data.minutesonline}} minutes</td></tr>
+		<tr><td>Time online</td><td>{{showMinutes data.minutesonline}}</td></tr>
 		<tr><td>Max players</td><td>{{data.maxplayers}}</td></tr>
 		<tr><td>Last seen</td><td>{{showMoment data.lastseen}}</td></tr>
 	</table>

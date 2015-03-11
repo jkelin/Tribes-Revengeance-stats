@@ -8,7 +8,6 @@
 	{{/each}}
     {{/if}}
 
-	<span style="display:none">{{json data}}</span>
 	<table class="table table-bordered">
 		<tr>
 			<th>Name</th>
@@ -25,7 +24,7 @@
 			<td>{{kills}}</td>
 			<td>{{deaths}}</td>
 			<td>{{style}}</td>
-			<td></td>
+			<td>{{stats.flagCaptureStat}}</td>
 			<td>{{minutesonline}} minutes</td>
 			<td>{{showMoment lastseen}}</td>
 		</tr>

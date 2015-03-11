@@ -9,6 +9,8 @@ var exphbs  = require('express-handlebars');
 var url = require('url');
 var moment = require('moment');
 var q = require('q');
+var timespan = require('timespan');
+//var mongooseCachebox = require("mongoose-cachebox");
 
 var timeoutMs = 1000;
 
@@ -181,7 +183,7 @@ function doAllTheWork(){
 	});
 }
 
-mongoose.connect(process.env.dburl);
+
 
 var Server = mongoose.model('Server', {
 	_id: String,
@@ -218,6 +220,8 @@ var ServerTrack = mongoose.model('ServerTrack', {
 		numplayers: Number
 	}]
 });
+
+
 
 setInterval(doAllTheWork, 60 * 1000);
 doAllTheWork();
@@ -281,6 +285,16 @@ function handlePlayer(input, ip, port){
 var helpers = {
 	json: function (context) { return JSON.stringify(context); },
 	urlencode: function (context) { return encodeURIComponent(context); },
+	showMinutes: function(context) { 
+		var span = new timespan.TimeSpan();
+		span.addMinutes(parseInt(context));
+		var str = "";
+		if(span.days != 0)str += span.days + " days ";
+		if(span.hours != 0)str += span.hours + " hours ";
+		if(str != "") str += "and ";
+		str += span.minutes + " minutes";
+		return str;
+	},
 	showMoment: function(context) { return moment(context).fromNow(); }
 };
 
@@ -405,3 +419,5 @@ var server = app.listen(app.get('port'), function () {
   console.log('App listening at http://%s:%s', host, port)
 
 })
+
+mongoose.connect(process.env.dburl);
