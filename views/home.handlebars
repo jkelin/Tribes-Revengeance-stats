@@ -1,8 +1,9 @@
 <div class="col-sm-3 col-md-2 sidebar">
   <ul class="nav nav-sidebar">
     <li class="active"><a href="#overview">Overview <span class="sr-only">(current)</span></a></li>
-    <li><a href="#info">Info</a></li>
-    <li><a href="#top">Top players</a></li>
+    <li><a href="#servers">Servers online</a></li>
+    <li><a href="#kills">Greatest killers</a></li>
+    <li><a href="#time">Most addicted</a></li>
   </ul>
   <!--<ul class="nav nav-sidebar">
     <li><a href="">Nav item</a></li>
@@ -28,9 +29,31 @@
     {{/if}}
 
 	Hello world
+	
+	{{#if servers}}
+	<h2 name="servers">Online servers</h2>
+	<table class="table table-bordered">
+		<tr>
+			<th>Name</th>
+			<th>Address</th>
+			<th>Map</th>
+			<th>Number of players</th>
+		</tr>
+		{{#each servers}}
+		<tr>
+			<td>{{name}}</td>
+			<td>{{_id}}</td>
+			<td>{{lastdata.mapname}}</td>
+			<td>{{lastdata.numplayers}}</td>
+		</tr>
+		{{/each}}
+	</table>
+	{{else}}
+	No servers online :(
+	{{/if}}
 
 
-	<h2 name="top">Top players</h2>
+	<h2 name="kills">Greatest killers</h2>
 	<table class="table table-bordered">
 		<tr>
 			<th>Name</th>
@@ -41,7 +64,31 @@
 			<th>Time played</th>
 			<th>Last seen</th>
 		</tr>
-	{{#each data}}
+	{{#each playersKills}}
+		<tr>
+			<td><a href="/player/{{urlencode _id}}">{{_id}}</a></td>
+			<td>{{kills}}</td>
+			<td>{{deaths}}</td>
+			<td>{{style}}</td>
+			<td></td>
+			<td>{{minutesonline}} minutes</td>
+			<td>{{showMoment lastseen}}</td>
+		</tr>
+	{{/each}}
+	</table>
+
+	<h2 name="time">Most addicted</h2>
+	<table class="table table-bordered">
+		<tr>
+			<th>Name</th>
+			<th>Kills</th>
+			<th>Deaths</th>
+			<th>Style</th>
+			<th>Flag captures</th>
+			<th>Time played</th>
+			<th>Last seen</th>
+		</tr>
+	{{#each playersTime}}
 		<tr>
 			<td><a href="/player/{{urlencode _id}}">{{_id}}</a></td>
 			<td>{{kills}}</td>

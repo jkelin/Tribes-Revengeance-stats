@@ -9,6 +9,7 @@
     "express": "^4.12.2",
     "express-handlebars": "^1.2.2",
     "moment": "^2.9.0",
-    "mongoose": "^3.8.24"
+    "mongoose": "^3.8.24",
+    "q": "^1.2.0"
   }
 }
