@@ -134,15 +134,25 @@ function handleData(data){
 
 		data.players.forEach(timePlayer);
 
-		freegeoip.getLocation(server.ip, function(err, location) {
-			server.country = location["country_code"].toLowerCase();
-	  		server.save(function(err){
+		if(server.country == undefined){
+			freegeoip.getLocation(server.ip, function(err, location) {
+				server.country = location["country_code"].toLowerCase();
+		  		server.save(function(err){
+					if(err) throw err;
+					else {
+						//console.log("Saved", id);
+					}
+				});
+			});
+		}
+		else {
+			server.save(function(err){
 				if(err) throw err;
 				else {
 					//console.log("Saved", id);
 				}
 			});
-		});
+		}
 	});
 }
 
