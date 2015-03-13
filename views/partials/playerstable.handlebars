@@ -1,0 +1,26 @@
+<table class="table table-bordered">
+	<tr>
+		<th>Name</th>
+		<th>Kills</th>
+		<th>Deaths</th>
+		<th>Kills per minute</th>
+		<th>Style</th>
+		<th>Flag captures</th>
+		<th>Total score</th>
+		<th>Time played</th>
+		<th>Last seen</th>
+	</tr>
+{{#each data}}
+	<tr>
+		<td><a href="/player/{{urlencode _id}}">{{_id}}</a></td>
+		<td>{{kills}}</td>
+		<td>{{deaths}}</td>
+		<td>{{killsperminute this}}</td>
+		<td>{{style}}</td>
+		<td>{{stats.flagCaptureStat}}</td>
+		<td>{{score}}</td>
+		<td>{{showMinutes minutesonline}}</td>
+		<td>{{showMoment lastseen}}</td>
+	</tr>
+{{/each}}
+</table>

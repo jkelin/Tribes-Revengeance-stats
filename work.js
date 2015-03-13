@@ -315,7 +315,8 @@ var helpers = {
 		str += span.minutes + " minutes";
 		return str;
 	},
-	showMoment: function(context) { return moment(context).fromNow(); }
+	showMoment: function(context) { return moment(context).fromNow(); },
+	killsperminute: function(context) { return (context.kills / context.minutesonline).toFixed(2); }
 };
 
 app.engine('handlebars', exphbs({defaultLayout: 'main'}));
