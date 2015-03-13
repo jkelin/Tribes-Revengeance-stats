@@ -11,10 +11,11 @@
 	{{#if data}}
 	<h2>{{data._id}} <small>{{data.score}}</small></h2>
 	<table class="table table-striped">
+		<tr><td>Score</td><td>{{data.score}}</td></tr>
 		<tr><td>Kills</td><td>{{data.kills}}</td></tr>
 		<tr><td>Deaths</td><td>{{data.deaths}}</td></tr>
 		<tr><td>Offense</td><td>{{data.offense}}</td></tr>
-		<tr><td>Defense</td><td>{{data.defense}}</td></tr>
+		<tr><td>Defence</td><td>{{data.defence}}</td></tr>
 		<tr><td>Style</td><td>{{data.style}}</td></tr>
 		<tr><td>Time played</td><td>{{data.minutesonline}} minutes</td></tr>
 		<tr><td>Last seen</td><td>{{showMoment data.lastseen}}</td></tr>

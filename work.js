@@ -253,7 +253,7 @@ function handlePlayer(input, ip, port){
 				score:0,
 				kills:0,
 				deaths:0,
-				offense:0,
+				offence:0,
 				defense:0,
 				style:0,
 				minutesonline:0
@@ -265,7 +265,7 @@ function handlePlayer(input, ip, port){
 		player.score += input.score;
 		player.kills += input.kills;
 		player.deaths += input.deaths;
-		player.offense += input.offense;
+		player.offence += input.offence;
 		player.defense += input.defense;
 		player.style += input.style;
 		player.lastseen	 = Date.now();
