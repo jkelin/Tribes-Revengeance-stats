@@ -220,7 +220,7 @@ var Player = mongoose.model('Player', {
 	score: Number,
 	kills: Number,
 	deaths: Number,
-	offsense: Number,
+	offense: Number,
 	defense: Number,
 	style: Number,
 	lastseen: Date,
@@ -253,7 +253,7 @@ function handlePlayer(input, ip, port){
 				score:0,
 				kills:0,
 				deaths:0,
-				offence:0,
+				offense:0,
 				defense:0,
 				style:0,
 				minutesonline:0
@@ -265,7 +265,7 @@ function handlePlayer(input, ip, port){
 		player.score += input.score;
 		player.kills += input.kills;
 		player.deaths += input.deaths;
-		player.offence += input.offence;
+		player.offense += input.offense;
 		player.defense += input.defense;
 		player.style += input.style;
 		player.lastseen	 = Date.now();
