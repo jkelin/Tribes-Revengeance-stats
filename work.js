@@ -216,7 +216,6 @@ var Server = mongoose.model('Server', {
 var Player = mongoose.model('Player', {
 	_id: String,
 	ip: String,
-	country: String,
 	lastserver: String,
 	score: Number,
 	kills: Number,
@@ -259,10 +258,8 @@ function handlePlayer(input, ip, port){
 				style:0,
 				minutesonline:0
 			});
-			changeCountry = true;
 		}
 
-		if(player.ip != input.ip || player.country == undefined || player.country == "") changeCountry = true;
 		player.ip = input.ip,
 		player.lastserver = ip + ":" + port;
 		player.score += input.score;
@@ -295,17 +292,8 @@ function handlePlayer(input, ip, port){
 		}
 		console.log("statted ",input.name);
 
-		if(changeCountry){
-			var ip = player.ip.split(':')[0];
-			freegeoip.getLocation(ip, function(err, location) {
-				player.country = location["country_code"].toLowerCase();
-		  		player.save(function(err){if(err)throw err;});
-			});
-			
-		}
-		else {
-			player.save(function(err){if(err)throw err;});
-		}
+
+		player.save(function(err){if(err)throw err;});
 	});
 }; 
 
