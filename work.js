@@ -368,7 +368,7 @@ app.get('/player/:name', function (req, res) {
 })
 
 app.get('/players', function (req, res) {
-	Player.find(function(err,data){
+	Player.find().sort({lastseen:-1}).exec(function(err,data){
 		if(err) throw err;
 		res.render('players',{
 			data:data,
@@ -379,7 +379,7 @@ app.get('/players', function (req, res) {
 })
 
 app.get('/servers', function (req, res) {
-	Server.find(function(err,data){
+	Server.find().sort({lastseen:-1}).exec(function(err,data){
 		if(err) throw err;
 		res.render('servers',{
 			data:data,
@@ -391,7 +391,7 @@ app.get('/servers', function (req, res) {
 
 app.get('/search', function (req, res) {
 	var name = req.query.name !== undefined ? req.query.name : "";
-	Player.where({_id: new RegExp(name, "i")}).find(function(err,data){
+	Player.where({_id: new RegExp(name, "i")}).sort({lastseen:-1}).find().exec(function(err,data){
 		if(err) throw err;
 		res.render('players',{
 			data:data,
