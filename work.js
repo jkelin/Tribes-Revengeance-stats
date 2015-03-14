@@ -335,7 +335,7 @@ function getNewsForProject(){
 function addServerLastFullReport(ip,port){
 	Server.where({_id:ip+":"+port}).findOne(function(err, server){
 		if(err) throw err;
-		server.lastfullreport = Date.getTime();
+		server.lastfullreport = new Date().getTime();
 		server.save(function(err){if(err)throw err;});
 	});
 }
@@ -456,13 +456,19 @@ app.get('/search', cacher.cache(false), function (req, res) {
 
 app.get('/server/:id', cacher.cache(false), function (req, res) {
 	var id = req.params["id"];
-	Server.where({_id: id}).findOne(function(err,data){
+	var promises = [
+		Server.findOne().where({_id: id}).exec(),
+		ServerTrack.findOne().where({serverId: id}).exec()
+	];
+
+	q.all(promises).then(function(data) {
 		if(err) throw err;
 		var compDate = new Date();
 		compDate.setMinutes(compDate.getMinutes() - 2);
 
 		res.render('server',{
-			data:data,
+			data:data[0],
+			tracks:data[1],
 			online:data != null && data.lastseen > compDate,
 			helpers:helpers
 		});
