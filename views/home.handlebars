@@ -55,7 +55,18 @@
 	</p>
 
 	<h2 id="news">News</h2>
-	<p>
-		Testing, testing
-	</p>
+	<h3>Code changes</h3>
+	<table class="table table-striped">
+		<tr>
+			<th>When</th>
+			<th>What</th>
+		</tr>
+
+		{{#each news}}
+		<tr>
+			<td>{{showMoment date}}</td>
+			<td><a href="{{url}}">{{message}}</a></td>
+		</tr>
+		{{/each}}
+	</table>
 </div>

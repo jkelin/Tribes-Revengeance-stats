@@ -13,7 +13,9 @@ var timespan = require('timespan');
 var freegeoip = require('node-freegeoip');
 var Cacher = require("cacher")
 var cacher = new Cacher()
+var github = require('octonode');
 //var mongooseCachebox = require("mongoose-cachebox");
+var tribes_news = [];
 
 var timeoutMs = 1000;
 
@@ -299,7 +301,35 @@ function handlePlayer(input, ip, port){
 
 		player.save(function(err){if(err)throw err;});
 	});
-}; 
+};
+
+function getNewsForProject(){
+	console.log("Resolving news");
+	var deferred = q.defer();
+	var client = github.client();
+	var repo = client.repo('fireantik/Tribes-Revengeance-stats');
+	repo.commits(function(error,commits){
+	    if (error) {
+	        deferred.reject(new Error(error));
+	    } else {
+	    	var data = [];
+	    	for(var i in commits){
+	    		var message = commits[i].commit.message;
+	    		var dateStr = commits[i].commit.author.date;
+	    		var url = commits[i].url;
+	    		var date = new Date(dateStr);
+
+	    		data.push({
+	    			message: message,
+	    			date: date,
+	    			url: url
+	    		});
+	    	}
+	        deferred.resolve(data);
+	    }
+	});
+	return deferred.promise;
+}
 
 
 // ----------------------------------------
@@ -364,6 +394,7 @@ app.get('/', function (req, res) {
 			playersKills:data[0],
 			playersTime:data[1],
 			servers:data[2],
+			news:tribes_news.slice(0, 5),
 			helpers:helpers
 		});
 	});
@@ -454,3 +485,6 @@ var server = app.listen(app.get('port'), function () {
 })
 
 mongoose.connect(process.env.MONGOLAB_URI);
+getNewsForProject().then(function(news){
+	tribes_news = news;
+});

@@ -12,6 +12,7 @@
     "moment": "^2.9.0",
     "mongoose": "^3.8.24",
     "node-freegeoip": "0.0.1",
+    "octonode": "^0.6.16",
     "q": "^1.2.0",
     "timespan": "^2.3.0"
   }
