@@ -17,14 +17,14 @@
 		<tr><td>Offense</td><td>{{data.offense}}</td></tr>
 		<tr><td>Defense</td><td>{{data.defense}}</td></tr>
 		<tr><td>Style</td><td>{{data.style}}</td></tr>
-		<tr><td>Time played</td><td>{{data.minutesonline}} minutes</td></tr>
+		<tr><td>Time played</td><td>{{showMinutes data.minutesonline}} minutes</td></tr>
 		<tr><td>Last seen</td><td>{{showMoment data.lastseen}}</td></tr>
 	</table>
 	<br>
 	<table class="table table-striped">
 		{{#each data.stats}}
 			<tr>
-				<td>{{@key}}</td>
+				<td>{{translateStatName @key}}</td>
 				<td>{{this}}</td>
 			</tr>
 		{{/each}}

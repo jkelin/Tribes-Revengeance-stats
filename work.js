@@ -256,9 +256,11 @@ function handlePlayer(input, ip, port){
 				offense:0,
 				defense:0,
 				style:0,
-				minutesonline:0
+				minutesonline:20
 			});
 		}
+
+		if(player.offense == undefined) player.offense = 0;
 
 		player.ip = input.ip,
 		player.lastserver = ip + ":" + port;
@@ -316,6 +318,13 @@ var helpers = {
 		return str;
 	},
 	showMoment: function(context) { return moment(context).fromNow(); },
+	translateStatName: function(context) { 
+		var table = require("./statnames.json");
+		for (var i in table) {
+			if(context == i) return table[i];
+		};
+		return context;
+	},
 	killsperminute: function(context) { return (context.kills / context.minutesonline).toFixed(2); }
 };
 
