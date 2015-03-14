@@ -15,6 +15,7 @@ var Cacher = require("cacher")
 var cacher = new Cacher()
 var github = require('octonode');
 //var mongooseCachebox = require("mongoose-cachebox");
+var rollbar = require('rollbar');
 var tribes_news = [];
 
 var timeoutMs = 1000;
@@ -372,6 +373,7 @@ var helpers = {
 app.engine('handlebars', exphbs({defaultLayout: 'main'}));
 app.set('view engine', 'handlebars');
 
+app.use(rollbar.errorHandler('5fece51536824b3097852cca48f3f269'));
 app.use(cacher.cache('seconds', 60))
 app.use(express.static('public', options));
 
