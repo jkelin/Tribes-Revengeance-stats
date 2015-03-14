@@ -316,7 +316,7 @@ function getNewsForProject(){
 	    	for(var i in commits){
 	    		var message = commits[i].commit.message;
 	    		var dateStr = commits[i].commit.author.date;
-	    		var url = commits[i].url;
+	    		var url = commits[i].html_url;
 	    		var date = new Date(dateStr);
 
 	    		data.push({
