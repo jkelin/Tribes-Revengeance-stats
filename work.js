@@ -336,19 +336,24 @@ function addServerLastFullReport(ip,port){
 	});
 }
 
-function limitTracks(tracks, outnum){
+function limitTracks(tracks){
 	var d = new Date();
 	d.setDate(d.getDate() - 2);
-
-	for(var i in tracks.players){
-		var item = tracks.players[i];
-		if(item.time < d) continue;
-		data.push({
-			time: item.time,
-			players: item.players
-		});
-		d.setHours(d.getHours() - 1);
+	var data = []
+	while(d < Date.now()){
+		var e = new Date(d);
+		e.setHours(e.getHours() + 1);
+		var filtered = underscore.filter(tracks,function(t){return d < t.time && t.time < e;});
+		if(filtered.length != 0){
+			var item = underscore.min(filtered,function(t){return new Date(t.time)});
+			data.push({
+				time: item.time,
+				players: item.numplayers
+			});
+		}
+		d.setHours(d.getHours() + 1);
 	}
+
 	return data;
 }
 
@@ -469,20 +474,21 @@ app.get('/search', cacher.cache(false), function (req, res) {
 
 app.get('/server/:id', cacher.cache(false), function (req, res) {
 	var id = req.params["id"];
+	var d = new Date();
+	d.setDate(d.getDate() - 2);
 	var promises = [
-		Server.findOne().where({_id: id}).exec()
-		//ServerTrack.findOne().where({serverId: id}).exec()
+		Server.findOne().where({_id: id}).exec(),
+		ServerTrack.where({serverId: id, time: {'$gt':d}}).find().exec()
 	];
-
+		
 	q.all(promises).then(function(data) {
-		if(err) throw err;
 		var compDate = new Date();
 		compDate.setMinutes(compDate.getMinutes() - 2);
 
 		res.render('server',{
 			data:data[0],
-			//tracks: limitTracks(data[1]),
-			online:data != null && data.lastseen > compDate,
+			tracks: limitTracks(data[1]),
+			online:data != null && data[0].lastseen > compDate,
 			helpers:helpers
 		});
 	});
