@@ -11,6 +11,8 @@ var moment = require('moment');
 var q = require('q');
 var timespan = require('timespan');
 var freegeoip = require('node-freegeoip');
+var Cacher = require("cacher")
+var cacher = new Cacher()
 //var mongooseCachebox = require("mongoose-cachebox");
 
 var timeoutMs = 1000;
@@ -332,6 +334,7 @@ app.engine('handlebars', exphbs({defaultLayout: 'main'}));
 app.set('view engine', 'handlebars');
 
 app.use(express.static('public', options));
+app.use(cacher.cache('seconds', 60))
 
 app.use (function(req, res, next) {
     var data='';
@@ -366,7 +369,7 @@ app.get('/', function (req, res) {
 	});
 })
 
-app.get('/player/:name', function (req, res) {
+app.get('/player/:name', cacher.cache(false), function (req, res) {
   	var name = req.params["name"];
 	Player.where({_id: new RegExp(name, "i")}).findOne(function(err,data){
 		if(err) throw err;
@@ -399,7 +402,7 @@ app.get('/servers', function (req, res) {
 	});
 })
 
-app.get('/search', function (req, res) {
+app.get('/search', cacher.cache(false), function (req, res) {
 	var name = req.query.name !== undefined ? req.query.name : "";
 	Player.where({_id: new RegExp(name, "i")}).sort({lastseen:-1}).find().exec(function(err,data){
 		if(err) throw err;
@@ -411,7 +414,7 @@ app.get('/search', function (req, res) {
 	});
 })
 
-app.get('/server/:id', function (req, res) {
+app.get('/server/:id', cacher.cache(false), function (req, res) {
 	var id = req.params["id"];
 	Server.where({_id: id}).findOne(function(err,data){
 		if(err) throw err;
@@ -450,4 +453,4 @@ var server = app.listen(app.get('port'), function () {
 
 })
 
-mongoose.connect(process.env.dburl);
+mongoose.connect(process.env.MONGOLAB_URI);

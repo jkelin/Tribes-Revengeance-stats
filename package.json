@@ -6,6 +6,7 @@
   "license": "ISC",
   "dependencies": {
     "atob": "^1.1.2",
+    "cacher": "^2.1.1",
     "express": "^4.12.2",
     "express-handlebars": "^1.2.2",
     "moment": "^2.9.0",
