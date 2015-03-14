@@ -521,5 +521,3 @@ mongoose.connect(process.env.MONGOLAB_URI);
 getNewsForProject().then(function(news){
 	tribes_news = news;
 });
-
-rollbar.reportMessage("Init!");
