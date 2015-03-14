@@ -228,6 +228,7 @@ var Player = mongoose.model('Player', {
 	defense: Number,
 	style: Number,
 	lastseen: Date,
+	lastfullreport: Date,
 	minutesonline: Number,
 	stats: mongoose.Schema.Types.Mixed
 });
@@ -329,6 +330,14 @@ function getNewsForProject(){
 	    }
 	});
 	return deferred.promise;
+}
+
+function addServerLastFullReport(ip,port){
+	Server.where({_id:ip+":"+port}).findOne(function(err, server)){
+		if(err) throw err;
+		server.lastfullreport = Date.getTime();
+		server.save(function(err){if(err)throw err;});
+	});
 }
 
 
@@ -460,8 +469,21 @@ app.get('/server/:id', cacher.cache(false), function (req, res) {
 	});
 })
 
+function getClientIp(req) {
+  var ipAddress;
+  var forwardedIpsStr = req.header('x-forwarded-for'); 
+  if (forwardedIpsStr) {
+    var forwardedIps = forwardedIpsStr.split(',');
+    ipAddress = forwardedIps[0];
+  }
+  if (!ipAddress) {
+    ipAddress = req.connection.remoteAddress;
+  }
+  return ipAddress;
+};
+
 app.post('/upload', function (req, res) {
-	var ip = req.connection.remoteAddress;
+	var ip = getClientIp(req);
   	res.send('Hello World!')
   	console.log("received upload request from",ip)
   	console.log(req.body)
@@ -472,6 +494,7 @@ app.post('/upload', function (req, res) {
 	object.players.forEach(function(player){
 		handlePlayer(player, ip, port);
 	});
+	addServerLastFullReport(ip);
 })
 
 app.set('port', (process.env.PORT || 5000));
