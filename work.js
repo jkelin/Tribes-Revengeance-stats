@@ -333,7 +333,7 @@ function getNewsForProject(){
 }
 
 function addServerLastFullReport(ip,port){
-	Server.where({_id:ip+":"+port}).findOne(function(err, server)){
+	Server.where({_id:ip+":"+port}).findOne(function(err, server){
 		if(err) throw err;
 		server.lastfullreport = Date.getTime();
 		server.save(function(err){if(err)throw err;});
