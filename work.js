@@ -14,6 +14,7 @@ var freegeoip = require('node-freegeoip');
 var Cacher = require("cacher")
 var cacher = new Cacher()
 var github = require('octonode');
+var underscore = require('underscore');
 //var mongooseCachebox = require("mongoose-cachebox");
 var rollbar = require('rollbar');
 rollbar.init("5fece51536824b3097852cca48f3f269");
@@ -164,23 +165,13 @@ function handleData(data){
 }
 
 function pushPlayersTrackings(serverIdIn, data){
-	ServerTrack.where({serverId:serverIdIn}).findOne(function(err, track){
-		if(err) throw err;
-		else if(track === null){
-			track = new ServerTrack({ 
-				serverId: serverIdIn,
-				players: []
-			});
-		}
-
-		track.players.push({
-			time: Date.now(),
-			numplayers: data.numplayers
-		});
-
-		track.markModified("players");
-		track.save(function(err){if(err)throw err;});
+	var track = new ServerTrack({
+		serverId: serverIdIn,
+		time: Date.now(),
+		numplayers: data.numplayers
 	});
+
+	track.save(function(err){if(err)throw err;});
 }
 
 function timePlayer(player){
@@ -238,10 +229,8 @@ var Player = mongoose.model('Player', {
 
 var ServerTrack = mongoose.model('ServerTrack', {
 	serverId: String,
-	players: [{
-		time: Date,
-		numplayers: Number
-	}]
+	time: Date,
+	numplayers: Number
 });
 
 
@@ -348,7 +337,19 @@ function addServerLastFullReport(ip,port){
 }
 
 function limitTracks(tracks, outnum){
+	var d = new Date();
+	d.setDate(d.getDate() - 2);
 
+	for(var i in tracks.players){
+		var item = tracks.players[i];
+		if(item.time < d) continue;
+		data.push({
+			time: item.time,
+			players: item.players
+		});
+		d.setHours(d.getHours() - 1);
+	}
+	return data;
 }
 
 
@@ -469,8 +470,8 @@ app.get('/search', cacher.cache(false), function (req, res) {
 app.get('/server/:id', cacher.cache(false), function (req, res) {
 	var id = req.params["id"];
 	var promises = [
-		Server.findOne().where({_id: id}).exec(),
-		ServerTrack.findOne().where({serverId: id}).exec()
+		Server.findOne().where({_id: id}).exec()
+		//ServerTrack.findOne().where({serverId: id}).exec()
 	];
 
 	q.all(promises).then(function(data) {
@@ -480,7 +481,7 @@ app.get('/server/:id', cacher.cache(false), function (req, res) {
 
 		res.render('server',{
 			data:data[0],
-			tracks:limitTracks(data[1], 100),
+			//tracks: limitTracks(data[1]),
 			online:data != null && data.lastseen > compDate,
 			helpers:helpers
 		});
