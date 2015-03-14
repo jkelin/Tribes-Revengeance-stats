@@ -339,12 +339,16 @@ function addServerLastFullReport(ip,port){
 	Server.where({_id:ip+":"+port}).findOne(function(err, server){
 		if(err) throw err;
 		if(server == null){
-			rollbar.reportMessage("server null, _id:",ip+":"+port);
+			rollbar.reportMessage("server null, _id:" + (ip+":"+port));
 			return;
 		}
 		server.lastfullreport = new Date().getTime();
 		server.save(function(err){if(err)throw err;});
 	});
+}
+
+function limitTracks(tracks, outnum){
+
 }
 
 
@@ -476,7 +480,7 @@ app.get('/server/:id', cacher.cache(false), function (req, res) {
 
 		res.render('server',{
 			data:data[0],
-			tracks:data[1],
+			tracks:limitTracks(data[1], 100),
 			online:data != null && data.lastseen > compDate,
 			helpers:helpers
 		});
@@ -508,7 +512,7 @@ app.post('/upload', function (req, res) {
 	object.players.forEach(function(player){
 		handlePlayer(player, ip, port);
 	});
-	addServerLastFullReport(ip);
+	addServerLastFullReport(ip, port);
 })
 
 app.set('port', (process.env.PORT || 5000));
