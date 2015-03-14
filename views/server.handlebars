@@ -21,6 +21,14 @@
 		<tr><td>Time online</td><td>{{showMinutes data.minutesonline}}</td></tr>
 		<tr><td>Max players</td><td>{{data.maxplayers}}</td></tr>
 		<tr><td>Last seen</td><td>{{showMoment data.lastseen}}</td></tr>
+		<tr>
+			<td>Last full report</td>
+			{{#if data.lastfullreport}}
+			<td>{{showMoment data.lastfullreport}}</td>
+			{{else}}
+			<td>Never (server side mod is not installed)</td>
+			{{/if}}
+		</tr>
 	</table>
 
 		{{#if online}}
