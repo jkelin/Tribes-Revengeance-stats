@@ -333,8 +333,8 @@ var helpers = {
 app.engine('handlebars', exphbs({defaultLayout: 'main'}));
 app.set('view engine', 'handlebars');
 
-app.use(express.static('public', options));
 app.use(cacher.cache('seconds', 60))
+app.use(express.static('public', options));
 
 app.use (function(req, res, next) {
     var data='';
