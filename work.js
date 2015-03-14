@@ -16,6 +16,8 @@ var cacher = new Cacher()
 var github = require('octonode');
 //var mongooseCachebox = require("mongoose-cachebox");
 var rollbar = require('rollbar');
+rollbar.init("5fece51536824b3097852cca48f3f269");
+
 var tribes_news = [];
 
 var timeoutMs = 1000;
@@ -519,3 +521,5 @@ mongoose.connect(process.env.MONGOLAB_URI);
 getNewsForProject().then(function(news){
 	tribes_news = news;
 });
+
+rollbar.reportMessage("Init!");
