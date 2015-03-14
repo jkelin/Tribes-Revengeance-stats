@@ -1,3 +1,5 @@
+require('newrelic');
+
 var http = require("http");
 var dgram = require('dgram');
 var mongoose = require('mongoose');
@@ -18,7 +20,7 @@ var underscore = require('underscore');
 //var mongooseCachebox = require("mongoose-cachebox");
 var rollbar = require('rollbar');
 rollbar.init("5fece51536824b3097852cca48f3f269");
-require('newrelic');
+
 
 var tribes_news = [];
 
