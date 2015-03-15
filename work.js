@@ -427,7 +427,10 @@ app.get('/', function (req, res) {
 			news:tribes_news.slice(0, 5),
 			helpers:helpers
 		});
-	});
+	}).catch(function (error) {
+		next(error);
+	})
+	.done();
 })
 
 app.get('/player/:name', cacher.cache(false), function (req, res) {
@@ -475,7 +478,7 @@ app.get('/search', cacher.cache(false), function (req, res) {
 	});
 })
 
-app.get('/server/:id', cacher.cache(false), function (req, res) {
+app.get('/server/:id', cacher.cache(false), function (req, res,next) {
 	var id = req.params["id"];
 	var d = new Date();
 	d.setDate(d.getDate() - 2);
@@ -494,7 +497,10 @@ app.get('/server/:id', cacher.cache(false), function (req, res) {
 			online:data != null && data[0].lastseen > compDate,
 			helpers:helpers
 		});
-	});
+	}).catch(function (error) {
+		next(error);
+	})
+	.done();
 })
 
 function getClientIp(req) {
@@ -524,6 +530,11 @@ app.post('/upload', function (req, res) {
 	});
 	addServerLastFullReport(ip, port);
 })
+
+app.use(function(err, req, res, next) {
+	console.log("Error:",err);
+  	res.send(err);
+});
 
 app.set('port', (process.env.PORT || 5000));
 var server = app.listen(app.get('port'), function () {
