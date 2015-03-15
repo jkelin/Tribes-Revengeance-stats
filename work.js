@@ -393,7 +393,7 @@ app.engine('handlebars', exphbs({defaultLayout: 'main'}));
 app.set('view engine', 'handlebars');
 
 app.use(rollbar.errorHandler('5fece51536824b3097852cca48f3f269'));
-app.use(cacher.cache('seconds', 60))
+//app.use(cacher.cache('seconds', 60))
 app.use(express.static('public', options));
 
 app.use (function(req, res, next) {
