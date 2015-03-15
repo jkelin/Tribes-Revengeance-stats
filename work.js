@@ -420,6 +420,7 @@ app.get('/', function (req, res) {
 	];
 
 	q.all(promises).then(function(data) {
+		console.log("then");
 		res.render('home', {
 			playersKills:data[0],
 			playersTime:data[1],
@@ -428,6 +429,7 @@ app.get('/', function (req, res) {
 			helpers:helpers
 		});
 	}).catch(function (error) {
+		console.log("catch");
 		next(error);
 	})
 	.done();
