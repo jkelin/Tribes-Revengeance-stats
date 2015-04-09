@@ -9,19 +9,23 @@
     {{/if}}
 
 	<table class="table table-bordered servertable">
-		<tr>
-			<th>Name</th>
-			<th>Address</th>
-			<th>Time online</th>
-			<th>Last seen</th>
-		</tr>
-	{{#each data}}
-		<tr>
-			<td><a href="/server/{{urlencode _id}}">{{name}}</a> {{> flag country=country}}</td>
-			<td>{{_id}}</td>
-			<td>{{showMinutes minutesonline}}</td>
-			<td>{{showMoment lastseen}}</td>
-		</tr>
-	{{/each}}
+		<thead>
+			<tr>
+				<th>Name</th>
+				<th>Address</th>
+				<th>Time online</th>
+				<th>Last seen</th>
+			</tr>
+		</thead>
+		<tbody>
+		{{#each data}}
+			<tr>
+				<td><a href="/server/{{urlencode _id}}">{{name}}</a> {{> flag country=country}}</td>
+				<td>{{_id}}</td>
+				<td>{{showMinutes minutesonline}}</td>
+				<td>{{showMoment lastseen}}</td>
+			</tr>
+		{{/each}}
+		</tbody>
 	</table>
 </div>

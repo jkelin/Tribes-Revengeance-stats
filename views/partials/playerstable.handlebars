@@ -1,28 +1,32 @@
-<table class="table table-bordered">
-	<tr>
-		<th>#</th>
-		<th>Name</th>
-		<th>Kills</th>
-		<th>Deaths</th>
-		<th>Kills per minute</th>
-		<th>Style</th>
-		<th>Flag captures</th>
-		<th>Total score</th>
-		<th>Time played</th>
-		<th>Last seen</th>
-	</tr>
-{{#each data}}
-	<tr>
-		<td>{{inc @index}}</td>
-		<td><a href="/player/{{urlencode _id}}">{{_id}}</a></td>
-		<td>{{kills}}</td>
-		<td>{{deaths}}</td>
-		<td>{{killsperminute this}}</td>
-		<td>{{style}}</td>
-		<td>{{stats.flagCaptureStat}}</td>
-		<td>{{score}}</td>
-		<td>{{showMinutes minutesonline}}</td>
-		<td>{{showMoment lastseen}}</td>
-	</tr>
-{{/each}}
+<table class="table table-bordered playertable table-hover">
+	<thead>
+		<tr>
+			<th data-sort-method='numeric'>#</th>
+			<th>Name</th>
+			<th data-sort-method='numeric'>Kills</th>
+			<th data-sort-method='numeric'>Deaths</th>
+			<th data-sort-method='numeric'>Kills per minute</th>
+			<th data-sort-method='numeric'>Style</th>
+			<th data-sort-method='numeric'>Flag captures</th>
+			<th data-sort-method='numeric'>Total score</th>
+			<th>Time played</th>
+			<th data-sort-method='date'>Last seen</th>
+		</tr>
+	</thead>
+	<tbody>
+	{{#each data}}
+		<tr>
+			<td>{{inc @index}}</td>
+			<td><a href="/player/{{urlencode _id}}">{{_id}}</a></td>
+			<td>{{kills}}</td>
+			<td>{{deaths}}</td>
+			<td>{{killsperminute this}}</td>
+			<td>{{style}}</td>
+			<td>{{stats.flagCaptureStat}}</td>
+			<td>{{score}}</td>
+			<td>{{showMinutes minutesonline}}</td>
+			<td>{{showMoment lastseen}}</td>
+		</tr>
+	{{/each}}
+	</tbody>
 </table>

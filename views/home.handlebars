@@ -22,20 +22,24 @@
 	{{#if servers}}
 	<h2 id="servers">Online servers</h2>
 	<table class="table table-bordered servertable">
-		<tr>
-			<th>Name</th>
-			<th>Address</th>
-			<th>Map</th>
-			<th>Number of players</th>
-		</tr>
-		{{#each servers}}
-		<tr>
-			<td><a href="/server/{{urlencode _id}}">{{name}}</a> {{> flag country=country}}</td>
-			<td>{{_id}}</td>
-			<td>{{lastdata.mapname}}</td>
-			<td>{{lastdata.numplayers}}</td>
-		</tr>
-		{{/each}}
+		<thead>
+			<tr>
+				<th>Name</th>
+				<th>Address</th>
+				<th>Map</th>
+				<th>Number of players</th>
+			</tr>
+		</thead>
+		<tbody>
+			{{#each servers}}
+			<tr>
+				<td><a href="/server/{{urlencode _id}}">{{name}}</a> {{> flag country=country}}</td>
+				<td>{{_id}}</td>
+				<td>{{lastdata.mapname}}</td>
+				<td>{{lastdata.numplayers}}</td>
+			</tr>
+			{{/each}}
+		</tbody>
 	</table>
 	{{else}}
 	No servers online :(

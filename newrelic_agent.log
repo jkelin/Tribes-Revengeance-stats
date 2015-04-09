@@ -31,3 +31,11 @@
 {"v":0,"level":30,"name":"newrelic","hostname":"fire-pc","pid":4884,"time":"2015-04-09T19:54:50.639Z","msg":"Starting New Relic for Node.js connection process."}
 {"v":0,"level":30,"name":"newrelic","hostname":"fire-pc","pid":4884,"time":"2015-04-09T19:54:54.589Z","msg":"Reporting to: https://rpm.newrelic.com/accounts/927040/applications/8075790","component":"new_relic_response"}
 {"v":0,"level":30,"name":"newrelic","hostname":"fire-pc","pid":4884,"time":"2015-04-09T19:54:54.589Z","msg":"Connected to collector-124.newrelic.com:443 with agent run ID 34696967950073567.","component":"collector_api"}
+{"v":0,"level":30,"name":"newrelic","hostname":"fire-pc","pid":2080,"time":"2015-04-09T20:14:13.520Z","msg":"Starting New Relic for Node.js connection process."}
+{"v":0,"level":30,"name":"newrelic","hostname":"fire-pc","pid":2080,"time":"2015-04-09T20:14:17.455Z","msg":"Reporting to: https://rpm.newrelic.com/accounts/927040/applications/8075790","component":"new_relic_response"}
+{"v":0,"level":30,"name":"newrelic","hostname":"fire-pc","pid":2080,"time":"2015-04-09T20:14:17.456Z","msg":"Connected to collector-124.newrelic.com:443 with agent run ID 34696967950125063.","component":"collector_api"}
+{"v":0,"level":30,"name":"newrelic","hostname":"fire-pc","pid":5008,"time":"2015-04-09T20:15:58.972Z","msg":"Starting New Relic for Node.js connection process."}
+{"v":0,"level":30,"name":"newrelic","hostname":"fire-pc","pid":5008,"time":"2015-04-09T20:16:02.921Z","msg":"Reporting to: https://rpm.newrelic.com/accounts/927040/applications/8075790","component":"new_relic_response"}
+{"v":0,"level":30,"name":"newrelic","hostname":"fire-pc","pid":5008,"time":"2015-04-09T20:16:02.923Z","msg":"Connected to collector-124.newrelic.com:443 with agent run ID 34696967950129202.","component":"collector_api"}
+{"v":0,"level":50,"name":"newrelic","hostname":"fire-pc","pid":5008,"time":"2015-04-09T20:43:25.816Z","msg":"Calling metric_data on New Relic failed unexpectedly. Data will be held until it can be submitted:","syscall":"connect","errno":"ETIMEDOUT","code":"ETIMEDOUT","component":"collector_api"}
+{"v":0,"level":30,"name":"newrelic","hostname":"fire-pc","pid":5008,"time":"2015-04-09T20:43:25.816Z","msg":"Error on submission to New Relic (data held for redelivery):","syscall":"connect","errno":"ETIMEDOUT","code":"ETIMEDOUT"}
