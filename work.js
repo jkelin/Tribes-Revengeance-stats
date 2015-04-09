@@ -438,7 +438,7 @@ app.get('/', function (req, res) {
 
 app.get('/player/:name', cacher.cache(false), function (req, res) {
   	var name = req.params["name"];
-	Player.where({_id: new RegExp(name, "i")}).findOne(function(err,data){
+	Player.where({_id: name}).findOne(function(err,data){
 		if(err) throw err;
 		res.render('player',{
 			data:data,
