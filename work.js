@@ -386,7 +386,8 @@ var helpers = {
 		};
 		return context;
 	},
-	killsperminute: function(context) { return (context.kills / context.minutesonline).toFixed(2); }
+	killsperminute: function(context) { return (context.kills / context.minutesonline).toFixed(2); },
+	inc: function(num) { return num + 1; }
 };
 
 app.engine('handlebars', exphbs({defaultLayout: 'main'}));

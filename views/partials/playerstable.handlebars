@@ -1,5 +1,6 @@
 <table class="table table-bordered">
 	<tr>
+		<th>#</th>
 		<th>Name</th>
 		<th>Kills</th>
 		<th>Deaths</th>
@@ -12,6 +13,7 @@
 	</tr>
 {{#each data}}
 	<tr>
+		<td>{{inc @index}}</td>
 		<td><a href="/player/{{urlencode _id}}">{{_id}}</a></td>
 		<td>{{kills}}</td>
 		<td>{{deaths}}</td>
