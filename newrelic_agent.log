@@ -19,3 +19,6 @@
 {"v":0,"level":30,"name":"newrelic","hostname":"fire-pc","pid":4888,"time":"2015-04-09T19:07:03.271Z","msg":"Starting New Relic for Node.js connection process."}
 {"v":0,"level":30,"name":"newrelic","hostname":"fire-pc","pid":4888,"time":"2015-04-09T19:07:07.238Z","msg":"Reporting to: https://rpm.newrelic.com/accounts/927040/applications/8075790","component":"new_relic_response"}
 {"v":0,"level":30,"name":"newrelic","hostname":"fire-pc","pid":4888,"time":"2015-04-09T19:07:07.238Z","msg":"Connected to collector-124.newrelic.com:443 with agent run ID 34696967949947607.","component":"collector_api"}
+{"v":0,"level":30,"name":"newrelic","hostname":"fire-pc","pid":2488,"time":"2015-04-09T19:12:17.356Z","msg":"Starting New Relic for Node.js connection process."}
+{"v":0,"level":30,"name":"newrelic","hostname":"fire-pc","pid":2488,"time":"2015-04-09T19:12:21.354Z","msg":"Reporting to: https://rpm.newrelic.com/accounts/927040/applications/8075790","component":"new_relic_response"}
+{"v":0,"level":30,"name":"newrelic","hostname":"fire-pc","pid":2488,"time":"2015-04-09T19:12:21.354Z","msg":"Connected to collector-124.newrelic.com:443 with agent run ID 34696967949962054.","component":"collector_api"}
