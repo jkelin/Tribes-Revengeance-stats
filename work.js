@@ -211,6 +211,7 @@ var Server = mongoose.model('Server', {
 	minutesonline: Number,
 	maxplayers: Number,
 	lastseen: Date,
+	lastfullreport: Date,
 	lastdata: mongoose.Schema.Types.Mixed
 });
 
@@ -225,7 +226,6 @@ var Player = mongoose.model('Player', {
 	defense: Number,
 	style: Number,
 	lastseen: Date,
-	lastfullreport: Date,
 	minutesonline: Number,
 	stats: mongoose.Schema.Types.Mixed
 });
