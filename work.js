@@ -21,6 +21,7 @@ var underscore = require('underscore');
 var rollbar = require('rollbar');
 rollbar.init("5fece51536824b3097852cca48f3f269");
 
+var countryNames = require("./countrynames.json");
 
 var tribes_news = [];
 
@@ -387,7 +388,8 @@ var helpers = {
 		return context;
 	},
 	killsperminute: function(context) { return (context.kills / context.minutesonline).toFixed(2); },
-	inc: function(num) { return num + 1; }
+	inc: function(num) { return num + 1; },
+	countryname: function(country) { return countryNames[country.toUpperCase()]; }
 };
 
 app.engine('handlebars', exphbs({defaultLayout: 'main'}));
@@ -421,7 +423,7 @@ app.get('/', function (req, res) {
 	];
 
 	q.all(promises).then(function(data) {
-		console.log("then");
+		//console.log("then");
 		res.render('home', {
 			playersKills:data[0],
 			playersTime:data[1],
