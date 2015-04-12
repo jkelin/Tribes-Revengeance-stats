@@ -340,9 +340,9 @@ function addServerLastFullReport(ip,port){
 	});
 }
 
-function limitTracks(tracks){
+function limitTracks(tracks, numDays){
 	var d = new Date();
-	d.setDate(d.getDate() - 2);
+	d.setDate(d.getDate() - numDays);
 	var data = []
 	while(d < Date.now()){
 		var e = new Date(d);
@@ -389,7 +389,10 @@ var helpers = {
 	},
 	killsperminute: function(context) { return (context.kills / context.minutesonline).toFixed(2); },
 	inc: function(num) { return num + 1; },
-	countryname: function(country) { return countryNames[country.toUpperCase()]; }
+	countryname: function(country, options) { return countryNames[country.toUpperCase()]; },
+	condPrint: function (v1, v2,v3) {
+		return (v1 == v2) ? v3 : "";
+	}
 };
 
 app.engine('handlebars', exphbs({defaultLayout: 'main'}));
@@ -485,8 +488,11 @@ app.get('/search', cacher.cache(false), function (req, res) {
 
 app.get('/server/:id', cacher.cache(false), function (req, res,next) {
 	var id = req.params["id"];
+	var numDays = req.query.days !== undefined ? parseInt(req.query.days) : 2;
+	if(numDays > 7) numDays = 7;
+	if(numDays < 2) numDays = 2;
 	var d = new Date();
-	d.setDate(d.getDate() - 2);
+	d.setDate(d.getDate() - numDays);
 	var promises = [
 		Server.findOne().where({_id: id}).exec(),
 		ServerTrack.where({serverId: id, time: {'$gt':d}}).find().exec()
@@ -498,9 +504,10 @@ app.get('/server/:id', cacher.cache(false), function (req, res,next) {
 
 		res.render('server',{
 			data:data[0],
-			tracks: limitTracks(data[1]),
+			tracks: limitTracks(data[1], numDays),
 			online:data != null && data[0].lastseen > compDate,
-			helpers:helpers
+			helpers:helpers,
+			numdays:numDays
 		});
 	}).catch(function (error) {
 		next(error);
