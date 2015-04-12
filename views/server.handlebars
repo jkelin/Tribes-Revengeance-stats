@@ -56,38 +56,28 @@
 		<h3>Number of players online in last 2 days</h3>
 		<span id="chartdata" style="display:none">{{json tracks}}</span>
 		<div id="chart_div" style="width: 900px; height: 400px;margin-left:auto;margin-right:auto"></div>
-		
-		<script type="text/javascript" src="//www.google.com/jsapi"></script>
+
+	    <script type="text/javascript" src="/tc-min.js"></script>
 	    <script type="text/javascript">
-	      var dataSpan = JSON.parse(document.getElementById('chartdata').innerHTML);
-	      var chartData = [];
-	      //chartData.push(["Time","Players"]);
-	      for(var i in dataSpan){
-	      	var date = new Date(dataSpan[i].time);
-	      	var formated = date.getMonth()+"-"+date.getDate()+" "+date.getHours()+":"+date.getSeconds();
-	      	chartData.push([formated,dataSpan[i].players]);
-	      }
-	      console.log(chartData);
-	      google.load("visualization", "1.1", {packages:["bar"]});
-	      google.setOnLoadCallback(drawChart);
-	      function drawChart() {
-	      	console.log(chartData);
-	      	var data = new google.visualization.DataTable();
-		    data.addColumn('string','Time');
-		    data.addColumn('number', 'Players');
-		    data.addRows(chartData);
+    		var dataSpan = JSON.parse(document.getElementById('chartdata').innerHTML);
+			var chartData = [];
+			for(var i in dataSpan){
+				var date = new Date(dataSpan[i].time);
+				//var formated = date.getMonth()+"-"+date.getDate()+" "+date.getHours()+":"+date.getSeconds();
+				var formated = new Date(dataSpan[i].time);
+				chartData.push({date:formated,players:dataSpan[i].players});
+			}
+			console.log(chartData);
 
-	        var options = {
-	          title: 'Number of players online in last 2 days',
-	          bars: 'vertical',
-			  width: 900,
-			  height: 400
-	        };
+		    var mytc = new Timechart({
+		        id: "chart_div",
+		        zoom: "d",
+		        datefield: "date",
+		        datafields: ["players"],
+		        dateformat: "yyyy-mm-dd h:i"
+		    },chartData);
+		</script>
 
-	        var chart = new google.charts.Bar(document.getElementById('chart_div'));
-	        chart.draw(data, options);
-	      }
-	    </script>
 	{{else}}
 	Server not found
 	{{/if}}
