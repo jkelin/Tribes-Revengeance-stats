@@ -486,6 +486,18 @@ app.get('/search', cacher.cache(false), function (req, res) {
 	});
 })
 
+function parseServerTimeData(data){
+	var o = {};
+	data.forEach(function(element){
+		var time = new Date(element.value.avgTime);
+		var index = time.getTime();
+		var value = element.value.max;
+
+		o[index] = value;
+	});
+	return o;
+}
+
 app.get('/server/:id', cacher.cache(false), function (req, res,next) {
 	var id = req.params["id"];
 	var numDays = req.query.days !== undefined ? parseInt(req.query.days) : 2;
@@ -493,18 +505,66 @@ app.get('/server/:id', cacher.cache(false), function (req, res,next) {
 	if(numDays < 2) numDays = 2;
 	var d = new Date();
 	d.setDate(d.getDate() - numDays);
+
+	var mro = {};
+	mro.map = function() {
+		var dayStr = this.time.getFullYear()+'-'+this.time.getMonth()+'-'+this.time.getDay();
+		var hourStr = this.time.getHours();
+		var finalStr = dayStr + ':' + hourStr;
+		
+		emit(
+			finalStr,
+			{num:this.numplayers,time:this.time,server:this.serverId}
+		); 
+	}
+	mro.reduce = function (key, values) {
+		/*var sum = 0;
+		for(var i = 1;i<values.length;i++) sum+=values[i].num;
+		var cnt = values.length;
+		var avg = sum/cnt;
+		var rounded = Math.round(avg);*/
+		
+		var minTime = values[1].time;	
+		var maxTime = values[values.length-1].time;
+
+		var avgTimestamp = (minTime.getTime() + maxTime.getTime()) / 2;
+		var avgTime = new Date(avgTimestamp);
+		
+		var max = 0;
+		for(var i = 1;i<values.length;i++) if(max < values[i].num) max = values[i].num;
+		
+		return {
+			//key:key, 
+			//players: rounded,
+			max:max,
+			//avg:avg,
+			//server:values[1].server,
+			//minTime:minTime,
+			//maxTime:maxTime,
+			avgTime: avgTime
+		};	
+	}
+	mro.query = {
+		"serverId":id,
+		"time":{"$gte":d}
+	};
+	console.log(JSON.stringify(mro.query));
 	var promises = [
 		Server.findOne().where({_id: id}).exec(),
-		ServerTrack.where({serverId: id, time: {'$gt':d}}).find().exec()
+		//ServerTrack.where({serverId: id, time: {'$gt':d}}).find().exec()
+		ServerTrack.mapReduce(mro)
 	];
 		
 	q.all(promises).then(function(data) {
 		var compDate = new Date();
 		compDate.setMinutes(compDate.getMinutes() - 2);
 
+		var parsed = parseServerTimeData(data[1]);
+		//console.log(parsed);
 		res.render('server',{
 			data:data[0],
-			tracks: limitTracks(data[1], numDays),
+			//tracks: limitTracks(data[1], numDays),
+			tracks: parsed,
 			online:data != null && data[0].lastseen > compDate,
 			helpers:helpers,
 			numdays:numDays
@@ -558,7 +618,10 @@ var server = app.listen(app.get('port'), function () {
 
 })
 
-mongoose.connect(process.env.MONGOLAB_URI);
+mongoose.connect(process.env.MONGOLAB_URI, function(err){
+	if(err){console.log("DB failed to connect"); throw err;}
+	console.log("DB connected");
+});
 getNewsForProject().then(function(news){
 	tribes_news = news;
 });

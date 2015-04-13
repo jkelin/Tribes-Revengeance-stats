@@ -65,10 +65,9 @@
     		var dataSpan = JSON.parse(document.getElementById('chartdata').innerHTML);
 			var chartData = [];
 			for(var i in dataSpan){
-				var date = new Date(dataSpan[i].time);
+				var date = new Date(parseInt(i));
 				//var formated = date.getMonth()+"-"+date.getDate()+" "+date.getHours()+":"+date.getSeconds();
-				var formated = new Date(dataSpan[i].time);
-				chartData.push({date:formated,players:dataSpan[i].players});
+				chartData.push({date:date,players:dataSpan[i]});
 			}
 			console.log(chartData);
 
