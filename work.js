@@ -32,6 +32,8 @@ var options = {
   path: '/server_list_details.php?game=tribesvengeance'
 };
 
+var NodeCache = require( "node-cache" );
+var myCache = new NodeCache();
 
 var getServersFromMaster = function(callback){
 	http.request(options, function(response) {
@@ -498,14 +500,7 @@ function parseServerTimeData(data){
 	return o;
 }
 
-app.get('/server/:id', cacher.cache(false), function (req, res,next) {
-	var id = req.params["id"];
-	var numDays = req.query.days !== undefined ? parseInt(req.query.days) : 2;
-	if(numDays > 7) numDays = 7;
-	if(numDays < 2) numDays = 2;
-	var d = new Date();
-	d.setDate(d.getDate() - numDays);
-
+function makeMro(id, d){
 	var mro = {};
 	mro.map = function() {
 		var dayStr = this.time.getFullYear()+'-'+this.time.getMonth()+'-'+this.time.getDay();
@@ -548,14 +543,53 @@ app.get('/server/:id', cacher.cache(false), function (req, res,next) {
 		"serverId":id,
 		"time":{"$gte":d}
 	};
-	console.log(JSON.stringify(mro.query));
+
+	return mro;
+}
+
+function getMinutesUntilNextHour() { 
+	return 60 - new Date().getMinutes(); 
+}
+
+function getServerChartData(id, d, days){
+	var cacheId = id+"|"+days;
+	
+
+	var r = myCache.get( cacheId );
+	//console.log("r = ",r)
+	if(r[cacheId] !== undefined) {
+		//console.log("from cache");
+		var deferred = q.defer();
+		deferred.resolve(r[cacheId]);
+		return deferred.promise;
+	}
+
+	var mro = makeMro(id,d);
+
+	return ServerTrack.mapReduce(mro).then(function(data){
+		//console.log("mapreduce then");
+		//myCache.set(cacheId, data, 1 * 60);
+		myCache.set(cacheId, data, (getMinutesUntilNextHour() + 5) * 60);
+		return data;
+	});
+}
+
+app.get('/server/:id', cacher.cache(false), function (req, res,next) {
+	var id = req.params["id"];
+	var numDays = req.query.days !== undefined ? parseInt(req.query.days) : 2;
+	if(numDays > 7) numDays = 7;
+	if(numDays < 2) numDays = 2;
+	var d = new Date();
+	d.setDate(d.getDate() - numDays);
+
 	var promises = [
 		Server.findOne().where({_id: id}).exec(),
 		//ServerTrack.where({serverId: id, time: {'$gt':d}}).find().exec()
-		ServerTrack.mapReduce(mro)
+		getServerChartData(id,d, numDays)
 	];
 		
 	q.all(promises).then(function(data) {
+		//console.log("q.all",data[1]);
 		var compDate = new Date();
 		compDate.setMinutes(compDate.getMinutes() - 2);
 

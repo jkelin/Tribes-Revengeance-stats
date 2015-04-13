@@ -12,6 +12,7 @@
     "moment": "^2.9.0",
     "mongoose": "^3.8.24",
     "newrelic": "^1.17.2",
+    "node-cache": "^1.1.0",
     "node-freegeoip": "0.0.1",
     "octonode": "^0.6.16",
     "q": "^1.2.0",
