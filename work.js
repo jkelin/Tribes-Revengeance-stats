@@ -17,6 +17,7 @@ var Cacher = require("cacher")
 var cacher = new Cacher()
 var github = require('octonode');
 var underscore = require('underscore');
+var compression = require('compression');
 //var mongooseCachebox = require("mongoose-cachebox");
 var rollbar = require('rollbar');
 rollbar.init("5fece51536824b3097852cca48f3f269");
@@ -402,7 +403,8 @@ app.set('view engine', 'handlebars');
 
 app.use(rollbar.errorHandler('5fece51536824b3097852cca48f3f269'));
 //app.use(cacher.cache('seconds', 60))
-app.use(express.static('public', options));
+app.use(express.static(__dirname + "/public/", { maxAge: 86400000 }));
+app.use(compression());
 
 app.use (function(req, res, next) {
     var data='';
