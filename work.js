@@ -376,7 +376,8 @@ var helpers = {
 		var span = new timespan.TimeSpan();
 		span.addMinutes(parseInt(context));
 		var str = "";
-		if(span.days != 0)str += span.days + " days ";
+		if(span.days == 1)str += span.days + " day ";
+		else if(span.days != 0)str += span.days + " days ";
 		if(span.hours != 0)str += span.hours + " hours ";
 		if(str != "") str += "and ";
 		str += span.minutes + " minutes";
