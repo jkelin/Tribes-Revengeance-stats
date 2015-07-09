@@ -33,5 +33,8 @@
 	"StatTeamKill":"Team kills",
 	"suicideStatCTF":"Suicides",
 	"killStatCTF":"CTF kills",
-	"StatHighestSpeed":"Highest speed"
+	"StatHighestSpeed":"Highest speed",
+	"StatRabbitKill":"Rabbit kills",
+	"ExtendedStatFastExplosive":"Extended fast explosives",
+	"ExtendedStatMidairDisc":"Extended midair disc"
 }
