@@ -517,6 +517,8 @@ app.get('/servers', function (req, res) {
 app.get('/servers.json', function (req, res) {
 	Server.find().sort({lastseen:-1}).exec(function(err,data){
 		if(err) throw err;
+		res.header("Access-Control-Allow-Origin", "*");
+		res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
 		res.json(data);
 	});
 });
