@@ -1,0 +1,16 @@
+<div class="main">
+    {{#if alerts}}
+        {{#each alerts}}
+            <div class="alert alert-warning alert-dismissible" role="alert">
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                {{text}}
+            </div>
+        {{/each}}
+    {{/if}}
+
+    <p>This page allows you to receive notifications whenever someone joins any Tribes server (when you have this page open).</p>
+
+    <button class="btn btn-primary" onclick="window.testTribesNotification()">Test!</button>
+
+    <script>window.startTribesNotifications()</script>
+</div>

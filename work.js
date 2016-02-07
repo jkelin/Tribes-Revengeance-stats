@@ -536,6 +536,10 @@ app.get('/search', cacher.cache(false), function (req, res) {
 	});
 })
 
+app.get('/ticker', cacher.cache(false), function (req, res) {
+	res.render('ticker');
+});
+
 function parseServerTimeData(data){
 	var o = {};
 	data.forEach(function(element){
