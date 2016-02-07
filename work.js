@@ -699,18 +699,25 @@ app.ws('/', function(ws, req) {
 			player: data.player.player
 		};
 
-		if(ws) ws.send(JSON.stringify(wsData));
+		if(ws && !ws.closed) ws.send(JSON.stringify(wsData));
 	}
 
 	function ping(){
-		if(ws) ws.send("PING");
+		if(ws && !ws.closed) ws.send("PING");
 	}
 
 	emitter.addListener("join", listen.bind(null, "join"));
 	emitter.addListener("left", listen.bind(null, "left"));
 	var interval = setInterval(ping, 30 * 1000);
 
+	ws.on('error', function() {
+		ws.closed = true;
+		emitter.removeListener("join", listen);
+		clearInterval(interval);
+	});
+
 	ws.on('close', function() {
+		ws.closed = true;
 		emitter.removeListener("join", listen);
 		clearInterval(interval);
 	});

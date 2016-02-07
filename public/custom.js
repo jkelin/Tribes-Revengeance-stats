@@ -10,14 +10,17 @@ function notify(what){
 
 window.testTribesNotification = function(){
     notify("Hello world!");
+};
 
-    var ws = new WebSocket("ws://" + location.host + "/");
-
+window.startTribesNotifications = function(){
     var msgArr = [];
     var lastMsg = Date.now();
 
+
+    var ws = new ReconnectingWebSocket("ws://" + location.host + "/");
+
     ws.onmessage = function(msg){
-        if(msg.data == "PING") return;
+        if(msg.data == "PING") return console.info("PING!");
         var data = JSON.parse(msg.data);
 
         if(data.type != "join") return;
@@ -31,8 +34,4 @@ window.testTribesNotification = function(){
         lastMsg = Date.now();
         msgArr = [];
     };
-};
-
-window.startTribesNotifications = function(){
-    window.testTribesNotification();
 };
