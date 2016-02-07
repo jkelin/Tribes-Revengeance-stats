@@ -20,7 +20,7 @@ var compression = require('compression');
 var emitter = new (require('events'));
 //var mongooseCachebox = require("mongoose-cachebox");
 
-var countryNames = require("./countrynames.json");
+var countryNames = require(__dirname + "/countrynames.json");
 
 var tribes_news = [];
 
@@ -412,7 +412,7 @@ var helpers = {
 	},
 	showMoment: function(context) { return moment(context).fromNow(); },
 	translateStatName: function(context) { 
-		var table = require("./statnames.json");
+		var table = require(__dirname +"/statnames.json");
 		for (var i in table) {
 			if(context == i) return table[i];
 		};
@@ -426,6 +426,7 @@ var helpers = {
 	}
 };
 
+app.set('views', __dirname + '/views');
 app.engine('handlebars', exphbs({defaultLayout: 'main'}));
 app.set('view engine', 'handlebars');
 
