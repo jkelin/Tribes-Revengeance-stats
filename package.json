@@ -10,15 +10,18 @@
     "compression": "^1.4.3",
     "express": "^4.12.2",
     "express-handlebars": "^1.2.2",
+    "express-ws": "^1.0.0-rc.2",
     "moment": "^2.9.0",
-    "mongoose": "^3.8.24",
+    "mongoose": "^4.4.2",
     "newrelic": "^1.17.2",
     "node-cache": "^1.1.0",
     "node-freegeoip": "0.0.1",
     "octonode": "^0.6.16",
     "q": "^1.2.0",
-    "rollbar": "^0.4.5",
     "timespan": "^2.3.0",
     "underscore": "^1.8.2"
+  },
+  "scripts": {
+    "start": "node work.js"
   }
 }

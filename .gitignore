@@ -1,3 +1,5 @@
 node_modules
 run.bat
 newrelic_agent.log
+.idea
+npm-debug.log

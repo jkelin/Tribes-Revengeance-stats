@@ -1,26 +1,24 @@
-require('newrelic');
-
 var http = require("http");
 var dgram = require('dgram');
 var mongoose = require('mongoose');
 var net = require('net');
-var express = require('express')
-var app = express()
-var atob = require('atob')
+var express = require('express');
+var app = express();
+var expressWs = require('express-ws')(app);
+var atob = require('atob');
 var exphbs  = require('express-handlebars');
 var url = require('url');
 var moment = require('moment');
 var q = require('q');
 var timespan = require('timespan');
 var freegeoip = require('node-freegeoip');
-var Cacher = require("cacher")
-var cacher = new Cacher()
+var Cacher = require("cacher");
+var cacher = new Cacher();
 var github = require('octonode');
 var underscore = require('underscore');
 var compression = require('compression');
+var emitter = new (require('events'));
 //var mongooseCachebox = require("mongoose-cachebox");
-var rollbar = require('rollbar');
-rollbar.init("5fece51536824b3097852cca48f3f269");
 
 var countryNames = require("./countrynames.json");
 
@@ -135,7 +133,6 @@ function handleData(data){
 			});
 		}
 
-		server.minutesonline ++;
 		server.name = data.hostname;
 		server.adminname = data.adminname;
 		server.adminemail = data.adminemail;
@@ -143,6 +140,27 @@ function handleData(data){
 		server.port = data.hostport;
 		server.maxplayers = data.maxplayers;
 		server.lastseen = Date.now();
+
+		if(!server.lastTiming || server.lastTiming + 60 * 1000 <= Date.now()) {
+			server.minutesonline++;
+			server.lastTiming = Date.now();
+			console.log("timing server", server.name);
+		}
+
+		data.players
+		.forEach(function(player){
+			var wasbefore = server.lastdata.players.some(function(p){return p.player == player.player});
+			if(!wasbefore) emitter.emit("join", {server: server, player: player});
+		});
+
+		if(server.lastdata && server.lastdata.players){
+			server.lastdata.players
+			.forEach(function(player){
+				var hasLeft = data.players.some(function(p){return p.player == player.player});
+				if(!hasLeft) emitter.emit("left", {server: server, player: player});
+			});
+		}
+
 		server.lastdata = data;
 
 		pushPlayersTrackings(id, data);
@@ -171,7 +189,12 @@ function handleData(data){
 	});
 }
 
+var lastTrackings = {};
 function pushPlayersTrackings(serverIdIn, data){
+	if(!lastTrackings[serverIdIn]) lastTrackings[serverIdIn] = 0;
+	if(lastTrackings[serverIdIn] + 60 * 1000 >= Date.now()) return;
+	lastTrackings[serverIdIn] = Date.now();
+
 	var track = new ServerTrack({
 		serverId: serverIdIn,
 		time: Date.now(),
@@ -182,19 +205,21 @@ function pushPlayersTrackings(serverIdIn, data){
 }
 
 function timePlayer(player){
-	console.log("timing ", player.player)
 	Player.where({_id:player.player}).findOne(function(err, pl){
 		if(err)throw err;
 		if(pl === null) return;
 
-		pl.minutesonline++;
-		pl.lastseen = Date.now()
+		if(!pl.lastTiming || pl.lastTiming + 60 * 1000 >= Date.now()){
+			pl.minutesonline++;
+			pl.lastTiming = Date.now();
+			console.log("timing player", player.player);
+		}
+		pl.lastseen = Date.now();
 		pl.save(function(err){if(err)throw err;});
 	});
 }
 
 function doAllTheWork(){
-	console.log("Checking servers");
 	getServersFromMaster(function(servers){
 		servers.forEach(function(item){
 			talkToServer(item[0], parseInt(item[1]));
@@ -215,6 +240,7 @@ var Server = mongoose.model('Server', {
 	minutesonline: Number,
 	maxplayers: Number,
 	lastseen: Date,
+	lastTiming: Date,
 	lastfullreport: Date,
 	lastdata: mongoose.Schema.Types.Mixed
 });
@@ -229,6 +255,7 @@ var Player = mongoose.model('Player', {
 	offense: Number,
 	defense: Number,
 	style: Number,
+	lastTiming: Date,
 	lastseen: Date,
 	minutesonline: Number,
 	stats: mongoose.Schema.Types.Mixed
@@ -242,7 +269,7 @@ var ServerTrack = mongoose.model('ServerTrack', {
 
 
 
-setInterval(doAllTheWork, 60 * 1000);
+setInterval(doAllTheWork, 5 * 1000);
 doAllTheWork();
  
 function handlePlayer(input, ip, port){
@@ -266,7 +293,7 @@ function handlePlayer(input, ip, port){
 
 		if(player.offense == undefined) player.offense = 0;
 
-		player.ip = input.ip,
+		player.ip = input.ip;
 		player.lastserver = ip + ":" + port;
 		player.score += input.score;
 		player.kills += input.kills;
@@ -402,7 +429,6 @@ var helpers = {
 app.engine('handlebars', exphbs({defaultLayout: 'main'}));
 app.set('view engine', 'handlebars');
 
-app.use(rollbar.errorHandler('5fece51536824b3097852cca48f3f269'));
 //app.use(cacher.cache('seconds', 60))
 app.use(express.static(__dirname + "/public/", { maxAge: 86400000 }));
 app.use(compression());
@@ -486,7 +512,15 @@ app.get('/servers', function (req, res) {
 			helpers:helpers
 		});
 	});
-})
+});
+
+app.get('/servers.json', function (req, res) {
+	Server.find().sort({lastseen:-1}).exec(function(err,data){
+		if(err) throw err;
+		res.json(data);
+	});
+});
+
 
 app.get('/search', cacher.cache(false), function (req, res) {
 	var name = req.query.name !== undefined ? req.query.name : "";
@@ -619,7 +653,7 @@ app.get('/server/:id', cacher.cache(false), function (req, res,next) {
 		next(error);
 	})
 	.done();
-})
+});
 
 function getClientIp(req) {
   var ipAddress;
@@ -649,6 +683,34 @@ app.post('/upload', function (req, res) {
 	addServerLastFullReport(ip, port);
 })
 
+app.ws('/', function(ws, req) {
+	function listen(type, data){
+		var wsData = {
+			type: type,
+			server: data.server._id,
+			serverName: data.server.name,
+			player: data.player.player
+		};
+
+		if(ws) ws.send(JSON.stringify(wsData));
+	}
+
+	function ping(){
+		if(ws) ws.send("PING");
+	}
+
+	emitter.addListener("join", listen.bind(null, "join"));
+	emitter.addListener("left", listen.bind(null, "left"));
+	var interval = setInterval(ping, 30 * 1000);
+
+	ws.on('close', function() {
+		emitter.removeListener("join", listen);
+		clearInterval(interval);
+	});
+
+	ping();
+});
+
 app.use(function(err, req, res, next) {
 	console.log("Error:",err);
   	res.send(err);
@@ -664,10 +726,11 @@ var server = app.listen(app.get('port'), function () {
 
 })
 
-mongoose.connect(process.env.MONGOLAB_URI, function(err){
+mongoose.connect(process.env.MONGOLAB_URI || "mongodb://localhost/tribes", function(err){
 	if(err){console.log("DB failed to connect"); throw err;}
 	console.log("DB connected");
 });
+
 getNewsForProject().then(function(news){
 	tribes_news = news;
 });
