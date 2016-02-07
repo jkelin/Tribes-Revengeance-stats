@@ -362,7 +362,7 @@ function addServerLastFullReport(ip,port){
 	Server.where({_id:ip+":"+port}).findOne(function(err, server){
 		if(err) throw err;
 		if(server == null){
-			rollbar.reportMessage("server null, _id:" + (ip+":"+port));
+			console.log("server null, _id:" + (ip+":"+port));
 			return;
 		}
 		server.lastfullreport = new Date().getTime();
