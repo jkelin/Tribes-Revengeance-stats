@@ -495,11 +495,14 @@ app.get('/player/:name', cacher.cache(false), function (req, res) {
 
 app.get('/players', function (req, res) {
 	Player.find().sort({lastseen:-1}).exec(function(err,data){
-		if(err) throw err;
-		res.render('players',{
-			data:data,
-			alerts: [{text: data.length + " players total"}],
-			helpers:helpers
+		Player.count({}, function(e, c){
+			if(err) throw err;
+			if(e) throw e;
+			res.render('players',{
+				data:data,
+				alerts: [{text: c + " players total"}],
+				helpers:helpers
+			});
 		});
 	});
 })
