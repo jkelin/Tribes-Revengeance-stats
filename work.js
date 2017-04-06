@@ -142,8 +142,12 @@ function handleData(data) {
         server.maxplayers = data.maxplayers;
         server.lastseen = Date.now();
 
-        server.minutesonline += (Date.now() - (server.lastTiming || Date.now())) / (1000 * 60);
-        server.lastTiming = Date.now();
+        if (!server.lastTiming || server.lastTiming <= Date.now() - 60 * 1000) {
+            server.minutesonline++;
+            console.log("Timing server", id);
+        } else {
+            console.log("Could not time server because lastTiming is", server.lastTiming, "and now is", Date.now(), "while needed is", Date.now() - 60 * 1000, "diff:", server.lastTiming - Date.now() - 60 * 1000);
+        }
 
         data.players
             .forEach(function (player) {
@@ -220,9 +224,11 @@ function timePlayer(player) {
             });
         };
 
-        pl.minutesonline += (Date.now() - (pl.lastTiming || Date.now())) / (1000 * 60);
-        pl.lastTiming = Date.now();
-
+        if (!pl.lastTiming || parseFloat(pl.lastTiming) + (60 * 1000) <= Date.now()) {
+            pl.minutesonline++;
+            pl.lastTiming = Date.now();
+            console.log("timing player", player.player);
+        }
         pl.lastseen = Date.now();
         pl.save(function (err) { if (err) throw err; });
     });
