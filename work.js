@@ -124,6 +124,7 @@ function talkToServer(ip, port) {
 function handleData(data) {
     //console.log(data);
     var id = data.ip + ':' + data.hostport;
+    console.log("Handling data from", id);
     Server.where({ _id: id }).findOne(function (err, server) {
         if (err) throw err;
         else if (server === null) {
@@ -144,7 +145,7 @@ function handleData(data) {
         if (!server.lastTiming || server.lastTiming + 60 * 1000 <= Date.now()) {
             server.minutesonline++;
             server.lastTiming = Date.now();
-            console.log("timing server", server.name);
+            console.log("Timing server", server.name);
         }
 
         data.players
@@ -167,13 +168,13 @@ function handleData(data) {
 
         data.players.forEach(timePlayer);
 
-        if (server.country == undefined) {
+        if (!server.country) {
             freegeoip.getLocation(server.ip, function (err, location) {
                 server.country = location["country_code"].toLowerCase();
                 server.save(function (err) {
                     if (err) throw err;
                     else {
-                        //console.log("Saved", id);
+                        console.log("Saved server", id);
                     }
                 });
             });
@@ -182,7 +183,7 @@ function handleData(data) {
             server.save(function (err) {
                 if (err) throw err;
                 else {
-                    //console.log("Saved", id);
+                    console.log("Saved server", id);
                 }
             });
         }
