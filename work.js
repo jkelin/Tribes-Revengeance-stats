@@ -130,7 +130,8 @@ function handleData(data) {
         else if (server === null) {
             server = new Server({
                 _id: id,
-                minutesonline: 0
+                minutesonline: 0,
+                lastTiming: Date.now()
             });
         }
 
@@ -142,12 +143,15 @@ function handleData(data) {
         server.maxplayers = data.maxplayers;
         server.lastseen = Date.now();
 
-        if (!server.lastTiming || server.lastTiming <= Date.now() - 60 * 1000) {
+        if (Date.now() >= server.lastTiming + 60 * 1000) {
             server.minutesonline++;
+            server.lastTiming = Date.now();
             console.log("Timing server", id);
         } else {
             console.log("Could not time server because lastTiming is", server.lastTiming, "and now is", Date.now(), "while needed is", Date.now() - 60 * 1000, "diff:", server.lastTiming - Date.now() - 60 * 1000);
         }
+
+        server.save(function (err) { if (err) throw err; });
 
         data.players
             .forEach(function (player) {
@@ -220,14 +224,15 @@ function timePlayer(player) {
                 offense: 0,
                 defense: 0,
                 style: 0,
-                minutesonline: 0
+                minutesonline: 0,
+                lastTiming: Date.now()
             });
         };
 
-        if (!pl.lastTiming || parseFloat(pl.lastTiming) + (60 * 1000) <= Date.now()) {
+        if (Date.now() >= pl.lastTiming + 60 * 1000) {
             pl.minutesonline++;
             pl.lastTiming = Date.now();
-            console.log("timing player", player.player);
+            console.log("Timing player", player.player);
         }
         pl.lastseen = Date.now();
         pl.save(function (err) { if (err) throw err; });
@@ -302,7 +307,8 @@ function handlePlayer(input, ip, port) {
                 offense: 0,
                 defense: 0,
                 style: 0,
-                minutesonline: 20
+                minutesonline: 20,
+                lastTiming: Date.now()
             });
         }
 
