@@ -131,7 +131,7 @@ function handleData(data) {
             server = new Server({
                 _id: id,
                 minutesonline: 0,
-                lastTiming: Date.now()
+                lastTiming: new Date()
             });
         }
 
@@ -141,14 +141,14 @@ function handleData(data) {
         server.ip = data.ip;
         server.port = data.hostport;
         server.maxplayers = data.maxplayers;
-        server.lastseen = Date.now();
+        server.lastseen = new Date();
 
-        if (Date.now() >= server.lastTiming + 60 * 1000) {
+        if (Date.now() >= server.lastTiming.getTime() + 60 * 1000) {
             server.minutesonline++;
-            server.lastTiming = Date.now();
+            server.lastTiming = new Date();
             console.log("Timing server", id);
         } else {
-            console.log("Could not time server because lastTiming is", server.lastTiming, "and now is", Date.now(), "while needed is", Date.now() - 60 * 1000, "diff:", server.lastTiming - Date.now() - 60 * 1000);
+            console.log("Could not time server because lastTiming is", server.lastTiming, "and now is", new Date(), "while needed is", new Date(Date.now() - 60 * 1000), "diff:", server.lastTiming - new Date(Date.now() - 60 * 1000));
         }
 
         server.save(function (err) { if (err) throw err; });
@@ -203,7 +203,7 @@ function pushPlayersTrackings(serverIdIn, data) {
 
     var track = new ServerTrack({
         serverId: serverIdIn,
-        time: Date.now(),
+        time: new Date(),
         numplayers: data.numplayers
     });
 
@@ -225,16 +225,17 @@ function timePlayer(player) {
                 defense: 0,
                 style: 0,
                 minutesonline: 0,
-                lastTiming: Date.now()
+                lastTiming: new Date()
             });
         };
 
-        if (Date.now() >= pl.lastTiming + 60 * 1000) {
+        if (Date.now() >= pl.lastTiming.getTime() + 60 * 1000) {
             pl.minutesonline++;
-            pl.lastTiming = Date.now();
+            pl.lastTiming = new Date();
             console.log("Timing player", player.player);
         }
-        pl.lastseen = Date.now();
+
+        pl.lastseen = new Date();
         pl.save(function (err) { if (err) throw err; });
     });
 }
@@ -308,7 +309,7 @@ function handlePlayer(input, ip, port) {
                 defense: 0,
                 style: 0,
                 minutesonline: 20,
-                lastTiming: Date.now()
+                lastTiming: new Date()
             });
         }
 
@@ -322,7 +323,11 @@ function handlePlayer(input, ip, port) {
         player.offense += input.offense;
         player.defense += input.defense;
         player.style += input.style;
-        player.lastseen = Date.now();
+        player.lastseen = new Date();
+
+        if(!player.stats){
+            player.stats = {};
+        }
 
         if (player.stats.StatHighestSpeed == undefined) player.stats.StatHighestSpeed = 0;
 
@@ -380,10 +385,12 @@ function getNewsForProject() {
 }
 
 function addServerLastFullReport(ip, port) {
-    Server.where({ _id: ip + ":" + port }).findOne(function (err, server) {
+    var id = ip + ":" + port;
+    Server.where({ _id: id})
+    .findOne(function (err, server) {
         if (err) throw err;
         if (server == null) {
-            console.log("server null, _id:" + (ip + ":" + port));
+            console.log("server null, _id:", id);
             return;
         }
         server.lastfullreport = new Date().getTime();
@@ -395,7 +402,7 @@ function limitTracks(tracks, numDays) {
     var d = new Date();
     d.setDate(d.getDate() - numDays);
     var data = []
-    while (d < Date.now()) {
+    while (d < new Date()) {
         var e = new Date(d);
         e.setHours(e.getHours() + 1);
         var filtered = underscore.filter(tracks, function (t) { return d < t.time && t.time < e; });
@@ -491,7 +498,7 @@ app.get('/', function (req, res) {
                 servers: data[2],
                 news: tribes_news.slice(0, 5),
                 helpers: helpers,
-                now: new Date(Date.now())
+                now: new Date()
             };
             res.render('home', obj);
             myCache.set("index", obj, 180);
@@ -707,11 +714,11 @@ app.post('/upload', function (req, res) {
     var decoded = atob(req.body);
     var object = JSON.parse(decoded);
 
-    var port = object.port;
-    object.players.forEach(function (player) {
-        handlePlayer(player, ip, port);
+    object.players
+    .forEach(function (player) {
+        handlePlayer(player, ip, object.port);
     });
-    addServerLastFullReport(ip, port);
+    addServerLastFullReport(ip, object.port);
 })
 
 app.ws('/', function (ws, req) {
