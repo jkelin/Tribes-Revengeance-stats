@@ -771,7 +771,7 @@ var server = app.listen(app.get('port'), function () {
 
 })
 
-mongoose.connect(process.env.MONGOLAB_URI || "mongodb://localhost/tribes", function (err) {
+mongoose.connect(process.env.MONGODB || "mongodb://localhost/tribes", function (err) {
     if (err) { console.log("DB failed to connect"); throw err; }
     console.log("DB connected");
 });
