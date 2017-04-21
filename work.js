@@ -20,6 +20,17 @@ var compression = require('compression');
 var emitter = new (require('events'));
 //var mongooseCachebox = require("mongoose-cachebox");
 
+function tryConvertIpv6ToIpv4(ip){
+    var regex = /^::ffff:([0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3})$/;
+    let matches = regex.exec(ip);
+    
+    if(matches && matches.length == 2){
+        return matches[1];
+    } else {
+        return ip;
+    }
+}
+
 var countryNames = require(__dirname + "/countrynames.json");
 
 var tribes_news = [];
@@ -690,20 +701,23 @@ app.get('/server/:id', cacher.cache(false), function (req, res, next) {
     }).catch(function (error) {
         next(error);
     })
-        .done();
+    .done();
 });
 
 function getClientIp(req) {
     var ipAddress;
     var forwardedIpsStr = req.header('x-forwarded-for');
+
     if (forwardedIpsStr) {
         var forwardedIps = forwardedIpsStr.split(',');
         ipAddress = forwardedIps[0];
     }
+
     if (!ipAddress) {
         ipAddress = req.connection.remoteAddress;
     }
-    return ipAddress;
+
+    return tryConvertIpv6ToIpv4(ipAddress);
 };
 
 app.post('/upload', function (req, res) {
@@ -718,6 +732,7 @@ app.post('/upload', function (req, res) {
     .forEach(function (player) {
         handlePlayer(player, ip, object.port);
     });
+
     addServerLastFullReport(ip, object.port);
 })
 
