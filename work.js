@@ -22,7 +22,7 @@ var emitter = new (require('events'));
 
 function tryConvertIpv6ToIpv4(ip){
     var regex = /^::ffff:([0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3})$/;
-    let matches = regex.exec(ip);
+    var matches = regex.exec(ip);
     
     if(matches && matches.length == 2){
         return matches[1];
