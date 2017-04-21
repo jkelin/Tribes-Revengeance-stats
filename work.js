@@ -457,11 +457,28 @@ var helpers = {
         };
         return context;
     },
-    killsperminute: function (context) { return (context.kills / context.minutesonline).toFixed(2); },
+    killsperminute: function (context) {
+        if(!context.kills || !context.minutesonline){
+            return "";
+        }
+        
+        return (context.kills / context.minutesonline).toFixed(2); 
+    },
     inc: function (num) { return num + 1; },
     countryname: function (country, options) { return countryNames[country.toUpperCase()]; },
     condPrint: function (v1, v2, v3) {
         return (v1 == v2) ? v3 : "";
+    },
+    emptyIfZero: function (num) {
+        if(typeof(num) !== "number"){
+            return num;
+        }
+
+        if(Math.abs(num) < 0.0001) {
+            return "";
+        }
+
+        return num;
     }
 };
 

@@ -18,12 +18,12 @@
 		<tr>
 			<td>{{inc @index}}</td>
 			<td><a href="/player/{{urlencode _id}}">{{_id}}</a></td>
-			<td>{{kills}}</td>
-			<td>{{deaths}}</td>
+			<td>{{emptyIfZero kills}}</td>
+			<td>{{emptyIfZero deaths}}</td>
 			<td>{{killsperminute this}}</td>
-			<td>{{style}}</td>
-			<td>{{stats.flagCaptureStat}}</td>
-			<td>{{score}}</td>
+			<td>{{emptyIfZero style}}</td>
+			<td>{{emptyIfZero stats.flagCaptureStat}}</td>
+			<td>{{emptyIfZero score}}</td>
 			<td>{{showMinutes minutesonline}}</td>
 			<td>{{showMoment lastseen}}</td>
 		</tr>
