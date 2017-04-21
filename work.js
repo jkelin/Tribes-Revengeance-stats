@@ -458,19 +458,23 @@ var helpers = {
         return context;
     },
     killsperminute: function (context) {
-        if(!context.kills || !context.minutesonline){
+        if(!context.kills && !context.deaths){
             return "";
         }
-        
-        return (context.kills / context.minutesonline).toFixed(2); 
+
+        return ((context.kills || 0) / (context.minutesonline || 1)).toFixed(2); 
     },
     inc: function (num) { return num + 1; },
     countryname: function (country, options) { return countryNames[country.toUpperCase()]; },
     condPrint: function (v1, v2, v3) {
         return (v1 == v2) ? v3 : "";
     },
-    emptyIfZero: function (num) {
-        if(typeof(num) !== "number"){
+    emptyIfZero: function (context, num) {
+        if(context.kills || context.deaths) {
+            return num || 0;
+        }
+
+        if(typeof(num) !== "number") {
             return num;
         }
 
