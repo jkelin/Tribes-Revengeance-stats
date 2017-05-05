@@ -18,7 +18,7 @@ var github = require('octonode');
 var underscore = require('underscore');
 var compression = require('compression');
 var emitter = new (require('events'));
-//var mongooseCachebox = require("mongoose-cachebox");
+var winston = require('winston');
 
 function tryConvertIpv6ToIpv4(ip){
     var regex = /^::ffff:([0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3})$/;
@@ -106,7 +106,7 @@ function talkToServer(ip, port) {
     var client = dgram.createSocket('udp4');
     var timer = setTimeout(function () {
         closeAll();
-        console.log('Timeout on ' + ip + ":" + port);
+        winston.info('Timeout on ' + ip + ":" + port);
 
     }, timeoutMs);
     var start = new Date().getTime();
@@ -135,7 +135,7 @@ function talkToServer(ip, port) {
 function handleData(data) {
     //console.log(data);
     var id = data.ip + ':' + data.hostport;
-    console.log("Handling data from", id);
+    winston.debug("Handling data from", id);
     Server.where({ _id: id }).findOne(function (err, server) {
         if (err) throw err;
         else if (server === null) {
@@ -157,9 +157,9 @@ function handleData(data) {
         if (Date.now() >= server.lastTiming.getTime() + 60 * 1000) {
             server.minutesonline++;
             server.lastTiming = new Date();
-            console.log("Timing server", id);
+            winston.debug("Timing server", id);
         } else {
-            console.log("Could not time server because lastTiming is", server.lastTiming, "and now is", new Date(), "while needed is", new Date(Date.now() - 60 * 1000), "diff:", server.lastTiming - new Date(Date.now() - 60 * 1000));
+            winston.debug("Could not time server because lastTiming is", server.lastTiming, "and now is", new Date(), "while needed is", new Date(Date.now() - 60 * 1000), "diff:", server.lastTiming - new Date(Date.now() - 60 * 1000));
         }
 
         server.save(function (err) { if (err) throw err; });
@@ -190,7 +190,7 @@ function handleData(data) {
                 server.save(function (err) {
                     if (err) throw err;
                     else {
-                        console.log("Saved server", id);
+                        winston.debug("Saved server", id);
                     }
                 });
             });
@@ -199,7 +199,7 @@ function handleData(data) {
             server.save(function (err) {
                 if (err) throw err;
                 else {
-                    console.log("Saved server", id);
+                    winston.debug("Saved server", id);
                 }
             });
         }
@@ -243,7 +243,7 @@ function timePlayer(player) {
         if (Date.now() >= pl.lastTiming.getTime() + 60 * 1000) {
             pl.minutesonline++;
             pl.lastTiming = new Date();
-            console.log("Timing player", player.player);
+            winton.debug("Timing player", player.player);
         }
 
         pl.lastseen = new Date();
@@ -305,7 +305,7 @@ setInterval(doAllTheWork, 5 * 1000);
 doAllTheWork();
 
 function handlePlayer(input, ip, port) {
-    console.log(input);
+    winton.debug("handling player", input);
     Player.where({ _id: input.name }).findOne(function (err, player) {
         if (err) throw err;
         var changeCountry = false;
@@ -350,7 +350,7 @@ function handlePlayer(input, ip, port) {
 
         for (var i in input) {
             var value = input[i];
-            console.log(i, value);
+            winton.debug("handle player stat", {name: i, value: value});
             if (i === "StatClasses.StatHighestSpeed") continue;
             if (i.indexOf('.') !== -1) {
                 var name = i.split('.')[1];
@@ -360,7 +360,7 @@ function handlePlayer(input, ip, port) {
                 player.markModified('stats');
             }
         }
-        console.log("statted ", input.name);
+        winston.debug("statted", input.name);
 
 
         player.save(function (err) { if (err) throw err; });
@@ -368,7 +368,7 @@ function handlePlayer(input, ip, port) {
 };
 
 function getNewsForProject() {
-    console.log("Resolving news");
+    winston.info("Resolving news");
     var deferred = q.defer();
     var client = github.client();
     var repo = client.repo('fireantik/Tribes-Revengeance-stats');
@@ -401,7 +401,7 @@ function addServerLastFullReport(ip, port) {
     .findOne(function (err, server) {
         if (err) throw err;
         if (server == null) {
-            console.log("server null, _id:", id);
+            winston.warn("server null, _id:", id);
             return;
         }
         server.lastfullreport = new Date().getTime();
@@ -518,7 +518,6 @@ app.get('/', function (req, res) {
     ];
 
     q.all(promises).then(function (data) {
-        //console.log("then");
         var obj = {
             playersKills: data[0],
             playersTime: data[1],
@@ -529,7 +528,6 @@ app.get('/', function (req, res) {
         };
         res.render('home', obj);
     }).catch(function (error) {
-        console.log("catch");
         next(error);
     })
     .done();
@@ -737,8 +735,7 @@ function getClientIp(req) {
 app.post('/upload', function (req, res) {
     var ip = getClientIp(req);
     res.send('Hello World!')
-    console.log("received upload request from", ip)
-    console.log(req.body)
+    winston.debug("received upload request", {ip: ip, data: req.body})
     var decoded = atob(req.body);
     var object = JSON.parse(decoded);
 
@@ -786,23 +783,27 @@ app.ws('/', function (ws, req) {
 });
 
 app.use(function (err, req, res, next) {
-    console.log("Error:", err);
+    winston.error("App error:", err);
     res.send(err);
 });
 
 app.set('port', (process.env.PORT || 5000));
 var server = app.listen(app.get('port'), function () {
 
-    var host = server.address().address
-    var port = server.address().port
+    var host = server.address().address;
+    var port = server.address().port;
 
-    console.log('App listening at http://%s:%s', host, port)
+    winston.info('App listening', {host: host, port: port});
 
 })
 
 mongoose.connect(process.env.MONGODB || "mongodb://localhost/tribes", function (err) {
-    if (err) { console.log("DB failed to connect"); throw err; }
-    console.log("DB connected");
+    if (err) { 
+        winston.error("DB failed to connect", err); 
+        throw err; 
+    }
+
+    winston.info("DB connected");
 });
 
 getNewsForProject().then(function (news) {
