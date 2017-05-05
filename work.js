@@ -243,7 +243,7 @@ function timePlayer(player) {
         if (Date.now() >= pl.lastTiming.getTime() + 60 * 1000) {
             pl.minutesonline++;
             pl.lastTiming = new Date();
-            winton.debug("Timing player", player.player);
+            winston.debug("Timing player", player.player);
         }
 
         pl.lastseen = new Date();
@@ -305,7 +305,7 @@ setInterval(doAllTheWork, 5 * 1000);
 doAllTheWork();
 
 function handlePlayer(input, ip, port) {
-    winton.debug("handling player", input);
+    winston.debug("handling player", input);
     Player.where({ _id: input.name }).findOne(function (err, player) {
         if (err) throw err;
         var changeCountry = false;
@@ -350,7 +350,7 @@ function handlePlayer(input, ip, port) {
 
         for (var i in input) {
             var value = input[i];
-            winton.debug("handle player stat", {name: i, value: value});
+            winston.debug("handle player stat", {name: i, value: value});
             if (i === "StatClasses.StatHighestSpeed") continue;
             if (i.indexOf('.') !== -1) {
                 var name = i.split('.')[1];
