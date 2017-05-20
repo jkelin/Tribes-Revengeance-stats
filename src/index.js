@@ -15,7 +15,7 @@ const path = require('path');
 const {getTribesServersFromMasterServer, queryTribesServer} = require("./serverQuery.js");
 const {Player, Server, ServerTrack} = require("./db.js");
 const {tryConvertIpv6ToIpv4, tribes_news, getClientIp} = require("./helpers.js");
-const {handleTribesServerData, emitter, addServerLastFullReport} = require("./tracker.js");
+const {handleTribesServerData, emitter, addServerLastFullReport, handlePlayer} = require("./tracker.js");
 
 const countryNames = require("./countrynames.json");
 

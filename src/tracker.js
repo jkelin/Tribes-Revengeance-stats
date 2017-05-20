@@ -203,6 +203,7 @@ function addServerLastFullReport(ip, port) {
 }
 
 module.exports = {
+    handlePlayer,
     addServerLastFullReport,
     handleTribesServerData,
     emitter
