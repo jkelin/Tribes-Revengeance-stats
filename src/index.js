@@ -5,13 +5,11 @@ const exphbs = require("express-handlebars");
 const url = require("url");
 const moment = require("moment");
 const timespan = require( "timespan");
-const Cacher = require("cacher");
 const github = require("octonode");
 const underscore = require("underscore");
 const compression = require("compression");
 const winston = require("winston");
 const Events = require("events");
-const NodeCache = require("node-cache");
 const path = require('path');
 
 const {getTribesServersFromMasterServer, queryTribesServer} = require("./serverQuery.js");
@@ -275,21 +273,9 @@ function getMinutesUntilNextHour() {
 }
 
 function getServerChartData(id, d, days) {
-    var cacheId = id + "|" + days;
-
-
-    var r = myCache.get(cacheId);
-    //console.log("r = ",r)
-    if (r[cacheId] !== undefined) {
-        return Promise.resolve(r[cacheId])
-    }
-
     var mro = makeMro(id, d);
 
     return ServerTrack.mapReduce(mro).then(function (data) {
-        //console.log("mapreduce then");
-        //myCache.set(cacheId, data, 1 * 60);
-        myCache.set(cacheId, data, (getMinutesUntilNextHour() + 5) * 60);
         return data;
     });
 }
