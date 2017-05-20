@@ -1,10 +1,11 @@
 const winston = require("winston");
-const Events = require("events");
 const freegeoip = require("node-freegeoip");
+const express = require("express");
 
 const {Player, Server, ServerTrack} = require("./db.js");
+const {emitter} = require("./ticker.js");
 
-let emitter = new Events();
+let router = express.Router();
 
 function handleTribesServerData(data) {
     //console.log(data);
@@ -202,9 +203,25 @@ function addServerLastFullReport(ip, port) {
     });
 }
 
+router.post('/upload', function (req, res) {
+    var ip = getClientIp(req);
+    res.send('Hello World!')
+    winston.debug("received upload request", {ip: ip, data: req.body})
+    var decoded = atob(req.body);
+    var object = JSON.parse(decoded);
+
+    object.players
+    .forEach(function (player) {
+        handlePlayer(player, ip, object.port);
+    });
+
+    addServerLastFullReport(ip, object.port);
+});
+
 module.exports = {
     handlePlayer,
     addServerLastFullReport,
     handleTribesServerData,
-    emitter
+    emitter,
+    trackerRouter: router
 }
