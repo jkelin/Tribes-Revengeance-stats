@@ -1,6 +1,5 @@
 const express = require("express");
 const ExpressWs = require("express-ws");
-const atob = require("atob");
 const exphbs = require("express-handlebars");
 const compression = require("compression");
 const winston = require("winston");
@@ -18,6 +17,20 @@ const players = require("./players.js");
 
 let app = express();
 let expressWs = ExpressWs(app);
+
+// This is needed for /upload
+app.use(function (req, res, next) {
+    var data = '';
+    req.setEncoding('utf8');
+    req.on('data', function (chunk) {
+        data += chunk;
+    });
+
+    req.on('end', function () {
+        req.body = data;
+        next();
+    });
+});
 
 app.set('views', path.join(__dirname, "..", "views"));
 app.engine('handlebars', exphbs({defaultLayout: 'main', helpers: handlebars_helpers}));
