@@ -206,6 +206,7 @@ function addServerLastFullReport(ip, port) {
 router.post('/upload', function (req, res) {
     var ip = getClientIp(req);
     res.send('Hello World!')
+    winston.info("Received /upload request from", {ip});
     winston.debug("received upload request", {ip: ip, data: req.body})
     var decoded = atob(req.body);
     var object = JSON.parse(decoded);
