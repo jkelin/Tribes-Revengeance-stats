@@ -101,11 +101,11 @@ var handlebars_helpers = {
     }
 };
 
-app.set('views', path.combine(__dirname, "..", "views"));
+app.set('views', path.join(__dirname, "..", "views"));
 app.engine('handlebars', exphbs({ defaultLayout: 'main' }));
 app.set('view engine', 'handlebars');
 
-app.use(express.static(path.combine(__dirname, "..", "public"), { maxAge: 86400000 }));
+app.use(express.static(path.join(__dirname, "..", "public"), { maxAge: 86400000 }));
 app.use(compression());
 
 app.use(function (req, res, next) {
