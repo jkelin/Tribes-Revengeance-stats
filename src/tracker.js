@@ -1,9 +1,11 @@
 const winston = require("winston");
 const freegeoip = require("node-freegeoip");
 const express = require("express");
+const atob = require("atob");
 
 const {Player, Server, ServerTrack} = require("./db.js");
 const {emitter} = require("./ticker.js");
+const {getClientIp} = require("./helpers.js");
 
 let router = express.Router();
 

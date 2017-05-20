@@ -8,7 +8,7 @@ const path = require('path');
 
 const {getTribesServersFromMasterServer, queryTribesServer} = require("./serverQuery.js");
 const {Player, Server, ServerTrack} = require("./db.js");
-const {tryConvertIpv6ToIpv4, tribes_news, getClientIp, handlebars_helpers} = require("./helpers.js");
+const {tryConvertIpv6ToIpv4, tribes_news, handlebars_helpers} = require("./helpers.js");
 const {handleTribesServerData, emitter, addServerLastFullReport, handlePlayer, trackerRouter} = require("./tracker.js");
 
 const ticker = require("./ticker.js");
