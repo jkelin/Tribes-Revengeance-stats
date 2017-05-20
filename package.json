@@ -1,28 +1,27 @@
 {
-  "name": "worker",
-  "version": "0.0.0",
-  "description": "",
-  "main": "work.js",
-  "license": "ISC",
-  "dependencies": {
-    "atob": "^1.1.2",
-    "cacher": "^2.1.1",
-    "compression": "^1.4.3",
-    "express": "^4.12.2",
-    "express-handlebars": "^1.2.2",
-    "express-ws": "^1.0.0-rc.2",
-    "moment": "^2.9.0",
-    "mongoose": "^4.4.2",
-    "newrelic": "^1.17.2",
-    "node-cache": "^1.1.0",
-    "node-freegeoip": "0.0.1",
-    "octonode": "^0.6.16",
-    "q": "^1.2.0",
-    "timespan": "^2.3.0",
-    "underscore": "^1.8.2",
-    "winston": "^2.3.1"
-  },
-  "scripts": {
-    "start": "node work.js"
-  }
+    "name": "tribes-revengeance-stats",
+    "main": "src/index.js",
+    "license": "MIT",
+    "engines": {
+        "node": ">=6.10.3" 
+    },
+    "dependencies": {
+        "atob": "^1.1.2",
+        "cacher": "^2.1.1",
+        "compression": "^1.4.3",
+        "express": "^4.12.2",
+        "express-handlebars": "^1.2.2",
+        "express-ws": "^1.0.0-rc.2",
+        "moment": "^2.9.0",
+        "mongoose": "^4.4.2",
+        "node-cache": "^1.1.0",
+        "node-freegeoip": "0.0.1",
+        "octonode": "^0.6.16",
+        "timespan": "^2.3.0",
+        "underscore": "^1.8.2",
+        "winston": "^2.3.1"
+    },
+    "scripts": {
+        "start": "node ./src/index.js"
+    }
 }
