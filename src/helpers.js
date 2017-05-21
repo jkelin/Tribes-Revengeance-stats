@@ -81,7 +81,7 @@ function aIncludesB(a, b) {
 function getFullMapName(map){
     const mapImageComponentMap = availableMapImages.map(x => ({map: x, components: x.split(/[- ]/g)}));
 
-    let searchComponents = map.toLowerCase().replace(/[\[\]\-\_\(\)\<\>]/g, " ").split(" ").filter(x => x);
+    let searchComponents = map.toLowerCase().replace(/[\[\]\-\_\(\)\<\>]/g, " ").replace(".tvm", "").split(" ").filter(x => x);
 
     let possibleMaps = mapImageComponentMap
         .filter(x => aIncludesB(x.components, searchComponents));
@@ -143,6 +143,10 @@ const handlebars_helpers = {
         const baseUrl = "http://tribesrevengeance.com/downloads/map-images";
 
         return `${baseUrl}/${kind}${thumbnail ? "-thumbnails" : ""}/${map}.jpg`;
+    },
+    mapName: function(map) {
+        let splat = map.split("-");
+        return splat[splat.length - 1].replace(/\(.*\)|\.tvm|BEML[0-9]/g, "").trim();
     }
 };
 

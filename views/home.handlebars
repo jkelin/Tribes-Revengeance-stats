@@ -27,7 +27,7 @@
 				<th>Name</th>
 				<th>Address</th>
 				<th>Map</th>
-				<th>Number of players</th>
+				<th>Players</th>
 			</tr>
 		</thead>
 		<tbody>
@@ -45,7 +45,7 @@
                     {{/if}}
 
                     <span class="home-map">
-                        [{{lastdata.gametype}}] {{lastdata.mapname}}
+                        [{{lastdata.gametype}}] {{mapName lastdata.mapname}}
                     </span>
                 </td>
 				<td>{{lastdata.numplayers}}</td>
