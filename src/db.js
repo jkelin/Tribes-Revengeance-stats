@@ -35,11 +35,18 @@ const Player = mongoose.model('Player', {
     stats: mongoose.Schema.Types.Mixed
 });
 
-const ServerTrack = mongoose.model('ServerTrack', {
+const ServerTrackSchema = new mongoose.Schema({
     serverId: String,
     time: Date,
     numplayers: Number
 });
+
+ServerTrackSchema.index({
+    serverId: 1,
+    time: -1
+});
+
+const ServerTrack = mongoose.model('ServerTrack', ServerTrackSchema);
 
 mongoose.connect(process.env.MONGODB || "mongodb://localhost/tribes", function (err) {
     if (err) { 
@@ -48,6 +55,7 @@ mongoose.connect(process.env.MONGODB || "mongodb://localhost/tribes", function (
     }
 
     winston.info("DB connected");
+    ServerTrack.ensureIndexes();
 });
 
 module.exports = {

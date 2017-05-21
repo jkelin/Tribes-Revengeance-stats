@@ -5,96 +5,37 @@ const {Player, Server, ServerTrack} = require("./db.js");
 
 let router = express.Router();
 
-function parseServerTimeData(data) {
-    var o = {};
-    data.forEach(function (element) {
-        var time = new Date(element.value.avgTime);
-        var index = time.getTime();
-        var value = element.value.max;
+function getServerChartData(id, days) {
+    let date = new Date();
+    date.setDate(date.getDate() - days);
 
-        o[index] = value;
-    });
-    return o;
-}
-
-function makeMro(id, d) {
-    var mro = {};
-    mro.map = function () {
-        var dayStr = this.time.getFullYear() + '-' + this.time.getMonth() + '-' + this.time.getDay();
-        var hourStr = this.time.getHours();
-        var finalStr = dayStr + ':' + hourStr;
-
-        emit(
-            finalStr,
-            { num: this.numplayers, time: this.time, server: this.serverId }
-        );
-    }
-    mro.reduce = function (key, values) {
-		/*var sum = 0;
-		for(var i = 1;i<values.length;i++) sum+=values[i].num;
-		var cnt = values.length;
-		var avg = sum/cnt;
-		var rounded = Math.round(avg);*/
-
-        var minTime = values[1].time;
-        var maxTime = values[values.length - 1].time;
-
-        var avgTimestamp = (minTime.getTime() + maxTime.getTime()) / 2;
-        var avgTime = new Date(avgTimestamp);
-
-        var max = 0;
-        for (var i = 1; i < values.length; i++) if (max < values[i].num) max = values[i].num;
-
-        return {
-            //key:key, 
-            //players: rounded,
-            max: max,
-            //avg:avg,
-            //server:values[1].server,
-            //minTime:minTime,
-            //maxTime:maxTime,
-            avgTime: avgTime
-        };
-    }
-    mro.query = {
-        "serverId": id,
-        "time": { "$gte": d }
-    };
-
-    return mro;
-}
-
-function getMinutesUntilNextHour() {
-    return 60 - new Date().getMinutes();
-}
-
-function getServerChartData(id, d, days) {
-    var mro = makeMro(id, d);
-
-    return ServerTrack.mapReduce(mro).then(function (data) {
-        return data;
-    });
-}
-
-function limitTracks(tracks, numDays) {
-    var d = new Date();
-    d.setDate(d.getDate() - numDays);
-    var data = []
-    while (d < new Date()) {
-        var e = new Date(d);
-        e.setHours(e.getHours() + 1);
-        var filtered = tracks.filter(t => d < t.time && t.time < e);
-        if (filtered.length != 0) {
-            var item = Math.min.apply(null, filtered.map(t => new Date(t.time)));
-            data.push({
-                time: item.time,
-                players: item.numplayers
-            });
+    const pipeline = [
+        { 
+            $match: { 
+                serverId: id,
+                time: {$gte: date}
+            } 
+        },
+        {
+            $group: {
+                _id: {
+                    server: "$serverId",
+                    month: {$month: "$time"},
+                    day: {$dayOfMonth: "$time"},
+                    year: {$year: "$time"},
+                    hour: {$hour: "$time"}
+                },
+                value: {$max: "$numplayers"}
+            }
         }
-        d.setHours(d.getHours() + 1);
-    }
+    ];
 
-    return data;
+    return ServerTrack.aggregate(pipeline)
+    .then(function (data) {
+        let map = {};
+        data.forEach(x => map[new Date(x._id.year, x._id.month, x._id.day, x._id.hour).getTime()] = x.value)
+        return map;
+    });
 }
 
 router.get('/server/:id', function (req, res, next) {
@@ -108,7 +49,7 @@ router.get('/server/:id', function (req, res, next) {
     var promises = [
         Server.findOne().where({ _id: id }).exec(),
         //ServerTrack.where({serverId: id, time: {'$gt':d}}).find().exec()
-        getServerChartData(id, d, numDays)
+        getServerChartData(id, numDays)
     ];
 
     return Promise.all(promises)
@@ -116,12 +57,9 @@ router.get('/server/:id', function (req, res, next) {
         var compDate = new Date();
         compDate.setMinutes(compDate.getMinutes() - 2);
 
-        var parsed = parseServerTimeData(data[1]);
-        //console.log(parsed);
         res.render('server', {
             data: data[0],
-            //tracks: limitTracks(data[1], numDays),
-            tracks: parsed,
+            tracks: data[1],
             online: data != null && data[0].lastseen > compDate,
             numdays: numDays
         });

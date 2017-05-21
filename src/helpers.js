@@ -2,6 +2,7 @@ const winston = require("winston");
 const moment = require("moment");
 const countryNames = require("./countrynames.json");
 const timespan = require( "timespan");
+const github = require('octonode');
 
 function tryConvertIpv6ToIpv4(ip){
     var regex = /^::ffff:([0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3})$/;
@@ -18,7 +19,6 @@ function getNews() {
     winston.info("Resolving news");
 
     return new Promise(function (resolve, reject) {
-        var deferred = q.defer();
         var client = github.client();
         var repo = client.repo('fireantik/Tribes-Revengeance-stats');
         
@@ -43,7 +43,7 @@ function getNews() {
                     });
                 }
 
-                winston.info("News resolved", news);
+                winston.info("News resolved");
 
                 return resolve(data);
             }
