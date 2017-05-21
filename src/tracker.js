@@ -5,7 +5,7 @@ const atob = require("atob");
 
 const {Player, Server, ServerTrack} = require("./db.js");
 const {emitter} = require("./ticker.js");
-const {getClientIp} = require("./helpers.js");
+const {getClientIp, getFullMapName} = require("./helpers.js");
 
 let router = express.Router();
 
@@ -56,6 +56,10 @@ function handleTribesServerData(data) {
         }
 
         server.lastdata = data;
+
+        if(server.lastdata.mapname){
+            server.lastdata.mapnamefull = getFullMapName(server.lastdata.mapname);
+        }
 
         pushPlayersTrackings(id, data);
 

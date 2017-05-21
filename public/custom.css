@@ -1,8 +1,26 @@
-.fireflag {
-	line-height: 10px;
-	float: right;
+.home-map-thumbnail a, .home-map-thumbnail .thumbnail {
+    margin: 0;
+    padding: 0;
+    display: block;
+    height: 44px;
+    border-radius: 0;
 }
 
-table.table.table-bordered.servertable td {
-	line-height: 30px;
+.home-map-thumbnail {
+    position: absolute;
+    right: 2px;
+    top: 2px;
+    z-index: -1;
+}
+
+.servertable td {
+    position: relative;
+}
+
+.home-map {
+    text-shadow:
+        -1px -1px 0 #fff,
+        1px -1px 0 #fff,
+        -1px 1px 0 #fff,
+        1px 1px 0 #fff;  
 }

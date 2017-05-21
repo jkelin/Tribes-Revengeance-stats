@@ -5,14 +5,14 @@ const compression = require("compression");
 const winston = require("winston");
 const path = require('path');
 
-const {getTribesServersFromMasterServer, queryTribesServer} = require("./serverQuery.js");
-const {Player, Server, ServerTrack} = require("./db.js");
-const {tryConvertIpv6ToIpv4, tribes_news, handlebars_helpers} = require("./helpers.js");
-const {handleTribesServerData, emitter, addServerLastFullReport, handlePlayer, trackerRouter} = require("./tracker.js");
+const {getTribesServersFromMasterServer, queryTribesServer} = require("./src/serverQuery.js");
+const {Player, Server, ServerTrack} = require("./src/db.js");
+const {tryConvertIpv6ToIpv4, tribes_news, handlebars_helpers} = require("./src/helpers.js");
+const {handleTribesServerData, emitter, addServerLastFullReport, handlePlayer, trackerRouter} = require("./src/tracker.js");
 
-const ticker = require("./ticker.js");
-const servers = require("./servers.js");
-const players = require("./players.js");
+const ticker = require("./src/ticker.js");
+const servers = require("./src/servers.js");
+const players = require("./src/players.js");
 
 
 let app = express();
@@ -32,10 +32,11 @@ app.use(function (req, res, next) {
     });
 });
 
+app.set('views', path.join(__dirname, "views"));
 app.engine('handlebars', exphbs({defaultLayout: 'main', helpers: handlebars_helpers}));
 app.set('view engine', 'handlebars');
 
-app.use(express.static(path.join(__dirname, "..", "public"), { maxAge: 86400000 }));
+app.use(express.static(path.join(__dirname, "public")));
 app.use(compression());
 
 app.use("/", players.router);

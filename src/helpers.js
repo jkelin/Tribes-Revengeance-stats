@@ -1,6 +1,7 @@
 const winston = require("winston");
 const moment = require("moment");
 const countryNames = require("./countrynames.json");
+const availableMapImages = require("./available-map-images.json");
 const timespan = require( "timespan");
 const github = require('octonode');
 
@@ -69,6 +70,26 @@ function getClientIp(req) {
     return tryConvertIpv6ToIpv4(ipAddress);
 };
 
+function aIncludesB(a, b) {
+    for (let i in b) {
+        if (a.filter(x => x.indexOf(b[i]) != -1).length == 0) return false;
+    }
+
+    return true;
+}
+
+function getFullMapName(map){
+    const mapImageComponentMap = availableMapImages.map(x => ({map: x, components: x.split(/[- ]/g)}));
+
+    let searchComponents = map.toLowerCase().replace(/[\[\]\-\_\(\)\<\>]/g, " ").split(" ").filter(x => x);
+
+    let possibleMaps = mapImageComponentMap
+        .filter(x => aIncludesB(x.components, searchComponents));
+
+    if (!possibleMaps.length) return undefined;
+    else return possibleMaps.map(x => x.map).sort()[0];
+}
+
 const handlebars_helpers = {
     json: function (context) { return JSON.stringify(context); },
     urlencode: function (context) { return encodeURIComponent(context); },
@@ -117,10 +138,16 @@ const handlebars_helpers = {
         }
 
         return num;
+    },
+    mapImage: function(map, kind = "loadscreens-chopped", thumbnail = true) {
+        const baseUrl = "http://tribesrevengeance.com/downloads/map-images";
+
+        return `${baseUrl}/${kind}${thumbnail ? "-thumbnails" : ""}/${map}.jpg`;
     }
 };
 
 module.exports = {
+    getFullMapName,
     handlebars_helpers,
     tribes_news,
     getClientIp,

@@ -35,7 +35,19 @@
 			<tr>
 				<td><a href="/server/{{urlencode _id}}">{{name}}</a> {{> flag country=country}}</td>
 				<td>{{_id}}</td>
-				<td>{{lastdata.mapname}}</td>
+				<td>
+                    {{#if lastdata.mapnamefull}}
+                        <span class="home-map-thumbnail">
+                            <a href="{{mapImage lastdata.mapnamefull "loadscreens-chopped" false}}">
+                                <img class="thumbnail" src="{{mapImage lastdata.mapnamefull "loadscreens-chopped" true}}" alt="{{lastdata.mapname}}">
+                            </a>
+                        </span>
+                    {{/if}}
+
+                    <span class="home-map">
+                        {{lastdata.mapname}}
+                    </span>
+                </td>
 				<td>{{lastdata.numplayers}}</td>
 			</tr>
 			{{/each}}
