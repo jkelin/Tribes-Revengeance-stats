@@ -57,8 +57,6 @@
 	{{else}}
 	No servers online :(
 	{{/if}}
-	<span style="display:none" id="nowSpan">{{now}}</span>
-
 
 	<h2 id="kills">Greatest killers</h2>
 	{{> playerstable data=playersKills}}
@@ -89,21 +87,3 @@
 		{{/each}}
 	</table>
 </div>
-
-<script>
-	var nowSpan = document.getElementById('nowSpan');
-	var oldDiv = document.getElementById('oldDiv');
-
-	var startTime = new Date(nowSpan.innerText);
-
-	function reloadOldDiv(){
-		var dif = new Date(Date.now()) - startTime;
-		var seconds = parseInt(dif/1000);
-		var timeText = seconds + " seconds";
-		oldDiv.innerText = "This data is " + timeText + " old. If you want more current data, please click on a server.";
-		oldDiv.style.display = seconds < 20 ? "none" : "block";
-	}
-
-	reloadOldDiv();
-	setInterval(reloadOldDiv, 100);
-</script>
