@@ -59,6 +59,12 @@
                 {{> chatitem}}
             {{/each}}
         </div>
+        <br>
+        <form action="#" id="chat-form" class="form-inline">
+            <input type="text" class="form-control input-sm" placeholder="Username" maxlength="29" required id="usr">
+            <input type="text" class="form-control input-sm" placeholder="Message" required maxlength="196" id="msg">
+            <input type="submit" class="btn btn-sm btn-primary" value="Send">
+        </form>
         {{/if}}
 		
 		<br>
@@ -110,6 +116,17 @@
             }
 
             setTimeout(reloadChat, 1000);
+
+            $("#chat-form").on("submit", function(e){
+                e.preventDefault();
+
+                var usr = $("#usr").val();
+                var msg = $("#msg").val();
+
+                $("#msg").val("");
+
+                jQuery.post(window.location.pathname + "/say/", JSON.stringify({user: usr, message: msg}));
+            });
 		</script>
 
 	{{else}}

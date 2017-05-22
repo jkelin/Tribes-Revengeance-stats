@@ -4,6 +4,7 @@ const exphbs = require("express-handlebars");
 const compression = require("compression");
 const winston = require("winston");
 const path = require('path');
+const bodyParser = require('body-parser');
 
 const {getTribesServersFromMasterServer, queryTribesServer} = require("./src/serverQuery.js");
 const {Player, Server, ServerTrack} = require("./src/db.js");
@@ -36,6 +37,8 @@ app.use(function (req, res, next) {
 app.set('views', path.join(__dirname, "views"));
 app.engine('handlebars', exphbs({defaultLayout: 'main', helpers: handlebars_helpers}));
 app.set('view engine', 'handlebars');
+//app.use(bodyParser.json());
+//app.use(bodyParser.urlencoded({extended: true})); 
 
 app.use(express.static(path.join(__dirname, "public")));
 app.use(compression());

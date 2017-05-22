@@ -76,7 +76,7 @@ function getServerChat(serverId, server, username, password) {
 
             if(x.type !== "text" || !x.data || !x.data.trim()) continue;
 
-            let groups = /^>( ([^:]{1,16}):)?(.*)$/.exec(x.data.trim());
+            let groups = /^>( ([^:]{1,29}):)?(.*)$/.exec(x.data.trim());
 
             if(!groups || groups.length < 4) continue;
 
@@ -112,7 +112,6 @@ function getServerChat(serverId, server, username, password) {
     });
 }
 
-
 setInterval(() => {
     Server.where({ chat: {$exists: true} }).find(function (err, servers) {
         if (err) throw err;
@@ -143,7 +142,34 @@ function getChatFor(server) {
     return (chatCache[server] || []).filter(x => x.when.getTime() > Date.now() - 3600 * 1000);
 }
 
+function say(user, message, server, username, password) {
+    let u = url.parse(server, true);
+    u.auth = username + ":" + password;
+    u.pathname = "/ServerAdmin/current_console";
+
+    let options = {
+        uri: u.format(),
+        method: "POST",
+        form: {
+            SendText: `say ${user}: ${message}`,
+            Send: "Send"
+        }
+    };
+
+    return rp(options);
+}
+
+function sayById(user, message, serverId) {
+    Server.findById(serverId, function(err, server){
+        if(err) throw err;
+
+        say(user, message, server.chat.server, server.chat.username, server.chat.password);
+    });
+}
+
 module.exports = {
     getChatFor,
-    emitter
+    emitter,
+    say,
+    sayById
 }
