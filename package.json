@@ -9,6 +9,7 @@
     "atob": "^1.1.2",
     "cheerio": "^0.22.0",
     "compression": "^1.4.3",
+    "encoding": "^0.1.12",
     "express": "^4.12.2",
     "express-handlebars": "^1.2.2",
     "express-ws": "^1.0.0-rc.2",

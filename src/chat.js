@@ -4,6 +4,7 @@ const url = require('url');
 const crypto = require('crypto');
 const winston = require("winston");
 const Events = require("events");
+const encoding = require("encoding");
 
 const {Server} = require('./db.js');
 
@@ -58,8 +59,9 @@ function getServerChat(serverId, server, username, password) {
 
     let options = {
         uri: u.format(),
+        encoding: "binary",
         transform: function (body) {
-            return cheerio.load(body);
+            return cheerio.load(encoding.convert(body, "utf-8", "iso-8859-1").toString());
         }
     };
 
