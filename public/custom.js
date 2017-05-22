@@ -2,7 +2,7 @@ function notify(what){
     console.log("notify", what);
     Notification.requestPermission().then(function(permission) {
         if(permission === "granted"){
-            var notification = new Notification(what, {icon: "/favicon.ico"})
+            var notification = new Notification(what, {icon: "/static/favicon.ico"})
             setTimeout(notification.close.bind(notification), 5 * 1000);
         }
     });

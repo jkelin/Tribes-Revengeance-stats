@@ -1,31 +1,20 @@
-<div class="main"z>
-    {{#if alerts}}
-    {{#each alerts}}
-  	<div class="alert alert-warning alert-dismissible" role="alert">
-	  <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-	  {{text}}
-	</div>
-	{{/each}}
-    {{/if}}
-
-	<table class="table table-bordered servertable">
-		<thead>
-			<tr>
-				<th>Name</th>
-				<th>Address</th>
-				<th>Time online</th>
-				<th>Last seen</th>
-			</tr>
-		</thead>
-		<tbody>
-		{{#each data}}
-			<tr>
-				<td><a href="/server/{{urlencode _id}}">{{name}}</a> {{> flag country=country}}</td>
-				<td>{{_id}}</td>
-				<td>{{showMinutes minutesonline}}</td>
-				<td>{{showMoment lastseen}}</td>
-			</tr>
-		{{/each}}
-		</tbody>
-	</table>
-</div>
+<table class="table table-bordered servertable">
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Address</th>
+            <th>Time online</th>
+            <th>Last seen</th>
+        </tr>
+    </thead>
+    <tbody>
+    {{#each data}}
+        <tr>
+            <td><a href="/server/{{urlencode _id}}">{{name}}</a> {{> flag country=country}}</td>
+            <td>{{_id}}</td>
+            <td>{{showMinutes minutesonline}}</td>
+            <td>{{showMoment lastseen}}</td>
+        </tr>
+    {{/each}}
+    </tbody>
+</table>

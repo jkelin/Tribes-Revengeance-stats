@@ -1,154 +1,156 @@
-<div class="main">
-    {{#if alerts}}
-    {{#each alerts}}
-  	<div class="alert alert-warning alert-dismissible" role="alert">
-	  <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-	  {{text}}
-	</div>
-	{{/each}}
+{{#if alerts}}
+{{#each alerts}}
+<div class="alert alert-warning alert-dismissible" role="alert">
+    <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+    {{text}}
+</div>
+{{/each}}
+{{/if}}
+
+{{#if data}}
+<h2>{{data.name}} <small>{{data._id}}</small></h2>
+{{#if online}}
+<h4 style="color:#00AA00">Online</h4>
+{{else}} 
+<h4 style="color:#AA0000">Offline</h4>
+{{/if}}
+<table class="table table-bordered">
+    <tr><td>Admin name</td><td>{{data.adminname}}</td></tr>
+    <tr><td>Admin email</td><td>{{data.adminemail}}</td></tr>
+    <tr><td>Time online</td><td>{{showMinutes data.minutesonline}}</td></tr>
+    <tr><td>Max players</td><td>{{data.maxplayers}}</td></tr>
+    <tr><td>Last seen</td><td>{{showMoment data.lastseen}}</td></tr>
+    <tr>
+        <td>Last full report</td>
+        {{#if data.lastfullreport}}
+        <td>{{showMoment data.lastfullreport}}</td>
+        {{else}}
+        <td>Never (server side mod is not installed)</td>
+        {{/if}}
+    </tr>
+</table>
+
+    {{#if data.lastdata.players}}
+        <h3>Players</h3>
+        <table class="table table-bordered">
+            <tr>
+                <th>Name</th>
+                <th>Score</th>
+                <th>Team</th>
+                <th>Ping</th>
+            </tr>
+
+            {{#each data.lastdata.players}}
+            <tr>
+                <td><a href="/player/{{urlencode player}}">{{player}}</a></td>
+                <td>{{score}}</td>
+                <td>{{team}}</td>
+                <td>{{ping}}</td>
+            </tr>
+            {{/each}}
+        </table>
     {{/if}}
 
-	{{#if data}}
-	<h2>{{data.name}} <small>{{data._id}}</small></h2>
-	{{#if online}}
-	<h4 style="color:#00AA00">Online</h4>
-	{{else}} 
-	<h4 style="color:#AA0000">Offline</h4>
-	{{/if}}
-	<table class="table table-bordered">
-		<tr><td>Admin name</td><td>{{data.adminname}}</td></tr>
-		<tr><td>Admin email</td><td>{{data.adminemail}}</td></tr>
-		<tr><td>Time online</td><td>{{showMinutes data.minutesonline}}</td></tr>
-		<tr><td>Max players</td><td>{{data.maxplayers}}</td></tr>
-		<tr><td>Last seen</td><td>{{showMoment data.lastseen}}</td></tr>
-		<tr>
-			<td>Last full report</td>
-			{{#if data.lastfullreport}}
-			<td>{{showMoment data.lastfullreport}}</td>
-			{{else}}
-			<td>Never (server side mod is not installed)</td>
-			{{/if}}
-		</tr>
-	</table>
-
-		{{#if online}}
-		<h3>Players</h3>
-		<table class="table table-bordered">
-			<tr>
-				<th>Name</th>
-				<th>Score</th>
-				<th>Team</th>
-				<th>Ping</th>
-			</tr>
-
-			{{#each data.lastdata.players}}
-			<tr>
-				<td><a href="/player/{{urlencode player}}">{{player}}</a></td>
-				<td>{{score}}</td>
-				<td>{{team}}</td>
-				<td>{{ping}}</td>
-			</tr>
-			{{/each}}
-		</table>
-		{{/if}}
-
-        {{#if chatOk}}
-        <h3>Chat</h3>
-        <div id="chat-container">
-            {{#each chat}}
-                {{> chatitem}}
-            {{/each}}
-        </div>
-        <br>
-        <form action="#" id="chat-form" class="form">
-            <div class="row">
-                <div class="col-sm-2">
-                    <input type="text" class="form-control input-sm" placeholder="Username" maxlength="29" required id="usr">
-                </div>
-                <div class="col-sm-9">
-                    <input type="text" class="form-control input-sm" placeholder="Message" required maxlength="196" id="msg">
-                </div>
-                <div class="col-sm-1">
-                    <input type="submit" class="btn btn-block btn-sm btn-primary" value="Send">
-                </div>
+    {{#if chatOk}}
+    <h3>Chat</h3>
+    <div id="chat-container">
+        {{#each chat}}
+            {{> chatitem}}
+        {{/each}}
+    </div>
+    <br>
+    <form action="#" id="chat-form" class="form">
+        <div class="row">
+            <div class="col-sm-2">
+                <input type="text" class="form-control input-sm" placeholder="Username" maxlength="29" required id="usr">
             </div>
-        </form>
-        {{/if}}
-		
-		<br>
-		<h3>Number of players online in last {{numdays}} days</h3>
-		<a href="?days=2">2 Days</a> | 
-		<a href="?days=5">5 Days</a> | 
-		<a href="?days=7">7 Days</a>
-		<span id="chartdata" style="display:none">{{json tracks}}</span>
-		<span id="chatdata" style="display:none">{{json chat}}</span>
-		<div id="chart_div" style="width: 900px; height: 400px;margin-left:auto;margin-right:auto"></div>
+            <div class="col-sm-8">
+                <input type="text" class="form-control input-sm" placeholder="Message" required maxlength="196" id="msg">
+            </div>
+            <div class="col-sm-2">
+                <input type="submit" class="btn btn-block btn-sm btn-primary" value="Send">
+            </div>
+        </div>
+    </form>
+    {{/if}}
+    
+    <br>
+    <div class="hidden-xs">
+        <h3>Number of players online in last {{numdays}} days</h3>
+        <a href="?days=2">2 Days</a> | 
+        <a href="?days=5">5 Days</a> | 
+        <a href="?days=7">7 Days</a>
+        <span id="chartdata" style="display:none">{{json tracks}}</span>
+        <span id="chatdata" style="display:none">{{json chat}}</span>
+        <div id="chart_div" style="width: 900px; height: 400px;margin-left:auto;margin-right:auto"></div>
+        <br>
+        <br>
+    </div>
 
-	    <script type="text/javascript" src="/tc-min.js"></script>
-	    <script type="text/javascript">
-    		var dataSpan = JSON.parse(document.getElementById('chartdata').innerHTML);
-			var chartData = [];
-			for(var i in dataSpan){
-				var date = new Date(parseInt(i));
-				//var formated = date.getMonth()+"-"+date.getDate()+" "+date.getHours()+":"+date.getSeconds();
-				chartData.push({date:date,players:dataSpan[i]});
-			}
+    <script type="text/javascript" src="/static/tc-min.js"></script>
+    <script type="text/javascript">
+        var dataSpan = JSON.parse(document.getElementById('chartdata').innerHTML);
+        var chartData = [];
+        for(var i in dataSpan){
+            var date = new Date(parseInt(i));
+            //var formated = date.getMonth()+"-"+date.getDate()+" "+date.getHours()+":"+date.getSeconds();
+            chartData.push({date:date,players:dataSpan[i]});
+        }
 
-		    document.TC = new Timechart({
-		        id: "chart_div",
-		        zoom: "d",
-		        datefield: "date",
-		        datafields: ["players"],
-		        dateformat: "yyyy-mm-dd h:i"
-		    },chartData);
+        document.TC = new Timechart({
+            id: "chart_div",
+            zoom: "d",
+            datefield: "date",
+            datafields: ["players"],
+            dateformat: "yyyy-mm-dd h:i"
+        },chartData);
 
-            var chatData = JSON.parse(document.getElementById('chatdata').innerHTML) || [];
+        var chatData = JSON.parse(document.getElementById('chatdata').innerHTML) || [];
 
-            var container = $('#chat-container');
+        var container = $('#chat-container');
 
-            function reloadChat(cb){
-                var url = window.location.pathname + "/chat/" + (chatData.length ? chatData[chatData.length - 1].id : "");
-                jQuery.getJSON(url, function(data){
+        function reloadChat(cb){
+            var url = window.location.pathname + "/chat/" + (chatData.length ? chatData[chatData.length - 1].id : "");
+            jQuery.getJSON(url, function(data){
+                
+                var shouldScroll = container[0].scrollHeight == container[0].clientHeight + container[0].scrollTop;
+
+                data.forEach(function(x){
+                    chatData.push(x);
+
+                    var html = '<div class="chat-item">' +
+                        '<span class="chat-user">' + x.user + ':</span>' +
+                        '<span class="chat-message">' + x.messageFriendly + '</span>' +
+                    '</div>';
+
                     
-                    var shouldScroll = container[0].scrollHeight == container[0].clientHeight + container[0].scrollTop;
-
-                    data.forEach(function(x){
-                        chatData.push(x);
-
-                        var html = '<div class="chat-item">' +
-                            '<span class="chat-user">' + x.user + ':</span>' +
-                            '<span class="chat-message">' + x.messageFriendly + '</span>' +
-                        '</div>';
-
-                        
-                        container.append(html);
-                    });
-
-                    if(shouldScroll){
-                        container.scrollTop(container[0].scrollHeight);
-                    }
-
-                    setTimeout(reloadChat, 1000);
+                    container.append(html);
                 });
-            }
 
-            container.scrollTop(container[0].scrollHeight);
+                if(shouldScroll){
+                    container.scrollTop(container[0].scrollHeight);
+                }
 
-            setTimeout(reloadChat, 1000);
-
-            $("#chat-form").on("submit", function(e){
-                e.preventDefault();
-
-                var usr = $("#usr").val();
-                var msg = $("#msg").val();
-
-                $("#msg").val("");
-
-                jQuery.post(window.location.pathname + "/say/", JSON.stringify({user: usr, message: msg}));
+                setTimeout(reloadChat, 1000);
             });
-		</script>
+        }
 
-	{{else}}
-	Server not found
-	{{/if}}
-</div>
+        container.scrollTop(container[0].scrollHeight);
+
+        setTimeout(reloadChat, 1000);
+
+        $("#chat-form").on("submit", function(e){
+            e.preventDefault();
+
+            var usr = $("#usr").val();
+            var msg = $("#msg").val();
+
+            $("#msg").val("");
+
+            jQuery.post(window.location.pathname + "/say/", JSON.stringify({user: usr, message: msg}));
+        });
+    </script>
+
+{{else}}
+Server not found
+{{/if}}
