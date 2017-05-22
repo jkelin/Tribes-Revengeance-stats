@@ -72,6 +72,28 @@ router.get('/server/:id', function (req, res, next) {
     });
 });
 
+router.get('/server/:id/chat/:from', function (req, res, next) {
+    var id = req.params["id"];
+    var frm = req.params["from"];
+
+    let resp = [];
+    let data = getChatFor(id);
+    let seenFrom = false;
+    
+    for(let i in data){
+        if(data[i].id == frm) {
+            seenFrom = true;
+            continue;
+        }
+
+        if(!seenFrom) continue;
+
+        resp.push(Object.assign({}, data[i], {html: "lol"}));
+    }
+
+    res.json(resp);
+});
+
 router.get('/servers', function (req, res) {
     Server.find().sort({ lastseen: -1 }).exec(function (err, data) {
         if (err) throw err;
