@@ -60,10 +60,18 @@
             {{/each}}
         </div>
         <br>
-        <form action="#" id="chat-form" class="form-inline">
-            <input type="text" class="form-control input-sm" placeholder="Username" maxlength="29" required id="usr">
-            <input type="text" class="form-control input-sm" placeholder="Message" required maxlength="196" id="msg">
-            <input type="submit" class="btn btn-sm btn-primary" value="Send">
+        <form action="#" id="chat-form" class="form">
+            <div class="row">
+                <div class="col-sm-2">
+                    <input type="text" class="form-control input-sm" placeholder="Username" maxlength="29" required id="usr">
+                </div>
+                <div class="col-sm-9">
+                    <input type="text" class="form-control input-sm" placeholder="Message" required maxlength="196" id="msg">
+                </div>
+                <div class="col-sm-1">
+                    <input type="submit" class="btn btn-block btn-sm btn-primary" value="Send">
+                </div>
+            </div>
         </form>
         {{/if}}
 		
@@ -96,9 +104,14 @@
 
             var chatData = JSON.parse(document.getElementById('chatdata').innerHTML) || [];
 
+            var container = $('#chat-container');
+
             function reloadChat(cb){
-                var url = window.location.pathname + "/chat/" + (chatData ? chatData[chatData.length - 1].id : "");
+                var url = window.location.pathname + "/chat/" + (chatData.length ? chatData[chatData.length - 1].id : "");
                 jQuery.getJSON(url, function(data){
+                    
+                    var shouldScroll = container[0].scrollHeight == container[0].clientHeight + container[0].scrollTop;
+
                     data.forEach(function(x){
                         chatData.push(x);
 
@@ -107,13 +120,19 @@
                             '<span class="chat-message">' + x.messageFriendly + '</span>' +
                         '</div>';
 
-                        jQuery("#chat-container").append(html);
-                        //jQuery("#chat-container").append(x.html);
+                        
+                        container.append(html);
                     });
+
+                    if(shouldScroll){
+                        container.scrollTop(container[0].scrollHeight);
+                    }
 
                     setTimeout(reloadChat, 1000);
                 });
             }
+
+            container.scrollTop(container[0].scrollHeight);
 
             setTimeout(reloadChat, 1000);
 
