@@ -13,6 +13,7 @@ const {handleTribesServerData, emitter, addServerLastFullReport, handlePlayer, t
 const ticker = require("./src/ticker.js");
 const servers = require("./src/servers.js");
 const players = require("./src/players.js");
+const chat = require("./src/chat.js");
 
 
 let app = express();

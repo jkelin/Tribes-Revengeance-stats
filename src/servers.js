@@ -2,6 +2,7 @@ const express = require("express");
 const winston = require("winston");
 
 const {Player, Server, ServerTrack} = require("./db.js");
+const {getChatFor} = require("./chat.js");
 
 let router = express.Router();
 
@@ -60,6 +61,8 @@ router.get('/server/:id', function (req, res, next) {
         res.render('server', {
             data: data[0],
             tracks: data[1],
+            chatOk: data[0].chat && data[0].chat.ok,
+            chat: getChatFor(data[0]._id).slice(-100),
             online: data != null && data[0].lastseen > compDate,
             numdays: numDays
         });

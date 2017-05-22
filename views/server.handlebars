@@ -51,6 +51,19 @@
 			{{/each}}
 		</table>
 		{{/if}}
+
+        {{#if chat}}
+        <h3>Chat</h3>
+        <div id="chat-container">
+            {{#each chat}}
+                <div class="chat-item">
+                    <span class="chat-when">[{{showMoment when}}]</span>
+                    <span class="chat-user">{{user}}:</span>
+                    <span class="chat-message">{{message}}</span>
+                </div>
+            {{/each}}
+        </div>
+        {{/if}}
 		
 		<br>
 		<h3>Number of players online in last {{numdays}} days</h3>

@@ -7,6 +7,7 @@
   },
   "dependencies": {
     "atob": "^1.1.2",
+    "cheerio": "^0.22.0",
     "compression": "^1.4.3",
     "express": "^4.12.2",
     "express-handlebars": "^1.2.2",
@@ -15,6 +16,7 @@
     "mongoose": "^4.4.2",
     "node-freegeoip": "0.0.1",
     "octonode": "^0.6.16",
+    "request-promise": "^4.2.1",
     "timespan": "^2.3.0",
     "winston": "^2.3.1"
   },

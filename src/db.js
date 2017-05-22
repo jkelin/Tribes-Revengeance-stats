@@ -16,6 +16,12 @@ const Server = mongoose.model('Server', {
     lastseen: Date,
     lastTiming: Date,
     lastfullreport: Date,
+    chat: {
+        server: String,
+        username: String,
+        password: String,
+        ok: Boolean
+    },
     lastdata: mongoose.Schema.Types.Mixed
 });
 
