@@ -62,7 +62,7 @@ router.get('/server/:id', function (req, res, next) {
             data: data[0],
             tracks: data[1],
             chatOk: data[0].chat && data[0].chat.ok,
-            chat: getChatFor(data[0]._id).slice(-100),
+            chat: getChatFor(data[0]._id),
             online: data != null && data[0].lastseen > compDate,
             numdays: numDays
         });
@@ -78,6 +78,9 @@ router.get('/server/:id/chat/:from', function (req, res, next) {
 
     let resp = [];
     let data = getChatFor(id);
+
+    if(!frm) return res.json(data);
+
     let seenFrom = false;
     
     for(let i in data){
@@ -88,7 +91,7 @@ router.get('/server/:id/chat/:from', function (req, res, next) {
 
         if(!seenFrom) continue;
 
-        resp.push(Object.assign({}, data[i], {html: "lol"}));
+        resp.push(Object.assign({}, data[i], {html: "TODO"}));
     }
 
     res.json(resp);

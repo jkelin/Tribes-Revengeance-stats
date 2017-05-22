@@ -138,7 +138,7 @@ setInterval(() => {
 }, 1000);
 
 function getChatFor(server) {
-    return chatCache[server] || [];
+    return (chatCache[server] || []).filter(x => x.when.getTime() > Date.now() - 3600 * 1000);
 }
 
 module.exports = {
