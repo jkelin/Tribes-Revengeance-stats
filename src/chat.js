@@ -7,6 +7,7 @@ const Events = require("events");
 const encoding = require("encoding");
 
 const {Server} = require('./db.js');
+const QcMappings = require('./qcmappings.json');
 
 let emitter = new Events();
 
@@ -50,6 +51,20 @@ function hashStringIntoNumber(str){
 
     //return buf.readInt32LE(0);
     return buf.toString('hex').slice(0, 6);
+}
+
+function makeMessageFromRaw(message){
+    let matches = /\((QuickChat|TeamQuickChat)\) ([A-Za-z_0-9]+)\?/g.exec(message);
+
+    if(matches && matches.length > 2) {
+        if(QcMappings[matches[2]]){
+            return `(${matches[1]}) ${QcMappings[matches[2]]}`;
+        }
+
+        return message;
+    } else {
+        return message;
+    }
 }
 
 function getServerChat(serverId, server, username, password) {
@@ -101,7 +116,8 @@ function getServerChat(serverId, server, username, password) {
                 when: new Date(),
                 id: hashStringIntoNumber("" + Date.now() + i),
                 user: newMessages[i].user,
-                message: newMessages[i].message
+                message: newMessages[i].message,
+                messageFriendly: makeMessageFromRaw(newMessages[i].message)
             };
 
             cache.push(msg);
