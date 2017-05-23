@@ -118,6 +118,8 @@
         socket.on('chat-message', function (data) {
             if(!data || data.server !== "{{data._id}}") return;
 
+            var shouldScroll = container[0].scrollHeight == container[0].clientHeight + container[0].scrollTop;
+
             var html = '<div class="chat-item">' +
                 '<span class="chat-user">' + data.user + ':</span>' +
                 '<span class="chat-message">' + data.messageFriendly + '</span>' +
@@ -125,11 +127,15 @@
 
             $("#snd").button("reset");
 
-            if(!isActive && $("#notif")[0].checked) {
+            if(!isActive && $("#notif")[0].checked && !data.messageFriendly.contains("QuickChat")) {
                 notify(data.messageFriendly, "Said " + data.user);
             }
             
             container.append(html);
+
+            if(shouldScroll){
+                container.scrollTop(container[0].scrollHeight);
+            }
         });
 
 
