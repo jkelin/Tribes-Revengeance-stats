@@ -56,8 +56,8 @@ const ServerTrack = mongoose.model('ServerTrack', ServerTrackSchema);
 
 mongoose.connect(process.env.MONGODB || "mongodb://localhost/tribes", function (err) {
     if (err) { 
-        winston.error("DB failed to connect", err); 
-        throw err; 
+        winston.error("DB failed to connect", err);
+        process.exit(1);
     }
 
     winston.info("DB connected");

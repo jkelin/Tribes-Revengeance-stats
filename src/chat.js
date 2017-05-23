@@ -5,6 +5,9 @@ const crypto = require('crypto');
 const winston = require("winston");
 const Events = require("events");
 const encoding = require("encoding");
+const Rx = require("rxjs/Rx");
+
+require("rxjs/operator/debounceTime");
 
 const {Server} = require('./db.js');
 const QcMappings = require('./qcmappings.json');
@@ -12,6 +15,7 @@ const QcMappings = require('./qcmappings.json');
 let emitter = new Events();
 
 let chatCache = {};
+let activeChatRequests = {};
 
 function arraysMatch(a, b){
     if(a.length !== b.length) return false;
@@ -133,23 +137,22 @@ setInterval(() => {
         if (err) throw err;
 
         servers.forEach(server => {
-            getServerChat(server._id, server.chat.server, server.chat.username, server.chat.password)
+            if(activeChatRequests[server._id]) return;
+
+            activeChatRequests[server._id] = getServerChat(server._id, server.chat.server, server.chat.username, server.chat.password)
             .then(x => {
-                if(!server.chat.ok){
-                    server.chat.ok = true;
-                    server.save();
-                }
+                server.chat.ok = true;
+                server.save();
 
                 winston.debug("Got server chat from", {id: server._id});
             })
             .catch(x => {
-                winston.error(x);
+                winston.error("Error getting chat from " + server._id, x);
 
-                if(server.chat.ok){
-                    server.chat.ok = false;
-                    server.save();
-                }
-            });
+                server.chat.ok = false;
+                server.save();
+            })
+            .then(_ => delete activeChatRequests[server._id]);
         })
     });
 }, 1000);
@@ -158,21 +161,31 @@ function getChatFor(server) {
     return (chatCache[server] || []).filter(x => x.when.getTime() > Date.now() - 3600 * 1000);
 }
 
+let sayMessages$ = new Rx.Subject()
+
+let sayResponses$ = sayMessages$
+    .debounce(() => Rx.Observable.interval(500))
+    .flatMap(({user, message, server, username, password}) => {
+        let u = url.parse(server, true);
+        u.auth = username + ":" + password;
+        u.pathname = "/ServerAdmin/current_console";
+
+        let options = {
+            uri: u.format(),
+            method: "POST",
+            form: {
+                SendText: `say ${user}: ${message}`,
+                Send: "Send"
+            }
+        };
+
+        return Rx.Observable.fromPromise(rp(options));
+    })
+
+sayResponses$.subscribe(console.log);
+
 function say(user, message, server, username, password) {
-    let u = url.parse(server, true);
-    u.auth = username + ":" + password;
-    u.pathname = "/ServerAdmin/current_console";
-
-    let options = {
-        uri: u.format(),
-        method: "POST",
-        form: {
-            SendText: `say ${user}: ${message}`,
-            Send: "Send"
-        }
-    };
-
-    return rp(options);
+    sayMessages$.next({user, message, server, username, password});
 }
 
 function sayById(user, message, serverId) {
