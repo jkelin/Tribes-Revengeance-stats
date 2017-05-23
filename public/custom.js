@@ -1,9 +1,9 @@
-function notify(what){
+function notify(what, body){
     console.log("notify", what);
     Notification.requestPermission().then(function(permission) {
         if(permission === "granted"){
-            var notification = new Notification(what, {icon: "/static/favicon.ico"})
-            setTimeout(notification.close.bind(notification), 5 * 1000);
+            var notification = new Notification(what, {icon: "/static/favicon.ico", body: body, requireInteraction: false})
+            setTimeout(notification.close.bind(notification), 3 * 1000);
         }
     });
 }
