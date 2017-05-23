@@ -66,6 +66,16 @@ body {
 }
 
 
+    .fireflag {
+      line-height: 10px;
+      float: right;
+    }
+
+    table.table.table-bordered.servertable td {
+      line-height: 30px;
+    }
+
+
 .home-map-thumbnail a, .home-map-thumbnail .thumbnail {
     margin: 0;
     padding: 0;

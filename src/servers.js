@@ -2,7 +2,7 @@ const express = require("express");
 const winston = require("winston");
 
 const {Player, Server, ServerTrack} = require("./db.js");
-const {getChatFor, sayById} = require("./chat.js");
+const {getChatFor} = require("./chat.js");
 
 let router = express.Router();
 
@@ -95,13 +95,6 @@ router.get('/server/:id/chat/:from', function (req, res, next) {
     }
 
     res.json(resp);
-});
-
-router.post('/server/:id/say', function (req, res, next) {
-    var id = req.params["id"];
-    let body = JSON.parse(req.body);
-
-    sayById(body.user, body.message, id);
 });
 
 router.get('/servers', function (req, res) {

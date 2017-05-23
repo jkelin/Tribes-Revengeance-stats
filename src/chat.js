@@ -3,7 +3,6 @@ const cheerio = require('cheerio');
 const url = require('url');
 const crypto = require('crypto');
 const winston = require("winston");
-const Events = require("events");
 const encoding = require("encoding");
 const Rx = require("rxjs/Rx");
 
@@ -11,8 +10,8 @@ require("rxjs/operator/debounceTime");
 
 const {Server} = require('./db.js');
 const QcMappings = require('./qcmappings.json');
+const Events = require("./events.js");
 
-let emitter = new Events();
 
 let chatCache = {};
 let activeChatRequests = {};
@@ -121,11 +120,12 @@ function getServerChat(serverId, server, username, password) {
                 id: hashStringIntoNumber("" + Date.now() + i),
                 user: newMessages[i].user,
                 message: newMessages[i].message,
-                messageFriendly: makeMessageFromRaw(newMessages[i].message)
+                messageFriendly: makeMessageFromRaw(newMessages[i].message),
+                server: serverId
             };
 
             cache.push(msg);
-            emitter.emit(serverId, { type: "message", data: msg });
+            Events.next({ type: "chat-message", data: msg });
         }
 
         return cache;
@@ -161,9 +161,20 @@ function getChatFor(server) {
     return (chatCache[server] || []).filter(x => x.when.getTime() > Date.now() - 3600 * 1000);
 }
 
-let sayMessages$ = new Rx.Subject()
+function serverFromId(id){
+    return Rx.Observable.fromPromise(Server.findById(id).exec());
+}
 
-let sayResponses$ = sayMessages$
+let sayMessages$ = Events
+    .filter(x => x.type == "say")
+    .flatMap(m => 
+        serverFromId(m.data.server)
+        .map(s => ({user: m.data.usr, message: m.data.message, server: s.chat.server, username: s.chat.username, password: s.chat.password}))
+    )
+    .publish()
+    .refCount();
+
+sayMessages$
     .debounce(() => Rx.Observable.interval(500))
     .flatMap(({user, message, server, username, password}) => {
         let u = url.parse(server, true);
@@ -181,24 +192,8 @@ let sayResponses$ = sayMessages$
 
         return Rx.Observable.fromPromise(rp(options));
     })
-
-sayResponses$.subscribe(console.log);
-
-function say(user, message, server, username, password) {
-    sayMessages$.next({user, message, server, username, password});
-}
-
-function sayById(user, message, serverId) {
-    Server.findById(serverId, function(err, server){
-        if(err) throw err;
-
-        say(user, message, server.chat.server, server.chat.username, server.chat.password);
-    });
-}
+    .subscribe();
 
 module.exports = {
-    getChatFor,
-    emitter,
-    say,
-    sayById
+    getChatFor
 }

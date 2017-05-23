@@ -4,7 +4,9 @@ const exphbs = require("express-handlebars");
 const compression = require("compression");
 const winston = require("winston");
 const path = require('path');
+const http = require('http');
 const bodyParser = require('body-parser');
+const SocketIO = require("socket.io");
 
 const {getTribesServersFromMasterServer, queryTribesServer} = require("./src/serverQuery.js");
 const {Player, Server, ServerTrack} = require("./src/db.js");
@@ -14,11 +16,12 @@ const {handleTribesServerData, emitter, addServerLastFullReport, handlePlayer, t
 const ticker = require("./src/ticker.js");
 const servers = require("./src/servers.js");
 const players = require("./src/players.js");
-const chat = require("./src/chat.js");
+const Events = require("./src/events.js");
 
 
 let app = express();
-let expressWs = ExpressWs(app);
+let server = http.Server(app);
+let io = SocketIO(server);
 
 // This is needed for /upload
 app.use(function (req, res, next) {
@@ -48,7 +51,15 @@ app.use("/", players.router);
 app.use("/", servers.router);
 app.use("/", trackerRouter);
 app.use("/", ticker.router);
-app.ws('/', ticker.handleWs);
+
+
+io.on('connection', function (socket) {
+    socket.on("say", data => Events.next({type: "say", data: {server: data.server, usr: data.usr, message: data.message}}))
+});
+
+Events.filter(x => x.type == "chat-message").subscribe(e => io.emit(e.type, e.data));
+
+Events.subscribe(e => winston.info("EVENT:", e))
 
 app.get('/', function (req, res) {
     var compDate = new Date();
@@ -93,7 +104,7 @@ app.use(function (err, req, res, next) {
     res.send(err);
 });
 
-var server = app.listen(process.env.PORT || 5000, function () {
+server.listen(process.env.PORT || 5000, function () {
 
     var host = server.address().address;
     var port = server.address().port;

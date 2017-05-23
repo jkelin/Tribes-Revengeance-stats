@@ -68,7 +68,9 @@
                 <input type="text" class="form-control input-sm" placeholder="Message" required maxlength="196" id="msg">
             </div>
             <div class="col-sm-2">
-                <input type="submit" class="btn btn-block btn-sm btn-primary" value="Send" data-loading-text="Sending..." id="snd">
+                <button type="submit" class="btn btn-block btn-sm btn-primary" disabled data-loading-text="Sending..." id="snd">
+                    Connecting...
+                </button>
             </div>
         </div>
     </form>
@@ -89,6 +91,25 @@
 
     <script type="text/javascript" src="/static/tc-min.js"></script>
     <script type="text/javascript">
+        var socket = io();
+        socket.on("connect", function(){ 
+            $("#snd").prop("disabled", false).text("Send") 
+        });
+
+        socket.on('chat-message', function (data) {
+            if(!data || data.server !== "{{data._id}}") return;
+
+            var html = '<div class="chat-item">' +
+                '<span class="chat-user">' + data.user + ':</span>' +
+                '<span class="chat-message">' + data.messageFriendly + '</span>' +
+            '</div>';
+
+            $("#snd").button("reset");
+            
+            container.append(html);
+        });
+
+
         var dataSpan = JSON.parse(document.getElementById('chartdata').innerHTML);
         var chartData = [];
         for(var i in dataSpan){
@@ -114,36 +135,7 @@
             localStorage.setItem("name", $(this).val())
         })
 
-        function reloadChat(cb){
-            var url = window.location.pathname + "/chat/" + (chatData.length ? chatData[chatData.length - 1].id : "");
-            jQuery.getJSON(url, function(data){
-                
-                var shouldScroll = container[0].scrollHeight == container[0].clientHeight + container[0].scrollTop;
-
-                data.forEach(function(x){
-                    chatData.push(x);
-
-                    var html = '<div class="chat-item">' +
-                        '<span class="chat-user">' + x.user + ':</span>' +
-                        '<span class="chat-message">' + x.messageFriendly + '</span>' +
-                    '</div>';
-
-                    $("#snd").button("reset");
-                    
-                    container.append(html);
-                });
-
-                if(shouldScroll){
-                    container.scrollTop(container[0].scrollHeight);
-                }
-
-                setTimeout(reloadChat, 1000);
-            });
-        }
-
         container.scrollTop(container[0].scrollHeight);
-
-        setTimeout(reloadChat, 1000);
 
         $("#chat-form").on("submit", function(e){
             e.preventDefault();
@@ -154,7 +146,7 @@
             $("#msg").val("");
             $("#snd").button("loading");
 
-            jQuery.post(window.location.pathname + "/say/", JSON.stringify({user: usr, message: msg}));
+            socket.emit("say", {server: "{{data._id}}", usr: usr, message: msg});
         });
     </script>
 
