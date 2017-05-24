@@ -140,7 +140,9 @@ const handlebars_helpers = {
         return num;
     },
     mapImage: function(map, kind = "loadscreens-chopped", thumbnail = true) {
-        const baseUrl = "http://tribesrevengeance.com/downloads/map-images";
+        let baseUrl = kind == "loadscreens-chopped" 
+            ? "/static"
+            : "http://tribesrevengeance.com/downloads/map-images";
 
         return `${baseUrl}/${kind}${thumbnail ? "-thumbnails" : ""}/${map}.jpg`;
     },
