@@ -21,7 +21,7 @@ function getNews() {
 
     return new Promise(function (resolve, reject) {
         var client = github.client();
-        var repo = client.repo('fireantik/Tribes-Revengeance-stats');
+        var repo = client.repo('jkelin/Tribes-Revengeance-stats');
         
         repo.commits(function (error, commits) {
             if (error) {
