@@ -145,14 +145,15 @@ setInterval(() => {
                 server.save();
 
                 winston.debug("Got server chat from", {id: server._id});
+                delete activeChatRequests[server._id];
             })
             .catch(x => {
                 winston.error("Error getting chat from " + server._id, x);
 
                 server.chat.ok = false;
                 server.save();
-            })
-            .then(_ => delete activeChatRequests[server._id]);
+                delete activeChatRequests[server._id];
+            });
         })
     });
 }, 1000);
