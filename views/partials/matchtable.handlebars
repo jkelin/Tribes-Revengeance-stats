@@ -1,0 +1,22 @@
+<table class="table table-bordered playertable table-hover">
+	<thead>
+		<tr>
+			<th>Name</th>
+			<th>Score</th>
+			<th>O</th>
+			<th>D</th>
+			<th>S</th>
+		</tr>
+	</thead>
+	<tbody>
+	{{#each data}}
+		<tr>
+			<td><a href={{url}}>{{name}}</a></td>
+			<td>{{score}}</td>
+			<td>{{offense}}</td>
+			<td>{{defense}}</td>
+			<td>{{style}}</td>
+		</tr>
+	{{/each}}
+	</tbody>
+</table>

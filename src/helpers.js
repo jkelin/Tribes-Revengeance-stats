@@ -4,6 +4,8 @@ const countryNames = require("./countrynames.json");
 const availableMapImages = require("./available-map-images.json");
 const timespan = require( "timespan");
 const github = require('octonode');
+const path = require('path');
+const sha1File = require('sha1-file')
 
 function tryConvertIpv6ToIpv4(ip){
     var regex = /^::ffff:([0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3})$/;
@@ -149,7 +151,15 @@ const handlebars_helpers = {
     mapName: function(map) {
         let splat = map.split("-");
         return splat[splat.length - 1].replace(/\(.*\)|\.tvm|BEML[0-9]/g, "").trim();
-    }
+    },
+    humanDate: function(date) {
+        return moment(date).format('YYYY-M-D');
+    },
+    humanTime: function(date) {
+        return moment(date).format('H:m');
+    },
+    csshash: () => sha1File(path.join(__dirname, '..', 'public', 'custom.css')),
+    jshash: () => sha1File(path.join(__dirname, '..', 'public', 'custom.js')),
 };
 
 module.exports = {

@@ -1,19 +1,20 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
     <meta charset="utf-8">
+    <meta http-equiv="content-language" content="en">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="icon" type="image/png" href="/static/favicon.png">
     <title>T:V Stats</title>
 
     <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha256-916EbMg70RQy9LHiGkXzG8hSg9EdNy97GazNG/aiY1w=" crossorigin="anonymous" />
     <link rel="stylesheet" href="/static/flags32.css">
-    <link rel="stylesheet" href="/public/custom.css">
+    <link rel="stylesheet" href="/public/custom.css?hash={{csshash}}">
     
     <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/2.2.4/jquery.min.js" integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44=" crossorigin="anonymous"></script>
     <script src="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha256-U5ZEeKfGNOja007MMD3YBI0A3OSZOQbeG6z2f2Y0hu8=" crossorigin="anonymous"></script>
     <script src="//cdnjs.cloudflare.com/ajax/libs/socket.io/2.0.1/socket.io.slim.js" integrity="sha256-xgFhgi3lzveFZBzfkbog/oj1SIOjyveAZKnUVwr35Q8=" crossorigin="anonymous"></script>
-    <script src="/public/custom.js"></script>
+    <script src="/public/custom.js?hash={{jshash}}"></script>
 </head>
 <body>
 	<nav class="navbar navbar-inverse navbar-fixed-top">
@@ -32,6 +33,7 @@
             <li><a href="/">Dashboard</a></li>
             <li><a href="/players">All players</a></li>
             <li><a href="/servers">Server statistics</a></li>
+            <li><a href="/matches">Recent matches</a></li>
             <li><a href="/ticker">Ticker</a></li>
             {{!-- <li><a href="http://tribesrevengeance.com" style="color:orange"><b>TribesRevengeance.com</b></a></li> --}}
             <li><a href="https://downloads.fireant.pw" style="color:orange"><b>Downloads</b></a></li>

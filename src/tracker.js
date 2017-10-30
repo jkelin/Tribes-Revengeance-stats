@@ -209,19 +209,46 @@ function addServerLastFullReport(ip, port) {
         });
 }
 
+function removeDotStatNamesFromFullReport(fullReport){
+    return {
+        ...fullReport,
+        players: fullReport.players.map(p => {
+            const player = {...p};
+            for (var i in player) {
+                const value = player[i];
+                if (i.indexOf('.') !== -1) {
+                    var name = i.split('.')[1];
+                    delete player[i];
+                    player[name] = value;
+                }
+            }
+            return player;
+        })
+    };
+}
+
 function saveMatchResult(ip, port, fullReport) {
     var id = ip + ":" + port;
 
+    // Server.where({ _id: '45.32.157.166:8777' })
     Server.where({ _id: id })
     .findOne(function (err, server) {
+        if (err) {
+            console.error('Could not find saveMatchResult')
+        }
+
         var match = new Match({
             server: id,
             when: new Date(),
-            fullReport: fullReport,
+            fullReport: removeDotStatNamesFromFullReport(fullReport),
             basicReport: server.lastdata
         });
 
-        match.save();
+        match.save(function(err) {
+            if (err) {
+                console.error('Could not save saveMatchResult', err)
+            }
+        });
     });
 }
 

@@ -44,7 +44,7 @@ if (STATS_WEB) {
     //app.use(bodyParser.json());
     //app.use(bodyParser.urlencoded({extended: true})); 
 
-    app.use("/public", express.static(path.join(__dirname, "public")));
+    app.use("/public", express.static(path.join(__dirname, "public"), {maxage: "365d"}));
     app.use("/static", express.static(path.join(__dirname, "static"), {maxage: "365d"}));
     app.use(compression());
 }
@@ -53,10 +53,12 @@ if (STATS_WEB) {
     const ticker = require("./src/ticker.js");
     const servers = require("./src/servers.js");
     const players = require("./src/players.js");
+    const matches = require("./src/matches.js");
 
     app.use("/", players.router);
     app.use("/", servers.router);
     app.use("/", ticker.router);
+    app.use("/", matches.router);
 }
 
 if (STATS_REPORT) {

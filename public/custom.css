@@ -164,3 +164,19 @@ body {
       display:block !important;
   }
 }
+
+.team-Imperial {
+    color: blue;
+}
+
+.team-Phoenix {
+    color: goldenrod;
+}
+
+.team-BloodEagle {
+    color: red;
+}
+
+.clickable-row {
+    cursor: pointer;
+}

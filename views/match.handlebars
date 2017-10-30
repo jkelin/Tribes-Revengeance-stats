@@ -1,0 +1,17 @@
+{{#if info}}
+<h2><a href="/server/{{info.ip}}:{{info.hostport}}">{{info.hostname}}</a> @ <a href="/matches#{{id}}">{{humanDate when}} {{humanTime when}}</a></h2>
+<h3>{{info.mapname}} (<a href="/matches/{{id}}.json">full data</a>)</h3>
+
+<div class="row">
+    <div class="col-sm-6">
+        <h4>{{info.teamone}}</h4>
+        {{> matchtable data=team1}}
+    </div>
+    <div class="col-sm-6">
+        <h4>{{info.teamtwo}}</h4>
+        {{> matchtable data=team2}}
+    </div>
+</div>
+{{else}}
+Match not found
+{{/if}}
