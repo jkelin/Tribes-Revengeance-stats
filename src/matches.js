@@ -51,7 +51,7 @@ function prepareStats(data) {
         key: k
     }));
 
-    return ret;
+    return _.sortBy(_.values(ret).filter(x => x.sum > 0), x => (require('./statorder.json'))[x.key] || key);
 }
 
 function generateResultInfo(data) {

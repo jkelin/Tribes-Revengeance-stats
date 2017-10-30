@@ -166,15 +166,15 @@ body {
 }
 
 .team-Imperial, .team-Imperial td {
-    color: blue;
+    color: #3899e8;
 }
 
 .team-Phoenix, .team-Phoenix td {
-    color: goldenrod;
+    color: #e69a22;
 }
 
 .team-Blood, .team-Blood td {
-    color: red;
+    color: #cf3833;
 }
 
 .clickable-row {
