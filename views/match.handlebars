@@ -2,14 +2,42 @@
 <h2><a href="/server/{{info.ip}}:{{info.hostport}}">{{info.hostname}}</a> @ <a href="/matches#{{id}}">{{humanDate when}} {{humanTime when}}</a></h2>
 <h3>{{info.mapname}} (<a href="/matches/{{id}}.json">full data</a>)</h3>
 
+<h4 class="team-{{result.team}}">{{result.text}}</h4>
+
 <div class="row">
     <div class="col-sm-6">
-        <h4>{{info.teamone}}</h4>
+        <h4><span class="team-{{info.teamone}}">{{info.teamone}}</span> ({{info.teamonescore}})</h4>
         {{> matchtable data=team1}}
     </div>
     <div class="col-sm-6">
-        <h4>{{info.teamtwo}}</h4>
+        <h4><span class="team-{{info.teamtwo}}">{{info.teamtwo}}</span> ({{info.teamtwoscore}})</h4>
         {{> matchtable data=team2}}
+    </div>
+</div>
+
+<h4>Stats</h4>
+<div class="row">
+    <div class="col-sm-12">
+        <table class="table table-bordered table-hover">
+            <thead>
+                <tr>
+                    <th>Award</th>
+                    <th>Winner</th>
+                    <th>Winner #</th>
+                    <th>Sum #</th>
+                </tr>
+            </thead>
+            <tbody>
+            {{#each stats}}
+                <tr id="{{id}}" data-href="/matches/{{id}}">
+                    <td>{{translateStatName key}}</td>
+                    <td><a class="team-{{max.team}}" href="/player/{{max.url}}">{{max.name}}</a></td>
+                    <td>{{max.value}}</td>
+                    <td>{{sum}}</td>
+                </tr>
+            {{/each}}
+            </tbody>
+        </table>
     </div>
 </div>
 {{else}}
