@@ -153,10 +153,10 @@ const handlebars_helpers = {
         return splat[splat.length - 1].replace(/\(.*\)|\.tvm|BEML[0-9]/g, "").trim();
     },
     humanDate: function(date) {
-        return moment(date).format('YYYY-M-D');
+        return moment(date).format('YYYY-MM-DD');
     },
     humanTime: function(date) {
-        return moment(date).format('H:m');
+        return moment(date).format('HH:mm');
     },
     csshash: () => sha1File(path.join(__dirname, '..', 'public', 'custom.css')),
     jshash: () => sha1File(path.join(__dirname, '..', 'public', 'custom.js')),
