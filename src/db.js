@@ -54,6 +54,13 @@ ServerTrackSchema.index({
 
 const ServerTrack = mongoose.model('ServerTrack', ServerTrackSchema);
 
+const Match = mongoose.model('Match', {
+    server: String,
+    when: Date,
+    basicReport: mongoose.Schema.Types.Mixed,
+    fullReport: mongoose.Schema.Types.Mixed
+});
+
 mongoose.connect(process.env.MONGODB || "mongodb://localhost/tribes", function (err) {
     if (err) { 
         winston.error("DB failed to connect", err);
@@ -67,5 +74,6 @@ mongoose.connect(process.env.MONGODB || "mongodb://localhost/tribes", function (
 module.exports = {
     Server,
     Player,
+    Match,
     ServerTrack
 }

@@ -3,9 +3,9 @@ const freegeoip = require("node-freegeoip");
 const express = require("express");
 const atob = require("atob");
 
-const {Player, Server, ServerTrack} = require("./db.js");
-const {emitter} = require("./ticker.js");
-const {getClientIp, getFullMapName} = require("./helpers.js");
+const { Player, Server, ServerTrack, Match } = require("./db.js");
+const { emitter } = require("./ticker.js");
+const { getClientIp, getFullMapName } = require("./helpers.js");
 
 let router = express.Router();
 
@@ -57,7 +57,7 @@ function handleTribesServerData(data) {
 
         server.lastdata = data;
 
-        if(server.lastdata.mapname){
+        if (server.lastdata.mapname) {
             server.lastdata.mapnamefull = getFullMapName(server.lastdata.mapname);
         }
 
@@ -104,32 +104,32 @@ function pushPlayersTrackings(serverIdIn, data) {
 
 function timePlayer(player) {
     Player.where({ _id: player.player })
-    .findOne(function (err, pl) {
-        if (err) throw err;
-        if (pl === null) {
-            pl = new Player({
-                _id: player.player,
-                stats: {},
-                score: 0,
-                kills: 0,
-                deaths: 0,
-                offense: 0,
-                defense: 0,
-                style: 0,
-                minutesonline: 0,
-                lastTiming: new Date()
-            });
-        };
+        .findOne(function (err, pl) {
+            if (err) throw err;
+            if (pl === null) {
+                pl = new Player({
+                    _id: player.player,
+                    stats: {},
+                    score: 0,
+                    kills: 0,
+                    deaths: 0,
+                    offense: 0,
+                    defense: 0,
+                    style: 0,
+                    minutesonline: 0,
+                    lastTiming: new Date()
+                });
+            };
 
-        if (Date.now() >= pl.lastTiming.getTime() + 60 * 1000) {
-            pl.minutesonline++;
-            pl.lastTiming = new Date();
-            winston.debug("Timing player", player.player);
-        }
+            if (Date.now() >= pl.lastTiming.getTime() + 60 * 1000) {
+                pl.minutesonline++;
+                pl.lastTiming = new Date();
+                winston.debug("Timing player", player.player);
+            }
 
-        pl.lastseen = new Date();
-        pl.save(function (err) { if (err) throw err; });
-    });
+            pl.lastseen = new Date();
+            pl.save(function (err) { if (err) throw err; });
+        });
 }
 
 function handlePlayer(input, ip, port) {
@@ -164,7 +164,7 @@ function handlePlayer(input, ip, port) {
         player.style += input.style;
         player.lastseen = new Date();
 
-        if(!player.stats){
+        if (!player.stats) {
             player.stats = {};
         }
 
@@ -178,7 +178,7 @@ function handlePlayer(input, ip, port) {
 
         for (var i in input) {
             var value = input[i];
-            winston.debug("handle player stat", {name: i, value: value});
+            winston.debug("handle player stat", { name: i, value: value });
             if (i === "StatClasses.StatHighestSpeed") continue;
             if (i.indexOf('.') !== -1) {
                 var name = i.split('.')[1];
@@ -197,32 +197,50 @@ function handlePlayer(input, ip, port) {
 
 function addServerLastFullReport(ip, port) {
     var id = ip + ":" + port;
-    Server.where({ _id: id})
+    Server.where({ _id: id })
+        .findOne(function (err, server) {
+            if (err) throw err;
+            if (server == null) {
+                winston.warn("server null, _id:", id);
+                return;
+            }
+            server.lastfullreport = new Date().getTime();
+            server.save(function (err) { if (err) throw err; });
+        });
+}
+
+function saveMatchResult(ip, port, fullReport) {
+    var id = ip + ":" + port;
+
+    Server.where({ _id: id })
     .findOne(function (err, server) {
-        if (err) throw err;
-        if (server == null) {
-            winston.warn("server null, _id:", id);
-            return;
-        }
-        server.lastfullreport = new Date().getTime();
-        server.save(function (err) { if (err) throw err; });
+        var match = new Match({
+            server: id,
+            when: new Date(),
+            fullReport: fullReport,
+            basicReport: server.lastdata
+        });
+
+        match.save();
     });
 }
 
 router.post('/upload', function (req, res) {
     var ip = getClientIp(req);
     res.send('Hello World!')
-    winston.info("Received /upload request from", {ip});
-    winston.debug("received upload request", {ip: ip, data: req.body})
+    winston.info("Received /upload request from", { ip });
+    winston.debug("received upload request", { ip: ip, data: req.body })
     var decoded = atob(req.body);
     var object = JSON.parse(decoded);
 
     object.players
-    .forEach(function (player) {
-        handlePlayer(player, ip, object.port);
-    });
+        .forEach(function (player) {
+            handlePlayer(player, ip, object.port);
+        });
 
     addServerLastFullReport(ip, object.port);
+
+    saveMatchResult(ip, object.port, object)
 });
 
 module.exports = {
