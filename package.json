@@ -11,6 +11,7 @@
     "cheerio": "^0.22.0",
     "compression": "^1.4.3",
     "cross-env": "^5.1.1",
+    "discord.js": "^11.2.1",
     "encoding": "^0.1.12",
     "express": "^4.12.2",
     "express-handlebars": "^1.2.2",

@@ -13,6 +13,8 @@ const {Player, Server, ServerTrack} = require("./src/db.js");
 const {tryConvertIpv6ToIpv4, tribes_news, handlebars_helpers} = require("./src/helpers.js");
 const {handleTribesServerData, emitter, addServerLastFullReport, handlePlayer, trackerRouter} = require("./src/tracker.js");
 
+require('./src/discord.js');
+
 const Events = require("./src/events.js");
 
 const STATS_WEB = (process.env.STATS_WEB || 'true') === 'true';
