@@ -93,97 +93,11 @@
         <a href="?days=7">7 Days</a>
         <span id="chartdata" style="display:none">{{json tracks}}</span>
         <span id="chatdata" style="display:none">{{json chat}}</span>
+        <span id="serverid" style="display:none">{{json data._id}}</span>
         <div id="chart_div" style="width: 900px; height: 400px;margin-left:auto;margin-right:auto"></div>
         <br>
         <br>
     </div>
-
-    <script type="text/javascript" src="/static/tc-min.js"></script>
-    <script type="text/javascript">
-        var isActive;
-
-        window.onfocus = function () { 
-            isActive = true; 
-        }; 
-
-        window.onblur = function () { 
-            isActive = false; 
-        }; 
-
-        var socket = io();
-        socket.on("connect", function(){ 
-            $("#snd").prop("disabled", false).text("Send") 
-        });
-
-        socket.on('chat-message', function (data) {
-            if(!data || data.server !== "{{data._id}}") return;
-
-            var shouldScroll = container[0].scrollHeight == container[0].clientHeight + container[0].scrollTop;
-
-            var html = '<div class="chat-item">' +
-                '<span class="chat-user">' + data.user + ':</span>' +
-                '<span class="chat-message">' + data.messageFriendly + '</span>' +
-            '</div>';
-
-            $("#snd").button("reset");
-
-            if(!isActive && $("#notif")[0].checked && !data.messageFriendly.contains("QuickChat")) {
-                notify(data.messageFriendly, "Said " + data.user);
-            }
-            
-            container.append(html);
-
-            if(shouldScroll){
-                container.scrollTop(container[0].scrollHeight);
-            }
-        });
-
-
-        var dataSpan = JSON.parse(document.getElementById('chartdata').innerHTML);
-        var chartData = [];
-        for(var i in dataSpan){
-            var date = new Date(parseInt(i));
-            //var formated = date.getMonth()+"-"+date.getDate()+" "+date.getHours()+":"+date.getSeconds();
-            chartData.push({date:date,players:dataSpan[i]});
-        }
-
-        document.TC = new Timechart({
-            id: "chart_div",
-            zoom: "d",
-            datefield: "date",
-            datafields: ["players"],
-            dateformat: "yyyy-mm-dd h:i"
-        },chartData);
-
-        var chatData = JSON.parse(document.getElementById('chatdata').innerHTML) || [];
-
-        var container = $('#chat-container');
-
-        $("#usr").val(localStorage.getItem("name") || "");
-        $("#usr").keyup(function() {
-            localStorage.setItem("name", $(this).val())
-        })
-
-        $("#notif")[0].checked = JSON.parse(localStorage.getItem("notify") || "false");
-        $("#notif").click(function() {
-            localStorage.setItem("notify", $(this)[0].checked)
-        })
-
-        container.scrollTop(container[0].scrollHeight);
-
-        $("#chat-form").on("submit", function(e){
-            e.preventDefault();
-
-            var usr = $("#usr").val();
-            var msg = $("#msg").val();
-
-            $("#msg").val("");
-            $("#snd").button("loading");
-
-            socket.emit("say", {server: "{{data._id}}", usr: usr, message: msg});
-        });
-    </script>
-
 {{else}}
 Server not found
 {{/if}}

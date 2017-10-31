@@ -159,7 +159,7 @@ const handlebars_helpers = {
         return moment(date).format('HH:mm');
     },
     csshash: () => sha1File(path.join(__dirname, '..', 'public', 'custom.css')),
-    jshash: () => sha1File(path.join(__dirname, '..', 'public', 'custom.js')),
+    jshash: () => sha1File(path.join(__dirname, '..', 'public', 'custom.js'))
 };
 
 module.exports = {

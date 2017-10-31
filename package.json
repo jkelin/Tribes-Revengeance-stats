@@ -10,6 +10,7 @@
     "body-parser": "^1.17.2",
     "cheerio": "^0.22.0",
     "compression": "^1.4.3",
+    "cross-env": "^5.1.1",
     "encoding": "^0.1.12",
     "express": "^4.12.2",
     "express-handlebars": "^1.2.2",
@@ -26,6 +27,8 @@
     "winston": "^2.3.1"
   },
   "scripts": {
-    "start": "node ./index.js"
+    "start": "node ./index.js",
+    "start:web": "cross-env STATS_REPORT=false yarn start",
+    "start:report": "cross-env STATS_WEB=false yarn start"
   }
 }

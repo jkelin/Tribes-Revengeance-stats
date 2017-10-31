@@ -20,6 +20,8 @@ const STATS_REPORT = (process.env.STATS_REPORT || 'true') === 'true';
 
 
 let app = express();
+app.use(compression());
+
 let server = http.Server(app);
 let io = SocketIO(server);
 
@@ -41,12 +43,13 @@ if (STATS_WEB) {
     app.set('views', path.join(__dirname, "views"));
     app.engine('handlebars', exphbs({defaultLayout: 'main', helpers: handlebars_helpers}));
     app.set('view engine', 'handlebars');
+
     //app.use(bodyParser.json());
     //app.use(bodyParser.urlencoded({extended: true})); 
 
     app.use("/public", express.static(path.join(__dirname, "public"), {maxage: "365d"}));
+
     app.use("/static", express.static(path.join(__dirname, "static"), {maxage: "365d"}));
-    app.use(compression());
 }
 
 if (STATS_WEB) {
