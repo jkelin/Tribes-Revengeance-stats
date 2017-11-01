@@ -64,6 +64,10 @@ if (STATS_WEB) {
     app.use("/", servers.router);
     app.use("/", ticker.router);
     app.use("/", matches.router);
+
+    app.get('/about', function (req, res) {
+        res.render('about');
+    });
 }
 
 if (STATS_REPORT) {
