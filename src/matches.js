@@ -12,7 +12,7 @@ function getPlayersForTeam(data, team) {
     return data.fullReport.players
     .filter(p => p.team === team)
     .map(x => {
-        const ip = ip.split(':')[0];
+        const ip = x.ip.split(':')[0];
 
         return {
             ...x,
