@@ -11,12 +11,18 @@ let router = express.Router();
 function getPlayersForTeam(data, team) {
     return data.fullReport.players
     .filter(p => p.team === team)
-    .map(x => ({
-        ...x,
-        ip: undefined,
-        ipHash: sha1(x.ip),
-        url: '/player/' + x.name
-    }))
+    .map(x => {
+        const ip = ip.split(':')[0];
+
+        return {
+            ...x,
+            ip: undefined,
+            ipHash: ip && sha1(ip),
+            ipHashFirstTwo: ip && sha1(ip.split('.')[0] + ip.split('.')[1]),
+            ipHashFirstThree: ip && sha1(ip.split('.')[0] + ip.split('.')[1] + ip.split('.')[2]),
+            url: '/player/' + x.name
+        }
+    })
     .sort((a, b) => b.score - a.score)
 }
 
