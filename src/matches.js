@@ -1,6 +1,7 @@
 const express = require("express");
 const winston = require("winston");
 const _ = require('lodash');
+const sha1 = require('sha1');
 
 const {Player, Server, ServerTrack, Match} = require("./db.js");
 const {getChatFor} = require("./chat.js");
@@ -13,6 +14,7 @@ function getPlayersForTeam(data, team) {
     .map(x => ({
         ...x,
         ip: undefined,
+        ipHash: sha1(x.ip),
         url: '/player/' + x.name
     }))
     .sort((a, b) => b.score - a.score)
