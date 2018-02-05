@@ -1,5 +1,5 @@
 # Tribes-Revengeance-stats
-Tribes Revengeance stats website http://stats.tribesrevengeance.com
+Tribes Revengeance stats website http://stats.tribesrevengeance.net
 
 ## API
 - /servers.json - brief overview of alls servers and their last responses
