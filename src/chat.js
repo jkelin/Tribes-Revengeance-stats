@@ -148,7 +148,8 @@ setInterval(() => {
                 delete activeChatRequests[server._id];
             })
             .catch(x => {
-                winston.error("Error getting chat from " + server._id, x);
+                winston.error("Error getting chat from " + server._id, x.message);
+                winston.debug(x);
 
                 server.chat.ok = false;
                 server.save();
