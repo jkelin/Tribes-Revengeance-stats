@@ -39,7 +39,7 @@ function getServerChartData(id, days) {
     });
 }
 
-router.get('/server/:id', function (req, res, next) {
+router.get('/server/:id', async function (req, res, next) {
     var id = req.params["id"];
     var numDays = req.query.days !== undefined ? parseInt(req.query.days) : 2;
     if (numDays > 7) numDays = 7;
@@ -47,14 +47,12 @@ router.get('/server/:id', function (req, res, next) {
     var d = new Date();
     d.setDate(d.getDate() - numDays);
 
-    var promises = [
-        Server.findOne().where({ _id: id }).exec(),
-        //ServerTrack.where({serverId: id, time: {'$gt':d}}).find().exec()
-        getServerChartData(id, numDays)
-    ];
+    try {
+        const data = await Promise.all([
+            Server.findOne().where({ _id: id }).exec(),
+            getServerChartData(id, numDays)
+        ]);
 
-    return Promise.all(promises)
-    .then(function (data) {
         var compDate = new Date();
         compDate.setMinutes(compDate.getMinutes() - 2);
 
@@ -66,10 +64,9 @@ router.get('/server/:id', function (req, res, next) {
             online: data != null && data[0].lastseen > compDate,
             numdays: numDays
         });
-    })
-    .catch(function (error) {
+    } catch(error) {
         next(error);
-    });
+    }
 });
 
 router.get('/server/:id/chat/:from', function (req, res, next) {

@@ -61,15 +61,24 @@ const Match = mongoose.model('Match', {
     fullReport: mongoose.Schema.Types.Mixed
 });
 
-mongoose.connect(process.env.MONGODB || "mongodb://localhost/tribes", function (err) {
-    if (err) { 
+async function connect() {
+    try {
+        const conn = mongoose.connect(
+            process.env.MONGODB || "mongodb://localhost/tribes",
+            {
+                useMongoClient: true
+            }
+        );
+    } catch (err) {
         winston.error("DB failed to connect", err);
         process.exit(1);
     }
 
     winston.info("DB connected");
     ServerTrack.ensureIndexes();
-});
+}
+
+connect();
 
 module.exports = {
     Server,

@@ -144,11 +144,11 @@ const handlebars_helpers = {
     mapImage: function(map, kind = "loadscreens-chopped", thumbnail = true) {
         let baseUrl = kind == "loadscreens-chopped" && thumbnail == true
             ? "/static"
-            : "http://tribesrevengeance.com/downloads/map-images";
+            : "http://downloads.tribesrevengeance.net/map-images";
 
         return `${baseUrl}/${kind}${thumbnail ? "-thumbnails" : ""}/${map}.jpg`;
     },
-    mapName: function(map) {
+    mapName: function(map = '') {
         let splat = map.split("-");
         return splat[splat.length - 1].replace(/\(.*\)|\.tvm|BEML[0-9]/g, "").trim();
     },

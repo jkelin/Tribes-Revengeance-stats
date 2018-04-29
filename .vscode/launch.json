@@ -7,8 +7,19 @@
         {
             "type": "node",
             "request": "launch",
-            "name": "Run",
-            "program": "${workspaceRoot}\\index.js"
-        }
+            "name": "start",
+            "program": "${workspaceRoot}\\index.js",
+            "env": {
+            }
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "start:web",
+            "program": "${workspaceRoot}\\index.js",
+            "env": {
+                "STATS_REPORT": "false"
+            }
+        },
     ]
 }

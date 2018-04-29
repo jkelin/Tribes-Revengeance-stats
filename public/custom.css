@@ -65,30 +65,38 @@ body {
   background-color: #428bca;
 }
 
-
-    .fireflag {
-      line-height: 10px;
-      float: right;
-    }
-
-    table.table.table-bordered.servertable td {
-      line-height: 30px;
-    }
-
-
-.home-map-thumbnail a, .home-map-thumbnail .thumbnail {
-    margin: 0;
-    padding: 0;
-    display: block;
-    height: 44px;
-    border-radius: 0;
+.fireflag {
+    line-height: 10px;
+    float: right;
 }
 
-.home-map-thumbnail {
-    position: absolute;
-    right: 2px;
-    top: 2px;
-    z-index: -1;
+table.table.table-bordered.servertable td {
+    line-height: 30px;
+}
+
+.server-map-td {
+    padding-top: 3px !important;
+    padding-bottom: 3px !important;
+    padding-right: 3px !important;
+}
+
+.server-map {
+    display: flex;
+}
+
+.server-map-row>td {
+    line-height: 44px;
+    vertical-align: middle !important;
+}
+
+.server-map-description {
+    flex-grow: 1;
+    line-height: 44px;
+}
+
+.server-map-thumbnail, .server-map-thumbnail a, .server-map-thumbnail img {
+    height: 44px;
+    display: block;
 }
 
 .servertable td {
