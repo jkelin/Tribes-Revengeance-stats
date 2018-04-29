@@ -133,7 +133,7 @@ function getServerChat(serverId, server, username, password) {
 }
 
 setInterval(() => {
-    Server.where({ chat: {$exists: true, enabled: true} }).find(function (err, servers) {
+    Server.where({ chat: {$exists: true}, 'chat.enabled': true }).find(function (err, servers) {
         if (err) throw err;
 
         servers.forEach(server => {
