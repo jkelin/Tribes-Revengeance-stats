@@ -188,3 +188,10 @@ table.table.table-bordered.servertable td {
 .clickable-row {
     cursor: pointer;
 }
+
+.match-when {
+    font-weight: 300;
+    font-size: 22px;
+    color: #676d82;
+    font-style: italic;
+}

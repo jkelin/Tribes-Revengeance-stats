@@ -1,5 +1,7 @@
 {{#if info}}
-<h2><a href="/server/{{info.ip}}:{{info.hostport}}">{{info.hostname}}</a> @ <a href="/matches#{{id}}">{{humanDate when}} {{humanTime when}}</a></h2>
+<h2><a href="/server/{{info.ip}}:{{info.hostport}}">{{info.hostname}}</a> 
+    <span class="match-when">{{humanDate when}} {{humanTime when}}</span>
+</h2>
 <h3>{{info.mapname}} (<a href="/matches/{{id}}.json">full data</a>)</h3>
 
 <h4 class="team-{{result.team}}">{{result.text}}</h4>

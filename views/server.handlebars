@@ -43,6 +43,13 @@
                             </a>
                         </span>
                     {{/if}}
+                    {{#if data.lastdata.mapnamefull}}
+                        <span style="margin-left: 8px" class="server-map-thumbnail hidden-xs">
+                            <a href="{{mapImage data.lastdata.mapnamefull "maps" false}}" target="_blank">
+                                <img width="44" height="44" src="{{mapImage data.lastdata.mapnamefull "maps" true}}" alt="{{data.lastdata.mapname}}">
+                            </a>
+                        </span>
+                    {{/if}}
                 </div>
             </td>
         </tr>

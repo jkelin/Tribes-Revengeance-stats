@@ -73,7 +73,11 @@ function generateResultInfo(data) {
 }
 
 function getMatchData(id) {
-    return Match.where({ _id: id }).findOne().exec().then(data => ({
+
+    return Match.where({ _id: id })
+    .findOne()
+    .exec()
+    .then(data => ({
         id: data._id,
         when: data.when,
         result: generateResultInfo(data.basicReport) ,
@@ -92,16 +96,29 @@ router.get('/matches/:id', function (req, res, next) {
     return getMatchData(req.params.id).then(data => res.render('match', data))
 });
 
-function getMatchesData() {
-    return Match
-    .find({ 'basicReport.numplayers': { $ne: '0' }})
-    .sort('-when')
-    .select({
-        basicReport: true,
-        when: true
-    })
-    .exec()
-    .then(data => ({
+async function getMatchesData(page) {
+    const perPage = 10;
+
+    const [data, count] = await Promise.all([
+        Match
+            .find({ 'basicReport.numplayers': { $ne: '0' }})
+            .sort('-when')
+            .select({
+                basicReport: true,
+                when: true
+            })
+            .skip((page - 1) * perPage)
+            .limit(perPage)
+            .exec(),
+        Match
+            .find({ 'basicReport.numplayers': { $ne: '0' }})
+            .count()
+            .exec()
+    ]);
+
+    const lastPage = Math.floor(count / perPage) + 1;
+
+    return {
         matches: data.map(m => ({
             id: m._id,
             when: m.when,
@@ -113,16 +130,35 @@ function getMatchesData() {
             teamtwoscore: m.basicReport.teamtwoscore,
             gametype: m.basicReport.gametype,
             numplayers: m.basicReport.numplayers,
-        }))
-    }))
+        })),
+        pagination: {
+            page,
+            perPage,
+            count: count,
+            first: 1,
+            last: lastPage,
+            prev: page - 1 >= 1 ? page - 1 : null,
+            next: page + 1 <= lastPage ? page + 1 : null,
+        }
+    };
+}
+
+function parsePage(page) {
+    try {
+        return parseInt(page || 1);
+    } catch (ex) {
+        return 1;
+    }
 }
 
 router.get('/matches.json', function (req, res, next) {
-    return getMatchesData().then(data => res.json(data))
+    return getMatchesData(parsePage(req.query.page))
+    .then(data => res.json(data))
 });
 
 router.get('/matches', function (req, res, next) {
-    return getMatchesData().then(data => res.render('matches', data))
+    return getMatchesData(parsePage(req.query.page))
+    .then(data => res.render('matches', data))
 });
 
 module.exports = {
