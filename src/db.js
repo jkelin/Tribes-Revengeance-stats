@@ -20,7 +20,8 @@ const Server = mongoose.model('Server', {
         server: String,
         username: String,
         password: String,
-        ok: Boolean
+        ok: Boolean,
+        enabled: Boolean
     },
     lastdata: mongoose.Schema.Types.Mixed
 });
