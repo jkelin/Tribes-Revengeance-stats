@@ -28,6 +28,21 @@
             <td>Never (<a href="https://github.com/jkelin/TribesVengeanceServerStatus">server side mod</a> is not installed)</td>
         {{/if}}
     </tr>
+    {{#if online}}
+        <tr>
+            <td>Map</td>
+            <td>
+                [{{lastdata.gametype}}] {{mapName lastdata.mapname}}
+                {{#if lastdata.mapnamefull}}
+                    <span class="home-map-thumbnail hidden-xs">
+                        <a href="{{mapImage lastdata.mapnamefull "loadscreens-chopped" false}}">
+                            <img width="91" height="44" class="thumbnail" src="{{mapImage lastdata.mapnamefull "loadscreens-chopped" true}}" alt="{{lastdata.mapname}}">
+                        </a>
+                    </span>
+                {{/if}}
+            </td>
+        </tr>
+    {{/if}}
 </table>
 
     {{#if data.lastdata.players}}
