@@ -97,7 +97,7 @@ router.get('/matches/:id', function (req, res, next) {
 });
 
 async function getMatchesData(page) {
-    const perPage = 10;
+    const perPage = 50;
 
     const [data, count] = await Promise.all([
         Match
