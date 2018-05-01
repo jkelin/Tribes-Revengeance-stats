@@ -1,5 +1,5 @@
-FROM node:8-onbuild
+FROM node:alpine
 EXPOSE 5000
 ENV MONGODB mongodb://localhost/tribes
 
-# CMD ["yarn", "start"]
+CMD ["yarn", "start"]
