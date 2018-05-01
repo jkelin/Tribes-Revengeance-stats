@@ -1,5 +1,4 @@
 const express = require("express");
-const ExpressWs = require("express-ws");
 const exphbs = require("express-handlebars");
 const compression = require("compression");
 const winston = require("winston");
