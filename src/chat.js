@@ -7,6 +7,7 @@ const crypto = require('crypto');
 const winston = require("winston");
 const encoding = require("encoding");
 const Rx = require("rxjs/Rx");
+const qs = require('qs');
 
 const axiosInstance = axios.create({
     timeout: 1000,
@@ -194,16 +195,27 @@ sayMessages$
         u.auth = username + ":" + password;
         u.pathname = "/ServerAdmin/current_console";
 
-        let options = {
-            uri: u.format(),
-            method: "POST",
-            form: {
-                SendText: `say ${user}: ${message}`,
-                Send: "Send"
-            }
-        };
+        // let options = {
+        //     uri: u.format(),
+        //     method: "POST",
+        //     form: {
+        //         SendText: `say ${user}: ${message}`,
+        //         Send: "Send"
+        //     }
+        // };
 
-        return Rx.Observable.fromPromise(rp(options));
+        const post = axiosInstance.post(
+            u.format(),
+            {
+                headers: { 'content-type': 'application/x-www-form-urlencoded' },
+                data: qs.stringify({
+                    SendText: `say ${user}: ${message}`,
+                    Send: "Send"
+                })
+            }
+        )
+
+        return Rx.Observable.fromPromise(post);
     })
     .subscribe();
 
