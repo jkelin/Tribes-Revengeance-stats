@@ -1,10 +1,20 @@
-const rp = require('request-promise');
+const axios = require('axios');
+const http = require('http');
+const https = require('https');
 const cheerio = require('cheerio');
 const url = require('url');
 const crypto = require('crypto');
 const winston = require("winston");
 const encoding = require("encoding");
 const Rx = require("rxjs/Rx");
+
+const axiosInstance = axios.create({
+    timeout: 1000,
+    httpAgent: new http.Agent({ keepAlive: true }),
+    httpsAgent: new https.Agent({ keepAlive: true }),
+    responseEncoding: "iso-8859-1",
+    responseType: 'text'
+});
 
 require("rxjs/operator/debounceTime");
 
@@ -75,15 +85,16 @@ function getServerChat(serverId, server, username, password) {
     u.auth = username + ":" + password;
     u.pathname = "/ServerAdmin/current_console_log";
 
-    let options = {
-        uri: u.format(),
-        encoding: "binary",
-        transform: function (body) {
-            return cheerio.load(encoding.convert(body, "utf-8", "iso-8859-1").toString());
-        }
-    };
+    // let options = {
+    //     uri: u.format(),
+    //     encoding: "binary",
+    //     transform: function (body) {
+    //         return cheerio.load(encoding.convert(body, "utf-8", "iso-8859-1").toString());
+    //     }
+    // };
 
-    return rp(options)
+    return axiosInstance.get(u.format())
+    .then(resp => cheerio.load(resp.data))
     .then($ => {
         let contents = $("table tr:nth-child(2) td:nth-child(2)").contents();
 
