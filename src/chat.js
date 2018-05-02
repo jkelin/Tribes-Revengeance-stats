@@ -206,16 +206,13 @@ sayMessages$
 
         const post = axiosInstance.post(
             u.format(),
-            {
-                headers: { 'content-type': 'application/x-www-form-urlencoded' },
-                data: qs.stringify({
-                    SendText: `say ${user}: ${message}`,
-                    Send: "Send"
-                })
-            }
+            qs.stringify({
+                SendText: `say ${user}: ${message}`,
+                Send: "Send"
+            })
         )
 
-        return Rx.Observable.fromPromise(post);
+        return Rx.Observable.fromPromise(post.then(x => x.data));
     })
     .subscribe();
 
