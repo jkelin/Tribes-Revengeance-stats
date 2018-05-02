@@ -65,10 +65,7 @@ const Match = mongoose.model('Match', {
 async function connect() {
     try {
         const conn = mongoose.connect(
-            process.env.MONGODB || "mongodb://localhost/tribes",
-            {
-                useMongoClient: true
-            }
+            process.env.MONGODB || "mongodb://localhost/tribes"
         );
     } catch (err) {
         winston.error("DB failed to connect", err);
