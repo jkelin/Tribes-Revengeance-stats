@@ -12,6 +12,7 @@ let router = express.Router();
 function handleTribesServerData(data) {
     //console.log(data);
     var id = data.ip + ':' + data.hostport;
+    if(!id) return winston.error('[handleTribesServerData] Server does not have an id', data);
     winston.debug("Handling data from", id);
     Server.where({ _id: id }).findOne(function (err, server) {
         if (err) throw err;
@@ -103,6 +104,7 @@ function pushPlayersTrackings(serverIdIn, data) {
 }
 
 function timePlayer(player) {
+    if(!player.player) return winston.error('[timePlayer] Player does not have a name', player);
     Player.where({ _id: player.player })
         .findOne(function (err, pl) {
             if (err) throw err;
@@ -134,6 +136,8 @@ function timePlayer(player) {
 
 function handlePlayer(input, ip, port) {
     winston.debug("handling player", input);
+    if(!input.name) return winston.error('Player does not have a name');
+
     Player.where({ _id: input.name }).findOne(function (err, player) {
         if (err) throw err;
         var changeCountry = false;
