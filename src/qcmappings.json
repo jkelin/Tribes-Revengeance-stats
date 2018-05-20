@@ -135,5 +135,7 @@
     "DYN_QKC_QCUGM1_03": "Defending our flag",
     "DYN_QKC_QCUGM1_06": "I'm about to die with the flag",
     "DYN_QKC_QCUGM1_07": "Don't return the flag yet",
-    "DYN_QKC_QCUGM1_08": "Return our flag now"
+    "DYN_QKC_QCUGM1_08": "Return our flag now",
+    "DYN_QKC_QCAUTO_12": "I deployed an inventory station",
+    "DYN_QKC_QCCOMMON_08?": "I don't know"
 }
