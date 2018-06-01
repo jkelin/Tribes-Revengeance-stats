@@ -123,6 +123,10 @@ if (STATS_WEB) {
     })
 }
 
+app.get('/status.json', function(req, res) {
+    res.json({ status: 'ok' });
+});
+
 app.use(function (err, req, res, next) {
     winston.error("App error:", err);
     res.send(err);
