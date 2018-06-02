@@ -74,7 +74,7 @@ const influx = new Influx.InfluxDB({
     schema: [{
         measurement: 'population',
         fields: {
-            players: Influx.FieldType.FLOAT,
+            players: Influx.FieldType.INTEGER,
         },
         tags: [
             'server'
