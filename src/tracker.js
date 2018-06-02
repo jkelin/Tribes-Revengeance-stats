@@ -97,9 +97,11 @@ function pushPlayersTrackings(serverIdIn, data) {
             {
                 measurement: 'population',
                 fields: {
-                    server: serverIdIn,
                     players: data.numplayers
                 },
+                tags: {
+                    server: serverIdIn,
+                }
             }
         ],
         {
