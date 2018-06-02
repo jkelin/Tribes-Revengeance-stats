@@ -1,7 +1,7 @@
 # Tribes-Revengeance-stats
 Tribes Revengeance stats website http://stats.tribesrevengeance.net
 
-Uses MongoDB for player and server stats storage and InfluxDB for server population history. Is fed data directly by the servers via ServerStatus mod, also queries servers for current uptime via Unreal server query protocol.
+Uses MongoDB for player and server stats storage and InfluxDB for server population history. Is fed data directly by the servers via ServerStatus mod, also queries servers for current uptime via GameSpy server query protocol.
 
 ## API
 - `/status.json` - Status endpoint
