@@ -151,3 +151,8 @@ if (STATS_REPORT) {
 
     setInterval(updateFromMaster, 5 * 1000);
 }
+
+process.on('unhandledRejection', (reason, p) => {
+    winston.error('Unhandled Rejection at: Promise', p, 'reason:', reason);
+    process.exit(1);
+});
