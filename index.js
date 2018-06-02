@@ -8,7 +8,7 @@ const bodyParser = require('body-parser');
 const SocketIO = require("socket.io");
 
 const {getTribesServersFromMasterServer, queryTribesServer} = require("./src/serverQuery.js");
-const {Player, Server, ServerTrack} = require("./src/db.js");
+const {Player, Server} = require("./src/db.js");
 const {tryConvertIpv6ToIpv4, tribes_news, handlebars_helpers} = require("./src/helpers.js");
 const {handleTribesServerData, emitter, addServerLastFullReport, handlePlayer, trackerRouter} = require("./src/tracker.js");
 

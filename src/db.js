@@ -1,3 +1,4 @@
+const Influx = require("influx");
 const mongoose = require("mongoose");
 const winston = require("winston");
 
@@ -42,18 +43,6 @@ const Player = mongoose.model('Player', {
     stats: mongoose.Schema.Types.Mixed
 });
 
-const ServerTrackSchema = new mongoose.Schema({
-    serverId: String,
-    time: Date,
-    numplayers: Number
-});
-
-ServerTrackSchema.index({
-    serverId: 1,
-    time: -1
-});
-
-const ServerTrack = mongoose.model('ServerTrack', ServerTrackSchema);
 
 const Match = mongoose.model('Match', {
     server: String,
@@ -63,24 +52,39 @@ const Match = mongoose.model('Match', {
 });
 
 async function connect() {
-    try {
-        const conn = mongoose.connect(
-            process.env.MONGODB || "mongodb://localhost/tribes"
-        );
-    } catch (err) {
-        winston.error("DB failed to connect", err);
-        process.exit(1);
-    }
-
-    winston.info("DB connected");
-    ServerTrack.ensureIndexes();
+    const conn = mongoose.connect(
+        process.env.MONGODB || "mongodb://localhost/tribes"
+    );
 }
 
-connect();
+connect()
+.then(() => winston.info("DB connected"))
+.catch(err => {
+    winston.error("Error connecting to DB");
+    winston.exception(err);
+    process.exit(1);
+})
+
+const influx = new Influx.InfluxDB({
+    username: process.env.INFLUXDB_USER,
+    password: process.env.INFLUXDB_PASSWORD,
+    database: process.env.INFLUXDB_DATABASE,
+    host: process.env.INFLUXDB_HOST,
+    port: process.env.INFLUXDB_PORT,
+    schema: [{
+        measurement: 'population',
+        fields: {
+            players: Influx.FieldType.INTEGER,
+        },
+        tags: [
+            'server'
+        ]
+    }]
+})
 
 module.exports = {
     Server,
     Player,
     Match,
-    ServerTrack
+    influx
 }

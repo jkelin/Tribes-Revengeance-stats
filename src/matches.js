@@ -3,7 +3,7 @@ const winston = require("winston");
 const _ = require('lodash');
 const sha1 = require('sha1');
 
-const {Player, Server, ServerTrack, Match} = require("./db.js");
+const {Player, Server, Match} = require("./db.js");
 const {getChatFor} = require("./chat.js");
 
 let router = express.Router();

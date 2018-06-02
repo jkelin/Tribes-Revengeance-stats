@@ -1,7 +1,7 @@
 const express = require("express");
 const winston = require("winston");
 
-const {Player, Server, ServerTrack} = require("./db.js");
+const {Player, Server} = require("./db.js");
 
 let router = express.Router();
 

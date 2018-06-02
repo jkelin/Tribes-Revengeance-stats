@@ -3,7 +3,7 @@ const freegeoip = require("node-freegeoip");
 const express = require("express");
 const atob = require("atob");
 
-const { Player, Server, ServerTrack, Match } = require("./db.js");
+const { Player, Server, Match, influx } = require("./db.js");
 const { emitter } = require("./ticker.js");
 const { getClientIp, getFullMapName } = require("./helpers.js");
 
@@ -91,16 +91,24 @@ function handleTribesServerData(data) {
 var lastTrackings = {};
 function pushPlayersTrackings(serverIdIn, data) {
     if (!lastTrackings[serverIdIn]) lastTrackings[serverIdIn] = 0;
+
+    influx.writePoints(
+        [
+            {
+                measurement: 'population',
+                fields: {
+                    server: serverIdIn,
+                    players: data.numplayers
+                },
+            }
+        ],
+        {
+            database: 'tribes'
+        }
+    );
+
     if (lastTrackings[serverIdIn] + 60 * 1000 >= Date.now()) return;
     lastTrackings[serverIdIn] = Date.now();
-
-    var track = new ServerTrack({
-        serverId: serverIdIn,
-        time: new Date(),
-        numplayers: data.numplayers
-    });
-
-    track.save(function (err) { if (err) throw err; });
 }
 
 function timePlayer(player) {

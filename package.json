@@ -13,9 +13,11 @@
     "compression": "^1.4.3",
     "cross-env": "^5.1.1",
     "discord.js": "^11.2.1",
+    "dotenv": "^5.0.1",
     "encoding": "^0.1.12",
     "express": "^4.12.2",
     "express-handlebars": "^3.0.0",
+    "influx": "^5.0.7",
     "moment": "^2.9.0",
     "mongoose": "^5.0.17",
     "node-freegeoip": "0.0.1",
@@ -29,7 +31,7 @@
     "winston": "^2.3.1"
   },
   "scripts": {
-    "start": "node ./index.js",
+    "start": "node -r dotenv/config ./index.js",
     "start:web": "cross-env STATS_REPORT=false yarn start",
     "start:report": "cross-env STATS_WEB=false yarn start"
   },

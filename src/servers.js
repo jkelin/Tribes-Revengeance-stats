@@ -1,40 +1,25 @@
 const express = require("express");
 const winston = require("winston");
 
-const {Player, Server, ServerTrack} = require("./db.js");
+const Influx = require("influx");
+const {Player, Server, influx} = require("./db.js");
 const {getChatFor} = require("./chat.js");
 
 let router = express.Router();
 
 function getServerChartData(id, days) {
-    let date = new Date();
-    date.setDate(date.getDate() - days);
-
-    const pipeline = [
-        { 
-            $match: { 
-                serverId: id,
-                time: {$gte: date}
-            } 
-        },
-        {
-            $group: {
-                _id: {
-                    server: "$serverId",
-                    month: {$month: "$time"},
-                    day: {$dayOfMonth: "$time"},
-                    year: {$year: "$time"},
-                    hour: {$hour: "$time"}
-                },
-                value: {$max: "$numplayers"}
-            }
-        }
-    ];
-
-    return ServerTrack.aggregate(pipeline)
+    return influx.query(`
+        SELECT median("players") as "players" FROM "population"
+        WHERE server = ${Influx.escape.stringLit(id)} AND time > now() - ${days}d
+        GROUP BY time(10m)
+    `)
     .then(function (data) {
         let map = {};
-        data.forEach(x => map[new Date(x._id.year, x._id.month, x._id.day, x._id.hour).getTime()] = x.value)
+
+        data
+        .filter(x => x.players !== null)
+        .forEach(x => map[new Date(x.time).getTime()] = (x.players || 0));
+
         return map;
     });
 }
@@ -42,7 +27,7 @@ function getServerChartData(id, days) {
 router.get('/server/:id', async function (req, res, next) {
     var id = req.params["id"];
     var numDays = req.query.days !== undefined ? parseInt(req.query.days) : 2;
-    if (numDays > 7) numDays = 7;
+    if (numDays > 30) numDays = 30;
     if (numDays < 2) numDays = 2;
     var d = new Date();
     d.setDate(d.getDate() - numDays);
