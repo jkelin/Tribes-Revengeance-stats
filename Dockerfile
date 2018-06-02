@@ -14,6 +14,6 @@ COPY . /app
 EXPOSE 5000
 ENV MONGODB mongodb://localhost/tribes
 
-HEALTHCHECK --interval=5s --timeout=1s CMD ["curl", "-sSf", "http://localhost:5000/status.json"]
+HEALTHCHECK --interval=5s --timeout=1s CMD curl -sSf "http://localhost:5000/status.json" || exit 1 
 
 CMD ["yarn", "start"]
