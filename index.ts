@@ -13,10 +13,12 @@ import {getTribesServersFromMasterServer, queryTribesServer} from "./src/serverQ
 import {Player, Server} from "./src/db";
 import {tryConvertIpv6ToIpv4, tribes_news, handlebars_helpers} from "./src/helpers";
 import {handleTribesServerData, addServerLastFullReport, handlePlayer, router as trackerRouter} from "./src/tracker";
+import { CronJob } from 'cron';
 
 require('./src/discord');
 
 import Events from "./src/events";
+import { exec } from "shelljs";
 
 const STATS_WEB = (process.env.STATS_WEB || 'true') === 'true';
 const STATS_REPORT = (process.env.STATS_REPORT || 'true') === 'true';
@@ -158,3 +160,13 @@ process.on('unhandledRejection', (reason, p) => {
     winston.error('Unhandled Rejection at: Promise', p, 'reason:', reason);
     process.exit(1);
 });
+
+process.on('uncaughtException', (ex) => {
+    winston.error('uncaughtException', ex.message, ex);
+    process.exit(1);
+});
+
+new CronJob('0 0 0 * * *', function() {
+    console.warn('Running CRON')
+    exec('yarn script:recalculate_identities')
+}, null, true);
