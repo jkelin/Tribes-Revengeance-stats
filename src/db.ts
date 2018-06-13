@@ -1,5 +1,5 @@
-const Influx = require("influx");
-const mongoose = require("mongoose");
+import { InfluxDB, FieldType } from "influx";
+import mongoose from "mongoose";
 import winston from "winston";
 
 mongoose.Promise = Promise;
@@ -25,7 +25,7 @@ export const Server = mongoose.model('Server', {
         enabled: Boolean
     },
     lastdata: mongoose.Schema.Types.Mixed
-});
+} as any);
 
 export const Player = mongoose.model('Player', {
     _id: String,
@@ -41,22 +41,22 @@ export const Player = mongoose.model('Player', {
     lastseen: Date,
     minutesonline: Number,
     stats: mongoose.Schema.Types.Mixed
-});
+} as any);
 
 export const Identity = mongoose.model('Identity', {
     ips: mongoose.Schema.Types.Mixed,
     names: mongoose.Schema.Types.Mixed,
     namesAndIps: [String],
-});
+} as any);
 
 export const Match = mongoose.model('Match', {
     server: String,
     when: Date,
     basicReport: mongoose.Schema.Types.Mixed,
     fullReport: mongoose.Schema.Types.Mixed
-});
+} as any);
 
-export const influx = new Influx.InfluxDB({
+export const influx = new InfluxDB({
     username: process.env.INFLUXDB_USER,
     password: process.env.INFLUXDB_PASSWORD,
     database: process.env.INFLUXDB_DATABASE,
@@ -65,13 +65,13 @@ export const influx = new Influx.InfluxDB({
     schema: [{
         measurement: 'population',
         fields: {
-            players: Influx.FieldType.INTEGER,
+            players: FieldType.INTEGER,
         },
         tags: [
             'server'
         ]
     }]
-})
+} as any);
 
 async function connect() {
     const conn = mongoose.connect(

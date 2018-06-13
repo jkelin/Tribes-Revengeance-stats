@@ -1,5 +1,12 @@
 {{#if data}}
 <h2>{{data._id}}</h2>
+{{#if relatedNicknamesString}}
+    <h4>
+        Also known as:
+        <span class="match-when">{{relatedNicknamesString}}</span>
+    </h4>
+{{/if}}
+
 <table class="table table-striped">
     <tr><td>Total score</td><td>{{data.score}}</td></tr>
     <tr><td>Kills</td><td>{{data.kills}}</td></tr>

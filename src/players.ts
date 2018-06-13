@@ -1,14 +1,21 @@
-const express = require("express");
-const winston = require("winston");
-const { sortBy, toPairs } = require("lodash");
+import express from "express";
+import winston from "winston";
+import { sortBy, toPairs } from "lodash";
 
-const {Player, Identity} = require("./db");
+import {Player, Identity} from "./db";
+import { cleanPlayerName } from "./helpers";
 
 let router = express.Router();
 
 async function findRelatedNicknames(name) {
-    const data = await Identity.find({ 'namesAndIps': { $in: [name] } }, { names: true }).findOne();
-    return sortBy(toPairs(data.names), x => -x[1]).filter(x => x[1] > 5).map(x => x[0]);
+    name = cleanPlayerName(name);
+    const data = await Identity.find({ 'namesAndIps': { $in: [ name ] } }, { names: true }).findOne();
+
+    if(data) {
+        return sortBy(toPairs(data.names), x => -x[1]).filter(x => x[1] > 10 && x[0] !== name).map(x => x[0]);
+    } else {
+        return null;
+    }
 }
 
 router.get('/player/:name', async function (req, res) {
@@ -16,13 +23,10 @@ router.get('/player/:name', async function (req, res) {
     const similar = await findRelatedNicknames(name);
     const data = await Player.where({ _id: name }).findOne();
 
-    console.warn({
-        ...data._doc,
-        relatedNicknames: similar
-    });
-
     res.render('player', {
-        data: {...data._doc, relatedNicknames: similar}
+        data: data,
+        relatedNicknames: similar,
+        relatedNicknamesString: similar && similar.join(', ')
     });
 })
 

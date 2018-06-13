@@ -1,16 +1,16 @@
 import express from "express";
 import winston from "winston";
 
-import Influx from "influx";
+import { escape } from "influx";
 import {Player, Server, influx} from "./db";
 import {getChatFor} from "./chat";
 
 let router = express.Router();
 
 function getServerChartData(id, days) {
-    return influx.query(`
+    return influx.query<{ players: number, time: number }>(`
         SELECT median("players") as "players" FROM "population"
-        WHERE server = ${Influx.escape.stringLit(id)} AND time > now() - ${days}d
+        WHERE server = ${escape.stringLit(id)} AND time > now() - ${days}d
         GROUP BY time(10m)
     `)
     .then(function (data) {
