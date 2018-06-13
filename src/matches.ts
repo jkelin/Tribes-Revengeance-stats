@@ -1,10 +1,10 @@
-const express = require("express");
-const winston = require("winston");
-const _ = require('lodash');
-const sha1 = require('sha1');
+import express from "express";
+import winston from "winston";
+import _ from 'lodash';
+import sha1 from 'sha1';
 
-const {Player, Server, Match} = require("./db.js");
-const {getChatFor} = require("./chat.js");
+import { Player, Server, Match } from "./db";
+import { getChatFor } from "./chat";
 
 let router = express.Router();
 
@@ -51,7 +51,7 @@ function prepareStats(data) {
         'ip'
     ].indexOf(x) === -1);
 
-    const ret = {};
+    const ret: Record<string, { min: { value: number, name: string, team: string }, max: { value: number, name: string, team: string }, sum: number, key: string }> = {};
     keys.forEach(k => ret[k] = ({
         max: handleItem(k, _.maxBy(data.fullReport.players, k)),
         min: handleItem(k, _.minBy(data.fullReport.players, k)),

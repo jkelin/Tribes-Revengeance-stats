@@ -1,10 +1,10 @@
 const Influx = require("influx");
 const mongoose = require("mongoose");
-const winston = require("winston");
+import winston from "winston";
 
 mongoose.Promise = Promise;
 
-const Server = mongoose.model('Server', {
+export const Server = mongoose.model('Server', {
     _id: String,
     name: String,
     adminname: String,
@@ -27,7 +27,7 @@ const Server = mongoose.model('Server', {
     lastdata: mongoose.Schema.Types.Mixed
 });
 
-const Player = mongoose.model('Player', {
+export const Player = mongoose.model('Player', {
     _id: String,
     ip: String,
     lastserver: String,
@@ -43,33 +43,20 @@ const Player = mongoose.model('Player', {
     stats: mongoose.Schema.Types.Mixed
 });
 
-const Identity = mongoose.model('Identity', {
+export const Identity = mongoose.model('Identity', {
     ips: mongoose.Schema.Types.Mixed,
     names: mongoose.Schema.Types.Mixed,
+    namesAndIps: [String],
 });
 
-const Match = mongoose.model('Match', {
+export const Match = mongoose.model('Match', {
     server: String,
     when: Date,
     basicReport: mongoose.Schema.Types.Mixed,
     fullReport: mongoose.Schema.Types.Mixed
 });
 
-async function connect() {
-    const conn = mongoose.connect(
-        process.env.MONGODB || "mongodb://localhost/tribes"
-    );
-}
-
-connect()
-.then(() => winston.info("DB connected"))
-.catch(err => {
-    winston.error("Error connecting to DB");
-    winston.exception(err);
-    process.exit(1);
-})
-
-const influx = new Influx.InfluxDB({
+export const influx = new Influx.InfluxDB({
     username: process.env.INFLUXDB_USER,
     password: process.env.INFLUXDB_PASSWORD,
     database: process.env.INFLUXDB_DATABASE,
@@ -86,10 +73,15 @@ const influx = new Influx.InfluxDB({
     }]
 })
 
-module.exports = {
-    Server,
-    Player,
-    Match,
-    Identity,
-    influx
+async function connect() {
+    const conn = mongoose.connect(
+        process.env.MONGODB || "mongodb://localhost/tribes"
+    );
 }
+
+connect()
+.then(() => winston.info("DB connected"))
+.catch(err => {
+    winston.error("Error connecting to DB", err);
+    process.exit(1);
+})

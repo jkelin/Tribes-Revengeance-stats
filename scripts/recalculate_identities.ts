@@ -166,7 +166,8 @@ async function main() {
 
     const docs = frequencies.map(f => new db.Identity({
         ips: f.ips,
-        names: f.names
+        names: f.names,
+        namesAndIps: keys(f.ips).concat(keys(f.names))
     }));
 
     console.info('Removing old identities');

@@ -1,15 +1,15 @@
-const winston = require("winston");
-const freegeoip = require("node-freegeoip");
-const express = require("express");
-const atob = require("atob");
+import winston from "winston";
+import freegeoip from "node-freegeoip";
+import express from "express";
+import atob from "atob";
 
-const { Player, Server, Match, influx } = require("./db.js");
-const { emitter } = require("./ticker.js");
-const { getClientIp, getFullMapName } = require("./helpers.js");
+import { Player, Server, Match, influx } from "./db";
+import { emitter } from "./ticker";
+import { getClientIp, getFullMapName } from "./helpers";
 
-let router = express.Router();
+export let router = express.Router();
 
-function handleTribesServerData(data) {
+export function handleTribesServerData(data) {
     //console.log(data);
     var id = data.ip + ':' + data.hostport;
     if(!id) return winston.error('[handleTribesServerData] Server does not have an id', data);
@@ -37,16 +37,18 @@ function handleTribesServerData(data) {
             server.lastTiming = new Date();
             winston.debug("Timing server", id);
         } else {
-            winston.debug("Could not time server because lastTiming is", server.lastTiming, "and now is", new Date(), "while needed is", new Date(Date.now() - 60 * 1000), "diff:", server.lastTiming - new Date(Date.now() - 60 * 1000));
+            winston.debug("Could not time server because lastTiming is", server.lastTiming, "and now is", new Date(), "while needed is", new Date(Date.now() - 60 * 1000), "diff:", server.lastTiming - (new Date(Date.now() - 60 * 1000) as any));
         }
 
         server.save(function (err) { if (err) throw err; });
 
-        data.players
-            .forEach(function (player) {
-                var wasbefore = server.lastdata.players.some(function (p) { return p.player == player.player });
-                if (!wasbefore) emitter.emit("join", { server: server, player: player });
-            });
+        if (server.lastdata) {
+            data.players
+                .forEach(function (player) {
+                    var wasbefore = server.lastdata.players.some(function (p) { return p.player == player.player });
+                    if (!wasbefore) emitter.emit("join", { server: server, player: player });
+                });
+        }
 
         if (server.lastdata && server.lastdata.players) {
             server.lastdata.players
@@ -89,7 +91,7 @@ function handleTribesServerData(data) {
 }
 
 var lastTrackings = {};
-function pushPlayersTrackings(serverIdIn, data) {
+export function pushPlayersTrackings(serverIdIn, data) {
     if (!lastTrackings[serverIdIn]) lastTrackings[serverIdIn] = 0;
 
     influx.writePoints(
@@ -113,7 +115,7 @@ function pushPlayersTrackings(serverIdIn, data) {
     lastTrackings[serverIdIn] = Date.now();
 }
 
-function timePlayer(player) {
+export function timePlayer(player) {
     if(!player.player) return winston.error('[timePlayer] Player does not have a name', player);
     Player.where({ _id: player.player })
         .findOne(function (err, pl) {
@@ -144,7 +146,7 @@ function timePlayer(player) {
         });
 }
 
-function handlePlayer(input, ip, port) {
+export function handlePlayer(input, ip, port) {
     winston.debug("handling player", input);
     if(!input.name) return winston.error('Player does not have a name');
 
@@ -209,7 +211,7 @@ function handlePlayer(input, ip, port) {
     });
 };
 
-function addServerLastFullReport(ip, port) {
+export function addServerLastFullReport(ip, port) {
     var id = ip + ":" + port;
     Server.where({ _id: id })
         .findOne(function (err, server) {
@@ -223,7 +225,7 @@ function addServerLastFullReport(ip, port) {
         });
 }
 
-function removeDotStatNamesFromFullReport(fullReport){
+export function removeDotStatNamesFromFullReport(fullReport){
     return {
         ...fullReport,
         players: fullReport.players.map(p => {
@@ -241,7 +243,7 @@ function removeDotStatNamesFromFullReport(fullReport){
     };
 }
 
-function saveMatchResult(ip, port, fullReport) {
+export function saveMatchResult(ip, port, fullReport) {
     var id = ip + ":" + port;
 
     // Server.where({ _id: '45.32.157.166:8777' })
@@ -283,11 +285,3 @@ router.post('/upload', function (req, res) {
 
     saveMatchResult(ip, object.port, object)
 });
-
-module.exports = {
-    handlePlayer,
-    addServerLastFullReport,
-    handleTribesServerData,
-    emitter,
-    trackerRouter: router
-}

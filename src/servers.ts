@@ -1,9 +1,9 @@
-const express = require("express");
-const winston = require("winston");
+import express from "express";
+import winston from "winston";
 
-const Influx = require("influx");
-const {Player, Server, influx} = require("./db.js");
-const {getChatFor} = require("./chat.js");
+import Influx from "influx";
+import {Player, Server, influx} from "./db";
+import {getChatFor} from "./chat";
 
 let router = express.Router();
 

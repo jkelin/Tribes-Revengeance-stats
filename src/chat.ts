@@ -1,27 +1,27 @@
-const axios = require('axios');
-const http = require('http');
-const https = require('https');
-const cheerio = require('cheerio');
-const url = require('url');
-const crypto = require('crypto');
-const winston = require("winston");
-const encoding = require("encoding");
-const Rx = require("rxjs/Rx");
-const qs = require('qs');
+import axios from 'axios';
+import http from 'http';
+import https from 'https';
+import cheerio from 'cheerio';
+import url from 'url';
+import crypto from 'crypto';
+import winston from "winston";
+import encoding from "encoding";
+import Rx  from"rxjs/Rx";
+import qs from 'qs';
 
 const axiosInstance = axios.create({
     timeout: 1000,
     httpAgent: new http.Agent({ keepAlive: true }),
     httpsAgent: new https.Agent({ keepAlive: true }),
     responseEncoding: "iso-8859-1",
-    responseType: 'text'
-});
+    responseType: 'text',
+} as any);
 
 require("rxjs/operator/debounceTime");
 
-const {Server} = require('./db.js');
-const QcMappings = require('./qcmappings.json');
-const Events = require("./events.js");
+import { Server } from './db';
+import QcMappings from './qcmappings.json';
+import Events from  "./events";
 
 
 let chatCache = {};
@@ -94,7 +94,7 @@ function getServerChat(serverId, server, username, password) {
     //     }
     // };
 
-    return axiosInstance.get(u.format())
+    return axiosInstance.get((u as any).format())
     .then(resp => cheerio.load(resp.data))
     .then($ => {
         let contents = $("table tr:nth-child(2) td:nth-child(2)").contents();
@@ -171,7 +171,7 @@ setInterval(() => {
     });
 }, 1000);
 
-function getChatFor(server) {
+export function getChatFor(server) {
     return (chatCache[server] || []).filter(x => x.when.getTime() > Date.now() - 3600 * 1000);
 }
 
@@ -183,7 +183,7 @@ let sayMessages$ = Events
     .filter(x => x.type == "say")
     .flatMap(m => 
         serverFromId(m.data.server)
-        .map(s => ({user: m.data.usr, message: m.data.message, server: s.chat.server, username: s.chat.username, password: s.chat.password}))
+        .map((s: { data: any, chat: any}) => ({user: m.data.usr, message: m.data.message, server: s.chat.server, username: s.chat.username, password: s.chat.password}))
     )
     .publish()
     .refCount();
@@ -205,7 +205,7 @@ sayMessages$
         // };
 
         const post = axiosInstance.post(
-            u.format(),
+            (u as any).format(),
             qs.stringify({
                 SendText: `say ${user}: ${message}`,
                 Send: "Send"
@@ -215,7 +215,3 @@ sayMessages$
         return Rx.Observable.fromPromise(post.then(x => x.data));
     })
     .subscribe();
-
-module.exports = {
-    getChatFor
-}

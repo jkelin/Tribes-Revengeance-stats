@@ -1,14 +1,14 @@
-const express = require("express");
-const Events = require("events");
+import express from "express";
+import Events from "events";
 
-let router = express.Router();
-let emitter = new Events();
+export let router = express.Router();
+export let emitter = new Events();
 
 router.get('/ticker', function (req, res) {
     res.render('ticker');
 });
 
-function handleWs(ws, req) {
+export function handleWs(ws, req) {
     function listen(type, data) {
         var wsData = {
             type: type,
@@ -41,10 +41,4 @@ function handleWs(ws, req) {
     });
 
     ping();
-}
-
-module.exports = {
-    handleWs,
-    emitter,
-    router
 }

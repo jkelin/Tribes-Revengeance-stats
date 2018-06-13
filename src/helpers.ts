@@ -1,15 +1,15 @@
-const winston = require("winston");
-const moment = require("moment");
-const countryNames = require("./countrynames.json");
-const availableMapImages = require("./available-map-images.json");
-const timespan = require( "timespan");
-const github = require('octonode');
-const path = require('path');
-const sha1File = require('sha1-file')
-const tags = require('./clan-tags.json');
-const removeAccents = require('./removeAccents');
+import winston from "winston";
+import moment from "moment";
+import countryNames from "./countrynames.json";
+import availableMapImages from "./available-map-images.json";
+import timespan from  "timespan";
+import github from 'octonode';
+import path from 'path';
+import sha1File from 'sha1-file';
+import tags from './clan-tags.json';
+import { removeDiacritics } from "./removeAccents";
 
-function tryConvertIpv6ToIpv4(ip){
+export function tryConvertIpv6ToIpv4(ip){
     var regex = /^::ffff:([0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3})$/;
     var matches = regex.exec(ip);
     
@@ -20,7 +20,7 @@ function tryConvertIpv6ToIpv4(ip){
     }
 }
 
-function getNews() {
+export function getNews() {
     winston.info("Resolving news");
 
     return new Promise(function (resolve, reject) {
@@ -56,9 +56,9 @@ function getNews() {
     })
 }
 
-const tribes_news = getNews().catch(() => []);
+export const tribes_news = getNews().catch(() => []);
 
-function getClientIp(req) {
+export function getClientIp(req) {
     var ipAddress;
     var forwardedIpsStr = req.header('x-forwarded-for');
 
@@ -74,7 +74,7 @@ function getClientIp(req) {
     return tryConvertIpv6ToIpv4(ipAddress);
 };
 
-function aIncludesB(a, b) {
+export function aIncludesB(a, b) {
     for (let i in b) {
         if (a.filter(x => x.indexOf(b[i]) != -1).length == 0) return false;
     }
@@ -82,7 +82,7 @@ function aIncludesB(a, b) {
     return true;
 }
 
-function getFullMapName(map){
+export function getFullMapName(map){
     const mapImageComponentMap = availableMapImages.map(x => ({map: x, components: x.split(/[- ]/g)}));
 
     let searchComponents = map.toLowerCase().replace(/[\[\]\-\_\(\)\<\>]/g, " ").replace(".tvm", "").split(" ").filter(x => x);
@@ -94,7 +94,7 @@ function getFullMapName(map){
     else return possibleMaps.map(x => x.map).sort()[0];
 }
 
-const handlebars_helpers = {
+export const handlebars_helpers = {
     json: function (context) { return JSON.stringify(context); },
     urlencode: function (context) { return encodeURIComponent(context); },
     showMinutes: function (context) {
@@ -164,7 +164,7 @@ const handlebars_helpers = {
     jshash: () => sha1File(path.join(__dirname, '..', 'public', 'custom.js'))
 };
 
-function matchClan(name) {
+export function matchClan(name) {
     for (const i in tags) {
         const regex = new RegExp(tags[i], "i");
 
@@ -179,7 +179,7 @@ function matchClan(name) {
     return undefined;
 }
 
-function stripClanTags(name) {
+export function stripClanTags(name) {
     const clan = matchClan(name);
     if (clan){
         return clan.name;
@@ -188,7 +188,7 @@ function stripClanTags(name) {
     }
 }
 
-function stripFormating(name) {
+export function stripFormating(name) {
     return name
     .replace(/\[c=[0-9a-f]{1}\]/i, '')
     .replace(/\[c=[0-9a-f]{3}\]/i, '')
@@ -198,7 +198,7 @@ function stripFormating(name) {
     .replace(/\[b\]/i, '');
 }
 
-function removeSpaces(name) {
+export function removeSpaces(name) {
     for (let i = 0; i < 10; i++) {
         name = name.replace(/  /g, ' ')
         .replace(/^ /g, '')
@@ -208,24 +208,13 @@ function removeSpaces(name) {
     return name;
 }
 
-function cleanPlayerName(name) {
+export function cleanPlayerName(name) {
     name = name.toLocaleLowerCase();
-    name = removeAccents.removeDiacritics(name)
+    name = removeDiacritics(name)
     name = stripClanTags(name)
     name = stripFormating(name)
     name = name.replace(/[^a-z0-9\-\_]/ig, ' ');
     name = removeSpaces(name)
 
     return name.trim();
-}
-
-module.exports = {
-    getFullMapName,
-    handlebars_helpers,
-    tribes_news,
-    getClientIp,
-    tryConvertIpv6ToIpv4,
-    cleanPlayerName,
-    matchClan,
-    stripClanTags
 }

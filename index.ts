@@ -1,22 +1,22 @@
 require('dotenv').config()
 
-const express = require("express");
-const exphbs = require("express-handlebars");
-const compression = require("compression");
-const winston = require("winston");
-const path = require('path');
-const http = require('http');
-const bodyParser = require('body-parser');
-const SocketIO = require("socket.io");
+import express from "express";
+import exphbs from "express-handlebars";
+import compression from "compression";
+import winston from "winston";
+import path from 'path';
+import http from 'http';
+import bodyParser from 'body-parser';
+import SocketIO from "socket.io";
 
-const {getTribesServersFromMasterServer, queryTribesServer} = require("./src/serverQuery.js");
-const {Player, Server} = require("./src/db.js");
-const {tryConvertIpv6ToIpv4, tribes_news, handlebars_helpers} = require("./src/helpers.js");
-const {handleTribesServerData, emitter, addServerLastFullReport, handlePlayer, trackerRouter} = require("./src/tracker.js");
+import {getTribesServersFromMasterServer, queryTribesServer} from "./src/serverQuery";
+import {Player, Server} from "./src/db";
+import {tryConvertIpv6ToIpv4, tribes_news, handlebars_helpers} from "./src/helpers";
+import {handleTribesServerData, addServerLastFullReport, handlePlayer, router as trackerRouter} from "./src/tracker";
 
-require('./src/discord.js');
+require('./src/discord');
 
-const Events = require("./src/events.js");
+import Events from "./src/events";
 
 const STATS_WEB = (process.env.STATS_WEB || 'true') === 'true';
 const STATS_REPORT = (process.env.STATS_REPORT || 'true') === 'true';
@@ -25,7 +25,7 @@ const STATS_REPORT = (process.env.STATS_REPORT || 'true') === 'true';
 let app = express();
 app.use(compression());
 
-let server = http.Server(app);
+let server = new http.Server(app);
 let io = SocketIO(server);
 
 // This is needed for /upload
@@ -50,16 +50,16 @@ if (STATS_WEB) {
     //app.use(bodyParser.json());
     //app.use(bodyParser.urlencoded({extended: true})); 
 
-    app.use("/public", express.static(path.join(__dirname, "public"), {maxage: "365d"}));
+    app.use("/public", express.static(path.join(__dirname, "public"), { maxAge: "365d" }));
 
-    app.use("/static", express.static(path.join(__dirname, "static"), {maxage: "365d"}));
+    app.use("/static", express.static(path.join(__dirname, "static"), { maxAge: "365d" }));
 }
 
 if (STATS_WEB) {
-    const ticker = require("./src/ticker.js");
-    const servers = require("./src/servers.js");
-    const players = require("./src/players.js");
-    const matches = require("./src/matches.js");
+    const ticker = require("./src/ticker");
+    const servers = require("./src/servers");
+    const players = require("./src/players");
+    const matches = require("./src/matches");
 
     app.use("/", players.router);
     app.use("/", servers.router);
@@ -86,7 +86,7 @@ if (STATS_WEB) {
     Events.subscribe(e => winston.info("EVENT:", e))
 
 
-    app.get('/', function (req, res) {
+    app.get('/', function (req, res, next) {
         var compDate = new Date();
         compDate.setMinutes(compDate.getMinutes() - 2);
 

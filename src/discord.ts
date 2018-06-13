@@ -1,5 +1,5 @@
-const Discord = require('discord.js');
-const Events = require("./events.js");
+import Discord from 'discord.js';
+import Events from "./events";
 
 
 const webhookId = process.env.DISCORD_WEBHOOK_ID;

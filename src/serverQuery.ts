@@ -1,11 +1,11 @@
-const http = require("http");
-const dgram = require("dgram");
-const net = require("net");
-const winston = require("winston");
+import http from "http";
+import dgram from "dgram";
+import net from "net";
+import winston from "winston";
 
 const timeoutMs = 1000;
 
-function getTribesServersFromMasterServer(callback) {
+export function getTribesServersFromMasterServer(callback) {
     let options = {
         host: 'qtracker.com',
         path: '/server_list_details.php?game=tribesvengeance'
@@ -34,7 +34,7 @@ function getTribesServersFromMasterServer(callback) {
     }).end();
 }
 
-function parseTribesServerQueryReponse(ip, port, message, ping, callback) {
+export function parseTribesServerQueryReponse(ip, port, message, ping) {
     var items = message.split('\\');
     items.splice(0, 1);
     var dict = {};
@@ -47,7 +47,7 @@ function parseTribesServerQueryReponse(ip, port, message, ping, callback) {
         name = !name;
     });
     
-    var data = {
+    var data: any = {
         players: []
     };
 
@@ -69,7 +69,7 @@ function parseTribesServerQueryReponse(ip, port, message, ping, callback) {
     return data;
 }
 
-function queryTribesServer(ip, port, callback) {
+export function queryTribesServer(ip, port, callback) {
     var message = new Buffer('\\basic\\');
     var client = dgram.createSocket('udp4');
     var timer = setTimeout(function () {
@@ -100,10 +100,4 @@ function queryTribesServer(ip, port, callback) {
 
     client.send(message, 0, message.length, port, ip);
     //client.bind(ip, port);
-}
-
-module.exports = {
-    queryTribesServer,
-    parseTribesServerQueryReponse,
-    getTribesServersFromMasterServer
 }
