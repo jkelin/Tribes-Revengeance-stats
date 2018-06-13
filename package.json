@@ -6,6 +6,8 @@
     "node": ">=6.10.3"
   },
   "dependencies": {
+    "@types/fs-extra": "^5.0.3",
+    "@types/lodash": "^4.14.109",
     "atob": "^2.1.1",
     "axios": "^0.18.0",
     "body-parser": "^1.17.2",
@@ -17,6 +19,7 @@
     "encoding": "^0.1.12",
     "express": "^4.12.2",
     "express-handlebars": "^3.0.0",
+    "fs-extra": "^6.0.1",
     "influx": "^5.0.7",
     "moment": "^2.9.0",
     "mongoose": "^5.0.17",
@@ -28,12 +31,15 @@
     "sha1-file": "^1.0.0",
     "socket.io": "1.1",
     "timespan": "^2.3.0",
+    "ts-node": "^6.1.0",
+    "typescript": "^2.9.1",
     "winston": "^2.3.1"
   },
   "scripts": {
-    "start": "node -r dotenv/config ./index.js",
+    "start": "node ./index.js",
     "start:web": "cross-env STATS_REPORT=false yarn start",
-    "start:report": "cross-env STATS_WEB=false yarn start"
+    "start:report": "cross-env STATS_WEB=false yarn start",
+    "script:recalculate_identities": "ts-node scripts/recalculate_identities.ts"
   },
   "devDependencies": {
     "@types/axios": "^0.14.0"

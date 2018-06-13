@@ -43,6 +43,10 @@ const Player = mongoose.model('Player', {
     stats: mongoose.Schema.Types.Mixed
 });
 
+const Identity = mongoose.model('Identity', {
+    ips: mongoose.Schema.Types.Mixed,
+    names: mongoose.Schema.Types.Mixed,
+});
 
 const Match = mongoose.model('Match', {
     server: String,
@@ -86,5 +90,6 @@ module.exports = {
     Server,
     Player,
     Match,
+    Identity,
     influx
 }

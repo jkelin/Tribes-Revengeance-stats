@@ -6,6 +6,8 @@ const timespan = require( "timespan");
 const github = require('octonode');
 const path = require('path');
 const sha1File = require('sha1-file')
+const tags = require('./clan-tags.json');
+const removeAccents = require('./removeAccents');
 
 function tryConvertIpv6ToIpv4(ip){
     var regex = /^::ffff:([0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3})$/;
@@ -162,10 +164,68 @@ const handlebars_helpers = {
     jshash: () => sha1File(path.join(__dirname, '..', 'public', 'custom.js'))
 };
 
+function matchClan(name) {
+    for (const i in tags) {
+        const regex = new RegExp(tags[i], "i");
+
+        if (regex.test(name)) {
+            return {
+                clan: i,
+                name: regex.exec(name)[1]
+            };
+        }
+    }
+    
+    return undefined;
+}
+
+function stripClanTags(name) {
+    const clan = matchClan(name);
+    if (clan){
+        return clan.name;
+    } else {
+        return name;
+    }
+}
+
+function stripFormating(name) {
+    return name
+    .replace(/\[c=[0-9a-f]{1}\]/i, '')
+    .replace(/\[c=[0-9a-f]{3}\]/i, '')
+    .replace(/\[c=[0-9a-f]{6}\]/i, '')
+    .replace(/\[i\]/i, '')
+    .replace(/\[u\]/i, '')
+    .replace(/\[b\]/i, '');
+}
+
+function removeSpaces(name) {
+    for (let i = 0; i < 10; i++) {
+        name = name.replace(/  /g, ' ')
+        .replace(/^ /g, '')
+        .replace(/ $/g, '');
+    }
+
+    return name;
+}
+
+function cleanPlayerName(name) {
+    name = name.toLocaleLowerCase();
+    name = removeAccents.removeDiacritics(name)
+    name = stripClanTags(name)
+    name = stripFormating(name)
+    name = name.replace(/[^a-z0-9\-\_]/ig, ' ');
+    name = removeSpaces(name)
+
+    return name.trim();
+}
+
 module.exports = {
     getFullMapName,
     handlebars_helpers,
     tribes_news,
     getClientIp,
-    tryConvertIpv6ToIpv4
+    tryConvertIpv6ToIpv4,
+    cleanPlayerName,
+    matchClan,
+    stripClanTags
 }
