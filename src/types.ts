@@ -7,6 +7,8 @@ export interface IUploadedPlayer {
     offense: number;
     defense: number;
     style: number;
+
+    isTracked?: boolean;
 }
 
 export interface IUploadedData {

@@ -54,10 +54,10 @@ export function isValid(player: IUploadedPlayer, data: IUploadedData) {
 
     const tolerance = Math.max(0, data.players.length - 4) * 0.025; // 2.5% per player in games with more than 4 players
 
-    if (difference < tolerance) {
+    if (data.players.length >= 2 && difference < tolerance) {
         return true;
     } else {
-        console.log("Cheater detected", player.name, data);
+        console.log("Player stats not tracked", player.name, data);
         return false;
     }
 }
