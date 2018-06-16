@@ -12,8 +12,8 @@ export function isValidPreprocess(player: IUploadedPlayer, data: IUploadedData) 
         style: player.style,
     }
 
-    const averages = mapValues(trackedStats, (value, key) => mean(data.players.map(x => x[key])));
-    const averageDistances = mapValues(trackedStats, (value, key) => Math.abs(averages[key] - player[key]));
+    // const averages = mapValues(trackedStats, (value, key) => mean(data.players.map(x => x[key])));
+    // const averageDistances = mapValues(trackedStats, (value, key) => Math.abs(averages[key] - player[key]));
 
     // Following can be useful for manual analysis
 
@@ -34,7 +34,7 @@ export function isValidPreprocess(player: IUploadedPlayer, data: IUploadedData) 
 
     // return finalObj;
 
-    return averageDistances;
+    return trackedStats;
 }
 
 /**
@@ -47,8 +47,8 @@ export function isValid(player: IUploadedPlayer, data: IUploadedData) {
     const stats: Dictionary<{max: number, avg: number, median: number, p90: number, p95: number, p99: number}> = require('./anticheat-stats.json');
 
     const difference = _(preprocessed)
-        .mapValues((value, key) => Math.max(0, value - stats[key].p95)) // absolute differences
-        .mapValues((diff, key) => diff / stats[key].p95) // percentage differences
+        .mapValues((value, key) => Math.max(0, value - stats[key].p99)) // absolute differences
+        .mapValues((diff, key) => diff / stats[key].p99) // percentage differences
         .values() // percentages
         .sum();
 

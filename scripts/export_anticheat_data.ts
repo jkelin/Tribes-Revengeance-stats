@@ -74,7 +74,7 @@ async function exportToFile(data: any[], filename: string) {
         data.map(x => x.players.map(p => isValidPreprocess(p, x)))
     );
 
-    await fs.writeFile(filename, JSON.stringify(preprocessed, null, 2));
+    // await fs.writeFile(filename, JSON.stringify(preprocessed, null, 2));
 
     const summary: any = {};
 
@@ -94,7 +94,7 @@ async function exportToFile(data: any[], filename: string) {
         };
     }
 
-    console.warn('written', filename);
+    // console.warn('written', filename);
     console.warn(JSON.stringify(summary, null ,2));
 }
 
