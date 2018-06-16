@@ -51,11 +51,12 @@ function prepareStats(data) {
         'ip'
     ].indexOf(x) === -1);
 
-    const ret: Record<string, { min: { value: number, name: string, team: string }, max: { value: number, name: string, team: string }, sum: number, key: string }> = {};
+    const ret: Record<string, { min: { value: number, name: string, team: string }, max: { value: number, name: string, team: string }, sum: number, avg: number, key: string }> = {};
     keys.forEach(k => ret[k] = ({
         max: handleItem(k, _.maxBy(data.fullReport.players, k)),
         min: handleItem(k, _.minBy(data.fullReport.players, k)),
         sum: _.sumBy(data.fullReport.players, k),
+        avg: _.meanBy(data.fullReport.players, k),
         key: k
     }));
 

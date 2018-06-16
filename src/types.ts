@@ -8,7 +8,7 @@ export interface IUploadedPlayer {
     defense: number;
     style: number;
 
-    isTracked?: boolean;
+    isUntracked?: boolean;
 }
 
 export interface IUploadedData {

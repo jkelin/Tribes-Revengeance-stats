@@ -279,10 +279,10 @@ router.post('/upload', function (req, res) {
     var decoded = atob(req.body);
     var object: IUploadedData = JSON.parse(decoded);
 
-    object.players.forEach(p => p.isTracked = isValid(p, object));
+    object.players.forEach(p => p.isUntracked = !isValid(p, object));
 
     object.players
-    .filter(p => p.isTracked)
+    .filter(p => !p.isUntracked)
     .forEach(function (player) {
         handlePlayer(player, ip, object.port);
     });
