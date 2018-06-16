@@ -6,6 +6,9 @@ import atob from "atob";
 import { Player, Server, Match, influx } from "./db";
 import { emitter } from "./ticker";
 import { getClientIp, getFullMapName } from "./helpers";
+import { mean, min, max } from "lodash";
+import { IUploadedData, IUploadedPlayer } from "./types";
+import { isValid } from "./anticheat";
 
 export let router = express.Router();
 
@@ -146,7 +149,7 @@ export function timePlayer(player) {
         });
 }
 
-export function handlePlayer(input, ip, port) {
+export function handlePlayer(input: IUploadedPlayer, ip: string, port: string) {
     winston.debug("handling player", input);
     if(!input.name) return winston.error('Player does not have a name');
 
@@ -274,12 +277,13 @@ router.post('/upload', function (req, res) {
     winston.info("Received /upload request from", { ip });
     winston.debug("received upload request", { ip: ip, data: req.body })
     var decoded = atob(req.body);
-    var object = JSON.parse(decoded);
+    var object: IUploadedData = JSON.parse(decoded);
 
     object.players
-        .forEach(function (player) {
-            handlePlayer(player, ip, object.port);
-        });
+    .filter(p => isValid(p, object))
+    .forEach(function (player) {
+        handlePlayer(player, ip, object.port);
+    });
 
     addServerLastFullReport(ip, object.port);
 
