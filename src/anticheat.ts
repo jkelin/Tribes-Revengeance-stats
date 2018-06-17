@@ -46,8 +46,10 @@ export function isValid(player: IUploadedPlayer, data: IUploadedData) {
     const preprocessed = isValidPreprocess(player, data);
     const stats: Dictionary<{max: number, avg: number, median: number, p90: number, p95: number, p99: number}> = require('./anticheat-stats.json');
 
+    const absoluteTolerance =  data.players.length * 5;
+
     const difference = _(preprocessed)
-        .mapValues((value, key) => Math.max(0, value - stats[key].p99)) // absolute differences
+        .mapValues((value, key) => Math.max(0, value - (stats[key].p99 + absoluteTolerance))) // absolute differences
         .mapValues((diff, key) => diff / stats[key].p99) // percentage differences
         .values() // percentages
         .sum();
