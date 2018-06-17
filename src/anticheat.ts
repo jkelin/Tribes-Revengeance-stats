@@ -51,10 +51,13 @@ export function isValid(player: IUploadedPlayer, data: IUploadedData) {
         .mapValues((diff, key) => diff / stats[key].p99) // percentage differences
         .values() // percentages
         .sum();
-
+    
+        
     const tolerance = Math.max(0, data.players.length - 4) * 0.025; // 2.5% per player in games with more than 4 players
+    // console.warn({ difference });
+    // console.warn({ tolerance });
 
-    if (data.players.length >= 2 && difference < tolerance) {
+    if (data.players.length >= 2 && difference <= tolerance) {
         return true;
     } else {
         console.log("Player stats not tracked", player.name, data);

@@ -1,5 +1,5 @@
 export interface IUploadedPlayer {
-    ip: string;
+    ip?: string;
     name: string;
     score: number;
     kills: number;

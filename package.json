@@ -47,7 +47,8 @@
     "start:web": "cross-env STATS_REPORT=false yarn start",
     "start:report": "cross-env STATS_WEB=false yarn start",
     "script:recalculate_identities": "ts-node scripts/recalculate_identities.ts",
-    "script:export_anticheat_data": "ts-node scripts/export_anticheat_data.ts"
+    "script:export_anticheat_data": "ts-node scripts/export_anticheat_data.ts",
+    "script:test_anticheat": "ts-node scripts/test_anticheat.ts"
   },
   "devDependencies": {
     "@types/axios": "^0.14.0"
