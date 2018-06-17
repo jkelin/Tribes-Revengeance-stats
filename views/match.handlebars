@@ -33,7 +33,7 @@
             {{#each stats}}
                 <tr id="{{id}}" data-href="/matches/{{id}}">
                     <td>{{translateStatName key}}</td>
-                    <td><a class="team-{{max.team}}" href="/player/{{max.url}}">{{max.name}}</a></td>
+                    <td><a class="team-{{max.team}}" href="/player/{{urlencode max.name}}">{{max.name}}</a></td>
                     <td>{{max.value}}</td>
                     <td>{{sum}}</td>
                 </tr>

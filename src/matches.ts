@@ -20,7 +20,7 @@ function getPlayersForTeam(data, team) {
             ipHash: ip && sha1(ip),
             ipHashFirstTwo: ip && sha1(ip.split('.')[0] + ip.split('.')[1]),
             ipHashFirstThree: ip && sha1(ip.split('.')[0] + ip.split('.')[1] + ip.split('.')[2]),
-            url: '/player/' + x.name
+            url: '/player/' + encodeURIComponent(x.name)
         }
     })
     .sort((a, b) => b.score - a.score)

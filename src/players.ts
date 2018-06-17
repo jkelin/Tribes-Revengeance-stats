@@ -19,7 +19,7 @@ async function findRelatedNicknames(name) {
 }
 
 router.get('/player/:name.json', async function (req, res) {
-    var name = req.params["name"];
+    var name = decodeURIComponent(req.params["name"]);
     const similar = await findRelatedNicknames(name);
     // const data = await Player.where({ _id: name }).findOne();
 
@@ -30,7 +30,7 @@ router.get('/player/:name.json', async function (req, res) {
 })
 
 router.get('/player/:name', async function (req, res) {
-    var name = req.params["name"];
+    var name = decodeURIComponent(req.params["name"]);
     const similar = await findRelatedNicknames(name);
     const data = await Player.where({ _id: name }).findOne();
 
