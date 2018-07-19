@@ -1,4 +1,5 @@
 require('dotenv').config()
+require('./src/logger');
 
 import express from "express";
 import exphbs from "express-handlebars";
@@ -14,6 +15,7 @@ import {Player, Server} from "./src/db";
 import {tryConvertIpv6ToIpv4, tribes_news, handlebars_helpers} from "./src/helpers";
 import {handleTribesServerData, addServerLastFullReport, handlePlayer, router as trackerRouter} from "./src/tracker";
 import { CronJob } from 'cron';
+import Raven from 'raven';
 
 require('./src/discord');
 
@@ -26,6 +28,10 @@ const STATS_REPORT = (process.env.STATS_REPORT || 'true') === 'true';
 
 let app = express();
 app.use(compression());
+
+if (process.env.SENTRY_DSN) {
+    app.use(Raven.requestHandler());
+}
 
 let server = new http.Server(app);
 let io = SocketIO(server);
@@ -131,6 +137,10 @@ app.get('/status.json', function(req, res) {
     res.json({ status: 'ok' });
 });
 
+if (process.env.SENTRY_DSN) {
+    app.use(Raven.errorHandler());
+}
+
 app.use(function (err, req, res, next) {
     winston.error("App error:", err);
     res.send(err);
@@ -158,12 +168,16 @@ if (STATS_REPORT) {
 
 process.on('unhandledRejection', (reason, p) => {
     winston.error('Unhandled Rejection at: Promise', p, 'reason:', reason);
-    process.exit(1);
+    Raven.captureException(reason, { 
+        extra: {
+            promise: p
+        },
+    }, () => process.exit(1));
 });
 
 process.on('uncaughtException', (ex) => {
     winston.error('uncaughtException', ex.message, ex);
-    process.exit(1);
+    Raven.captureException(ex, () => process.exit(1));
 });
 
 new CronJob('0 0 0 * * *', function() {

@@ -73,6 +73,11 @@ export function handleTribesServerData(data) {
 
         if (!server.country) {
             freegeoip.getLocation(server.ip, function (err, location) {
+                if (err) {
+                    winston.error(err);
+                    return;
+                }
+
                 server.country = location["country_code"].toLowerCase();
                 server.save(function (err) {
                     if (err) throw err;

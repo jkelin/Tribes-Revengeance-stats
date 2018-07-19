@@ -160,7 +160,7 @@ setInterval(() => {
                 delete activeChatRequests[server._id];
             })
             .catch(x => {
-                winston.error("Error getting chat from " + server._id, x.message);
+                winston.info("Error getting chat from " + server._id, x.message);
                 winston.debug(x);
 
                 server.chat.ok = false;

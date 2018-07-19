@@ -124,7 +124,7 @@ export const handlebars_helpers = {
         return ((context.kills || 0) / (context.minutesonline || 1)).toFixed(2); 
     },
     inc: function (num) { return num + 1; },
-    countryname: function (country, options) { return countryNames[country.toUpperCase()]; },
+    countryname: function (country, options) { return country && countryNames[country.toUpperCase()]; },
     condPrint: function (v1, v2, v3) {
         return (v1 == v2) ? v3 : "";
     },
