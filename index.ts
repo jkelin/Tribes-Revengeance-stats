@@ -86,7 +86,13 @@ if (STATS_REPORT) {
 
 if (STATS_WEB) {
     io.on('connection', function (socket) {
-        socket.on("say", data => Events.next({type: "say", data: {server: data.server, usr: data.usr, message: data.message}}))
+        socket.on("say", data => {
+            const nameRegex = /(A-Za-z0-9\| \-_\?\*\/:\.){3,29}/;
+            const messageRegex = /(A-Za-z0-9\| \-_\?\*\/:\.)/;
+            if (nameRegex.test(data.usr) && messageRegex.test(data.message)) {
+              Events.next({type: "say", data: {server: data.server, usr: data.usr, message: data.message}})
+            }
+        });
     });
 
     Events.filter(x => x.type == "chat-message").subscribe(e => io.emit(e.type, e.data));
