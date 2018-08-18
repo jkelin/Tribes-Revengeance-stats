@@ -10,6 +10,7 @@ import tags from '../data/clan-tags.json';
 import { removeDiacritics } from "./removeAccents";
 import { Request } from "../node_modules/@types/express-serve-static-core";
 import { INews } from "./types";
+import { CronJob } from "cron";
 
 export function tryConvertIpv6ToIpv4(ip: string){
     var regex = /^::ffff:([0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3})$/;
@@ -23,7 +24,7 @@ export function tryConvertIpv6ToIpv4(ip: string){
 }
 
 export function getNews() {
-    winston.info("Resolving news");
+    winston.info("Fetching news");
 
     return new Promise<INews[]>(function (resolve, reject) {
         var client = github.client();
@@ -58,7 +59,13 @@ export function getNews() {
     })
 }
 
-export const tribes_news = getNews().catch(() => []);
+export let tribes_news: Promise<INews[]>;
+new CronJob({
+    cronTime: '0 0 * * * *',
+    onTick: () => tribes_news = getNews(),
+    start: true,
+    runOnInit: true
+});
 
 export function getClientIp(req: Request) {
     var ipAddress;

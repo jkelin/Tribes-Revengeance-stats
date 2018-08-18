@@ -191,12 +191,11 @@ process.on('uncaughtException', (ex) => {
     Raven.captureException(ex, () => process.exit(1));
 });
 
-new CronJob(
-    '0 0 0 * * *',
-    function() {
-        console.warn('Running CRON')
+new CronJob({
+    cronTime: '0 0 0 * * *',
+    onTick: () => {
+        winston.info('Recalculating identities');
         exec('yarn script:recalculate_identities')
     },
-    () => {},
-    true
-);
+    start: true
+});
