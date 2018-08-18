@@ -2,19 +2,19 @@ import express from "express";
 import winston from "winston";
 
 import { escape } from "influx";
-import {Player, Server, influx} from "./db";
+import {Player, Server, influx, IPlayerModel, IServerModel} from "./db";
 import {getChatFor} from "./chat";
 
 let router = express.Router();
 
-function getServerChartData(id, days) {
+function getServerChartData(id: string, days: number) {
     return influx.query<{ players: number, time: number }>(`
         SELECT median("players") as "players" FROM "population"
         WHERE server = ${escape.stringLit(id)} AND time > now() - ${days}d
         GROUP BY time(10m)
     `)
     .then(function (data) {
-        let map = {};
+        let map: Record<number, number> = {};
 
         data
         .filter(x => x.players !== null)
@@ -25,7 +25,7 @@ function getServerChartData(id, days) {
 }
 
 router.get('/server/:id', async function (req, res, next) {
-    var id = req.params["id"];
+    var id: string = req.params["id"];
     var numDays = req.query.days !== undefined ? parseInt(req.query.days) : 2;
     if (numDays > 30) numDays = 30;
     if (numDays < 2) numDays = 2;
@@ -34,7 +34,7 @@ router.get('/server/:id', async function (req, res, next) {
 
     try {
         const data = await Promise.all([
-            Server.findOne().where({ _id: id }).exec(),
+            Server.where('_id', id).findOne().exec() as Promise<IServerModel>,
             getServerChartData(id, numDays)
         ]);
 

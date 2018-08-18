@@ -3,8 +3,9 @@ import winston from "winston";
 import _ from 'lodash';
 import sha1 from 'sha1';
 
-import { Player, Server, Match } from "./db";
+import { Player, Server, Match, IMatchModel } from "./db";
 import { getChatFor } from "./chat";
+import { ITribesServerQueryResponse } from "./types";
 
 let router = express.Router();
 
@@ -60,25 +61,25 @@ function prepareStats(data) {
         key: k
     }));
 
-    return _.sortBy(_.values(ret).filter(x => x.sum > 0), x => (require('./statorder.json'))[x.key] || "99" + x.key);
+    return _.sortBy(_.values(ret).filter(x => x.sum > 0), x => (require('../data/statorder.json'))[x.key] || "99" + x.key);
 }
 
-function generateResultInfo(data) {
-    if (parseInt(data.teamonescore) > parseInt(data.teamtwoscore)) {
+function generateResultInfo(data: ITribesServerQueryResponse) {
+    if (data.teamonescore > data.teamtwoscore) {
         return {text: `${data.teamone} won the match!`, team: data.teamone};
-    } else if (parseInt(data.teamonescore) < parseInt(data.teamtwoscore)) {
+    } else if (data.teamonescore < data.teamtwoscore) {
         return {text: `${data.teamtwo} won the match!`, team: data.teamtwo};
     } else {
         return {text: 'Match ended in a tie!'}
     }
 }
 
-function getMatchData(id) {
-
-    return Match.where({ _id: id })
+function getMatchData(id: string) {
+    return Match
+    .where('_id').equals(id)
     .findOne()
     .exec()
-    .then(data => ({
+    .then((data: IMatchModel) => ({
         id: data._id,
         when: data.when,
         result: generateResultInfo(data.basicReport) ,
@@ -97,7 +98,7 @@ router.get('/matches/:id', function (req, res, next) {
     return getMatchData(req.params.id).then(data => res.render('match', data))
 });
 
-async function getMatchesData(page) {
+async function getMatchesData(page: number) {
     const perPage = 50;
 
     const [data, count] = await Promise.all([
@@ -144,9 +145,9 @@ async function getMatchesData(page) {
     };
 }
 
-function parsePage(page) {
+function parsePage(page: string) {
     try {
-        return parseInt(page || 1);
+        return parseInt((page || 1) + '');
     } catch (ex) {
         return 1;
     }

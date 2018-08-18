@@ -105,7 +105,7 @@ async function main() {
         .filter(x => x.fullReport && Array.isArray(x.fullReport.players) && x.fullReport.players.length > 0)
         .map(x => x.fullReport);
 
-    await exportToFile(data, 'anticheat.good.json');
+    await exportToFile(data, 'data/anticheat.good.json');
 }
 
 main()

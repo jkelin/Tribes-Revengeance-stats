@@ -5,7 +5,6 @@ import cheerio from 'cheerio';
 import url from 'url';
 import crypto from 'crypto';
 import winston from "winston";
-import encoding from "encoding";
 import Rx  from"rxjs/Rx";
 import qs from 'qs';
 
@@ -19,15 +18,16 @@ const axiosInstance = axios.create({
 
 require("rxjs/operator/debounceTime");
 
-import { Server } from './db';
-import QcMappings from './qcmappings.json';
-import Events from  "./events";
+import { Server, IServerModel } from './db';
+import QcMappings from '../data/qcmappings.json';
+import Events, { EventSay } from  "./events";
+import { IChatMessage } from './types';
 
 
-let chatCache = {};
+let chatCache: Record<string, IChatMessage[]> = {};
 let activeChatRequests = {};
 
-function arraysMatch(a, b){
+function arraysMatch<T>(a: T[], b: T[]){
     if(a.length !== b.length) return false;
 
     for(let i in a) {
@@ -37,7 +37,7 @@ function arraysMatch(a, b){
     return true;
 }
 
-function findMaxMachingArrLen(a, b){
+function findMaxMachingArrLen<T>(a: T[], b: T[]){
     let maxLen = 0;
 
     for(let i = 0; i < b.length; i++) {
@@ -53,21 +53,21 @@ function findMaxMachingArrLen(a, b){
     return maxLen;
 }
 
-function newItems(oldArr, newArr, hasherOld, hasherNew) {
+function newItems<T>(oldArr: T[], newArr: T[], hasherOld: (x: T) => string, hasherNew: (x: T) => string) {
     let a = oldArr.map(hasherOld);
     let b = newArr.map(hasherNew);
     let len = findMaxMachingArrLen(a, b);
     return newArr.slice(len);
 }
 
-function hashStringIntoNumber(str){
+function hashStringIntoNumber(str: string){
     let buf = crypto.createHash('md5').update(str).digest();
 
     //return buf.readInt32LE(0);
     return buf.toString('hex').slice(0, 6);
 }
 
-function makeMessageFromRaw(message){
+function makeMessageFromRaw(message: string){
     let matches = /\((QuickChat|TeamQuickChat)\) ([A-Za-z_0-9]+)\?/g.exec(message);
 
     if(matches && matches.length > 2) {
@@ -81,7 +81,7 @@ function makeMessageFromRaw(message){
     }
 }
 
-function getServerChat(serverId, server, username, password) {
+function getServerChat(serverId: string, server: string, username: string, password: string) {
     let u = url.parse(server, true);
     u.auth = username + ":" + password;
     u.pathname = "/ServerAdmin/current_console_log";
@@ -96,10 +96,10 @@ function getServerChat(serverId, server, username, password) {
 
     return axiosInstance.get((u as any).format())
     .then(resp => cheerio.load(resp.data))
-    .then($ => {
+    .then(($: CheerioAPI) => {
         let contents = $("table tr:nth-child(2) td:nth-child(2)").contents();
 
-        let messages = [];
+        let messages: {user: string, message: string}[] = [];
 
         for(let i = 0; i < contents.length; i++){
             let x = contents[i];
@@ -122,12 +122,12 @@ function getServerChat(serverId, server, username, password) {
         let cache = chatCache[serverId];
         if(!cache) cache = chatCache[serverId] = [];
 
-        const hash = x => hashStringIntoNumber(x.user + x.message);
+        const hash = (x: {user: string, message: string}) => hashStringIntoNumber(x.user + x.message);
 
         let newMessages = newItems(cache, m, hash, hash);
 
         for(let i in newMessages){
-            let msg = {
+            let msg: IChatMessage = {
                 when: new Date(),
                 id: hashStringIntoNumber("" + Date.now() + i),
                 user: newMessages[i].user,
@@ -145,7 +145,10 @@ function getServerChat(serverId, server, username, password) {
 }
 
 setInterval(() => {
-    Server.where({ chat: {$exists: true}, 'chat.enabled': true }).find(function (err, servers) {
+    Server
+    .where('chat', { $exists: true })
+    .where('chat.enabled').equals(true)
+    .find(function (err, servers: IServerModel[]) {
         if (err) throw err;
 
         servers.forEach(server => {
@@ -171,19 +174,25 @@ setInterval(() => {
     });
 }, 1000);
 
-export function getChatFor(server) {
+export function getChatFor(server: string) {
     return (chatCache[server] || []).filter(x => x.when.getTime() > Date.now() - 3600 * 1000);
 }
 
-function serverFromId(id){
-    return Rx.Observable.fromPromise(Server.findById(id).exec());
+function serverFromId(id: string){
+    return Rx.Observable.fromPromise<IServerModel>(Server.findById(id).exec());
 }
 
 let sayMessages$ = Events
     .filter(x => x.type == "say")
-    .flatMap(m => 
+    .flatMap((m: EventSay) => 
         serverFromId(m.data.server)
-        .map((s: { data: any, chat: any}) => ({user: m.data.usr, message: m.data.message, server: s.chat.server, username: s.chat.username, password: s.chat.password}))
+        .map(s => ({
+            user: m.data.usr,
+            message: m.data.message,
+            server: s.chat.server,
+            username: s.chat.username,
+            password: s.chat.password
+        }))
     )
     .publish()
     .refCount();

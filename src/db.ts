@@ -1,10 +1,40 @@
 import { InfluxDB, FieldType } from "influx";
-import mongoose from "mongoose";
+import mongoose, { Document } from "mongoose";
 import winston from "winston";
+import { ITribesServerQueryResponse, IMatchResultFull } from "./types";
 
 mongoose.Promise = Promise;
 
-export const Server = mongoose.model('Server', {
+export interface IServerChat {
+    server: string,
+    username: string,
+    password: string,
+    ok: boolean,
+    enabled: boolean
+}
+
+export interface IServer {
+    _id: string;
+    name: string;
+    adminname: string;
+    adminemail: string;
+    country: string;
+    ip: string;
+    port: number;
+    minutesonline: number;
+    maxplayers: number;
+    lastseen: Date;
+    lastTiming: Date;
+    lastfullreport: Date;
+    chat: IServerChat;
+    lastdata: ITribesServerQueryResponse;
+}
+
+export interface IServerModel extends IServer, Document {
+    _id: string;
+}
+
+export const Server = mongoose.model<IServerModel>('Server', {
     _id: String,
     name: String,
     adminname: String,
@@ -27,7 +57,27 @@ export const Server = mongoose.model('Server', {
     lastdata: mongoose.Schema.Types.Mixed
 } as any);
 
-export const Player = mongoose.model('Player', {
+export interface IPlayer {
+    _id: string,
+    ip: string,
+    lastserver: string,
+    score: number,
+    kills: number,
+    deaths: number,
+    offense: number,
+    defense: number,
+    style: number,
+    lastTiming: Date,
+    lastseen: Date,
+    minutesonline: number,
+    stats?: Record<string, number>
+}
+
+export interface IPlayerModel extends IPlayer, Document {
+    _id: string;
+}
+
+export const Player = mongoose.model<IPlayerModel>('Player', {
     _id: String,
     ip: String,
     lastserver: String,
@@ -43,13 +93,30 @@ export const Player = mongoose.model('Player', {
     stats: mongoose.Schema.Types.Mixed
 } as any);
 
-export const Identity = mongoose.model('Identity', {
+export interface IIdentity {
+    ips: Record<string, number>;
+    names: Record<string, number>;
+    namesAndIps: string[];
+}
+
+export interface IIdentityModel extends IIdentity, Document {}
+
+export const Identity = mongoose.model<IIdentityModel>('Identity', {
     ips: mongoose.Schema.Types.Mixed,
     names: mongoose.Schema.Types.Mixed,
     namesAndIps: [String],
 } as any);
 
-export const Match = mongoose.model('Match', {
+export interface IMatch {
+    server: string;
+    when: Date;
+    basicReport: ITribesServerQueryResponse;
+    fullReport: IMatchResultFull;
+}
+
+export interface IMatchModel extends IMatch, Document {}
+
+export const Match = mongoose.model<IMatchModel>('Match', {
     server: String,
     when: Date,
     basicReport: mongoose.Schema.Types.Mixed,

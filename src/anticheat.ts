@@ -44,7 +44,7 @@ export function isValidPreprocess(player: IUploadedPlayer, data: IUploadedData) 
  */
 export function isValid(player: IUploadedPlayer, data: IUploadedData) {
     const preprocessed = isValidPreprocess(player, data);
-    const stats: Dictionary<{max: number, avg: number, median: number, p90: number, p95: number, p99: number}> = require('./anticheat-stats.json');
+    const stats: Dictionary<{max: number, avg: number, median: number, p90: number, p95: number, p99: number}> = require('./data/anticheat-stats.json');
 
     const absoluteTolerance =  data.players.length * 5;
 

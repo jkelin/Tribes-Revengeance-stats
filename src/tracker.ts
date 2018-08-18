@@ -3,27 +3,31 @@ import freegeoip from "node-freegeoip";
 import express from "express";
 import atob from "atob";
 
-import { Player, Server, Match, influx } from "./db";
+import { Player, Server, Match, influx, IPlayerModel, IServerModel, IServer, IPlayer } from "./db";
 import { emitter } from "./ticker";
 import { getClientIp, getFullMapName } from "./helpers";
 import { mean, min, max } from "lodash";
-import { IUploadedData, IUploadedPlayer } from "./types";
+import { IUploadedData, IUploadedPlayer, IFullReport, ITribesServerQueryResponse } from "./types";
 import { isValid } from "./anticheat";
 
 export let router = express.Router();
 
-export function handleTribesServerData(data) {
+export function handleTribesServerData(data: ITribesServerQueryResponse) {
     //console.log(data);
+    if(!data.ip && !data.hostport) return winston.error('[handleTribesServerData] Server does not have an id', data);
     var id = data.ip + ':' + data.hostport;
-    if(!id) return winston.error('[handleTribesServerData] Server does not have an id', data);
+
     winston.debug("Handling data from", id);
-    Server.where({ _id: id }).findOne(function (err, server) {
+    Server
+    .where('_id')
+    .equals(id)
+    .findOne(function (err, server: IServerModel) {
         if (err) throw err;
         else if (server === null) {
-            server = new Server({
+            server = new Server(<IServer>{
                 _id: id,
                 minutesonline: 0,
-                lastTiming: new Date()
+                lastTiming: new Date(),
             });
         }
 
@@ -40,7 +44,16 @@ export function handleTribesServerData(data) {
             server.lastTiming = new Date();
             winston.debug("Timing server", id);
         } else {
-            winston.debug("Could not time server because lastTiming is", server.lastTiming, "and now is", new Date(), "while needed is", new Date(Date.now() - 60 * 1000), "diff:", server.lastTiming - (new Date(Date.now() - 60 * 1000) as any));
+            winston.debug(
+                "Could not time server because lastTiming is",
+                server.lastTiming,
+                "and now is",
+                new Date(),
+                "while needed is",
+                new Date(Date.now() - 60 * 1000),
+                "diff:",
+                server.lastTiming.getTime() - new Date(Date.now() - 60 * 1000).getTime()
+            );
         }
 
         server.save(function (err) { if (err) throw err; });
@@ -125,11 +138,13 @@ export function pushPlayersTrackings(serverIdIn, data) {
 
 export function timePlayer(player) {
     if(!player.player) return winston.error('[timePlayer] Player does not have a name', player);
-    Player.where({ _id: player.player })
-        .findOne(function (err, pl) {
+    Player
+        .where('_id')
+        .equals(player.player)
+        .findOne(function (err, pl: IPlayerModel) {
             if (err) throw err;
             if (pl === null) {
-                pl = new Player({
+                pl = new Player(<IPlayer>{
                     _id: player.player,
                     stats: {},
                     score: 0,
@@ -154,15 +169,18 @@ export function timePlayer(player) {
         });
 }
 
-export function handlePlayer(input: IUploadedPlayer, ip: string, port: string) {
+export function handlePlayer(input: IUploadedPlayer, ip: string, port: number) {
     winston.debug("handling player", input);
     if(!input.name) return winston.error('Player does not have a name');
 
-    Player.where({ _id: input.name }).findOne(function (err, player) {
+    Player
+    .where('_id')
+    .equals(input.name)
+    .findOne(function (err, player: IPlayerModel) {
         if (err) throw err;
         var changeCountry = false;
         if (player === null) {
-            player = new Player({
+            player = new Player(<IPlayer>{
                 _id: input.name,
                 stats: {},
                 score: 0,
@@ -219,21 +237,23 @@ export function handlePlayer(input: IUploadedPlayer, ip: string, port: string) {
     });
 };
 
-export function addServerLastFullReport(ip, port) {
+export function addServerLastFullReport(ip: string, port: number) {
     var id = ip + ":" + port;
-    Server.where({ _id: id })
-        .findOne(function (err, server) {
+    Server
+        .where('_id')
+        .equals(id)
+        .findOne(function (err, server: IServerModel) {
             if (err) throw err;
             if (server == null) {
                 winston.warn("server null, _id:", id);
                 return;
             }
-            server.lastfullreport = new Date().getTime();
+            server.lastfullreport = new Date();
             server.save(function (err) { if (err) throw err; });
         });
 }
 
-export function removeDotStatNamesFromFullReport(fullReport){
+export function removeDotStatNamesFromFullReport(fullReport: IFullReport){
     return {
         ...fullReport,
         players: fullReport.players.map(p => {
@@ -251,12 +271,14 @@ export function removeDotStatNamesFromFullReport(fullReport){
     };
 }
 
-export function saveMatchResult(ip, port, fullReport) {
+export function saveMatchResult(ip: string, port: number, fullReport: IFullReport) {
     var id = ip + ":" + port;
 
     // Server.where({ _id: '45.32.157.166:8777' })
-    Server.where({ _id: id })
-    .findOne(function (err, server) {
+    Server
+    .where('_id')
+    .equals(id)
+    .findOne(function (err, server: IServerModel) {
         if (err) {
             console.error('Could not find saveMatchResult')
         }

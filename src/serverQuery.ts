@@ -2,10 +2,11 @@ import http from "http";
 import dgram from "dgram";
 import net from "net";
 import winston from "winston";
+import { ITribesServerQueryResponse } from "./types";
 
 const timeoutMs = 1000;
 
-export function getTribesServersFromMasterServer(callback) {
+export function getTribesServersFromMasterServer(callback: (data: string[][]) => any) {
     let options = {
         host: 'qtracker.com',
         path: '/server_list_details.php?game=tribesvengeance'
@@ -34,7 +35,7 @@ export function getTribesServersFromMasterServer(callback) {
     }).end();
 }
 
-export function parseTribesServerQueryReponse(ip, port, message, ping) {
+export function parseTribesServerQueryReponse(ip: string, port: number, message: string, ping: number): ITribesServerQueryResponse {
     var items = message.split('\\');
     items.splice(0, 1);
     var dict = {};
@@ -47,7 +48,9 @@ export function parseTribesServerQueryReponse(ip, port, message, ping) {
         name = !name;
     });
     
-    var data: any = {
+    var data: Partial<ITribesServerQueryResponse> = {
+        ip,
+        ping,
         players: []
     };
 
@@ -66,10 +69,10 @@ export function parseTribesServerQueryReponse(ip, port, message, ping) {
     data.ip = ip;
     data.ping = ping;
 
-    return data;
+    return data as ITribesServerQueryResponse;
 }
 
-export function queryTribesServer(ip, port, callback) {
+export function queryTribesServer(ip: string, port: number, callback: (data: ITribesServerQueryResponse) => any) {
     var message = new Buffer('\\basic\\');
     var client = dgram.createSocket('udp4');
     var timer = setTimeout(function () {

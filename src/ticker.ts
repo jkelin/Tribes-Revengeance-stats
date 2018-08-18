@@ -1,4 +1,4 @@
-import express from "express";
+import express, { Request } from "express";
 import Events from "events";
 
 export let router = express.Router();
@@ -8,7 +8,7 @@ router.get('/ticker', function (req, res) {
     res.render('ticker');
 });
 
-export function handleWs(ws, req) {
+export function handleWs(ws, req: Request) {
     function listen(type, data) {
         var wsData = {
             type: type,

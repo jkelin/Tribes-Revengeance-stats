@@ -11,7 +11,7 @@ import bodyParser from 'body-parser';
 import SocketIO from "socket.io";
 
 import {getTribesServersFromMasterServer, queryTribesServer} from "./src/serverQuery";
-import {Player, Server} from "./src/db";
+import {Player, Server, IPlayerModel} from "./src/db";
 import {tryConvertIpv6ToIpv4, tribes_news, handlebars_helpers} from "./src/helpers";
 import {handleTribesServerData, addServerLastFullReport, handlePlayer, router as trackerRouter} from "./src/tracker";
 import { CronJob } from 'cron';
@@ -129,7 +129,12 @@ if (STATS_WEB) {
 
     app.get('/search', function (req, res) {
         var name = req.query.name !== undefined ? req.query.name : "";
-        Player.where({ _id: new RegExp(name, "i") }).sort({ lastseen: -1 }).find().exec(function (err, data) {
+        Player
+        .where('_id')
+        .regex(new RegExp(name, "i"))
+        .sort({ lastseen: -1 })
+        .find()
+        .exec(function (err, data: IPlayerModel[]) {
             if (err) throw err;
             res.render('players', {
                 data: data,

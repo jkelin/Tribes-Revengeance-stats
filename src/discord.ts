@@ -1,5 +1,5 @@
 import Discord from 'discord.js';
-import Events from "./events";
+import Events, { EventChatMessage } from "./events";
 
 
 const webhookId = process.env.DISCORD_WEBHOOK_ID;
@@ -15,7 +15,7 @@ if (webhookId && webhookToken) {
 
     // Send a message using the webhook
     setTimeout(() => {
-        Events.filter(x => x.type == "chat-message").subscribe(e => {
+        Events.filter(x => x.type == "chat-message").subscribe((e: EventChatMessage) => {
             console.log(e);
             if (e.data && e.data.user && e.data.messageFriendly) {
                 hook.send(e.data.messageFriendly, { username: e.data.user });
@@ -30,7 +30,14 @@ if (token) {
 
     client.on('message', message => {
         if (message.channel.id === channelId && !message.author.bot) {
-            Events.next({type: "say", data: {server: serverId, usr: message.author.username, message: message.content}})
+            Events.next({
+                type: "say",
+                data: {
+                    server: serverId,
+                    usr: message.author.username,
+                    message: message.content
+                }
+            })
         }
     });
 }
