@@ -9,6 +9,10 @@ class SentryTransport {
             level: level,
             data: data
         });
+
+        if(level === 'error' || level === 'fatal' || level === 'exception') {
+            Raven.captureException(new Error(message));
+        }
     }
 }
 
