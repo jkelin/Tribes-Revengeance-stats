@@ -1,18 +1,18 @@
 import fs from 'fs-extra';
 import { isValidPreprocess } from '../src/anticheat';
 import { flatMap, max, mean, keys, sortBy, range } from 'lodash';
+import { Match } from '../src/db';
+import { IUploadedPlayer } from '../src/types';
 
 require('dotenv').config()
 
-const db = require('../src/db');
-
-function median(values) {
+function median(values: number[]) {
     values = values.slice(0).sort( function(a, b) {return a - b; } );
 
     return middle(values);
 }
 
-function middle(values) {
+function middle(values: number[]) {
     var len = values.length;
     var half = Math.floor(len / 2);
 
@@ -22,7 +22,7 @@ function middle(values) {
         return values[half];
 }
 
-function percentile(arr, p) {
+function percentile(arr: number[], p: number) {
     if (arr.length === 0) return 0;
     if (typeof p !== 'number') throw new TypeError('p must be a number');
     if (p <= 0) return arr[0];
@@ -38,11 +38,11 @@ function percentile(arr, p) {
     return arr[lower] * (1 - weight) + arr[upper] * weight;
 }
 
-const percentileOfScore = (array, value) => {
+const percentileOfScore = (array: number[], value: number) => {
     const originalLength = array.length;
     const a = [...array];
-    let alen;
-    const equalsValue = v => v === value;
+    let alen: number[];
+    const equalsValue = (v: any) => v === value;
 
     if (!array.some(equalsValue)) {
         a.push(value);
@@ -57,8 +57,8 @@ const percentileOfScore = (array, value) => {
     return Math.round( percent * 100) / 100;
 };
 
-function Quartile(data, q) {
-    data=sortBy(data, x => x);
+function Quartile(data: number[], q: number) {
+    data = sortBy(data, x => x);
     var pos = ((data.length) - 1) * q;
     var base = Math.floor(pos);
     var rest = pos - base;
@@ -71,7 +71,7 @@ function Quartile(data, q) {
 
 async function exportToFile(data: any[], filename: string) {
     const preprocessed = flatMap(
-        data.map(x => x.players.map(p => isValidPreprocess(p, x)))
+        data.map(x => x.players.map((p: IUploadedPlayer) => isValidPreprocess(p, x)))
     );
 
     // await fs.writeFile(filename, JSON.stringify(preprocessed, null, 2));
@@ -100,7 +100,7 @@ async function exportToFile(data: any[], filename: string) {
 
 async function main() {
     console.info('Downloading data');
-    const data: any[] = (await db.Match
+    const data = (await Match
         .find({}, { 'fullReport': true }))
         .filter(x => x.fullReport && Array.isArray(x.fullReport.players) && x.fullReport.players.length > 0)
         .map(x => x.fullReport);

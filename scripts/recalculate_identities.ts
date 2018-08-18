@@ -112,7 +112,7 @@ async function main() {
 
     const matchPlayers = flatMap(data
         .filter(x => x.fullReport && x.fullReport.players && x.fullReport.players.length)
-        .map(x => x.fullReport.players)
+        .map(x => x.fullReport!.players)
     )
     .map(x => ({ 
         ip: x.ip.split(':')[0],

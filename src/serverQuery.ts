@@ -60,8 +60,8 @@ export function parseTribesServerQueryReponse(ip: string, port: number, message:
             var itemName = splat[0];
             var index = splat[1];
 
-            if (data.players[index] === undefined) data.players[index] = {};
-            data.players[index][itemName] = dict[n];
+            if (data.players![index] === undefined) data.players![index] = {};
+            data.players![index][itemName] = dict[n];
         }
         else data[n] = dict[n];
     }

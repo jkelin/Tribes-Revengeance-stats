@@ -114,7 +114,7 @@ const data = {
             "flagReturnStat" : 1
         }
     ],
-    "port" : "7777"
+    "port" : 7777
 }
 
 async function main() {

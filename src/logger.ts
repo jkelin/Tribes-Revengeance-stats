@@ -1,10 +1,9 @@
 import Raven from 'raven';
 import winston from "winston";
 import path from 'path';
-import Transport from 'winston-transport';
 
 class SentryTransport {
-    log(level, message, data) {
+    log(level: string, message: string, data: any) {
         Raven.captureBreadcrumb({
             message: message,
             level: level,
@@ -15,7 +14,6 @@ class SentryTransport {
 
 if (process.env.SENTRY_DSN) {
     const root = (global as any).__rootdir__;
-    winston.info('Registering sentry raven');
 
     const raven = Raven.config(
         process.env.SENTRY_DSN,
@@ -25,7 +23,7 @@ if (process.env.SENTRY_DSN) {
                 var stacktrace = data.exception && data.exception[0].stacktrace;
             
                 if (stacktrace && stacktrace.frames) {
-                    stacktrace.frames.forEach(function(frame) {
+                    stacktrace.frames.forEach(function(frame: { filename: string }) {
                         if (frame.filename.startsWith('/')) {
                             frame.filename = "app:///" + path.relative(root, frame.filename);
                         }
@@ -43,6 +41,14 @@ if (process.env.SENTRY_DSN) {
         transports: [
             new winston.transports.Console({ level: 'silly' }),
             new SentryTransport() as any
+        ]
+    });
+
+    winston.info('Registering sentry raven');
+} else {
+    winston.configure({
+        transports: [
+            new winston.transports.Console({ level: 'silly' }),
         ]
     });
 }

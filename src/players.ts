@@ -7,7 +7,7 @@ import { cleanPlayerName } from "./helpers";
 
 let router = express.Router();
 
-async function findRelatedNicknames(name) {
+async function findRelatedNicknames(name: string) {
     name = cleanPlayerName(name);
     const data = await Identity.find({ 'namesAndIps': { $in: [ name ] } }, { names: true }).findOne();
 

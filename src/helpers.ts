@@ -31,9 +31,9 @@ export function getNews() {
         
         repo.commits(function (error, commits) {
             if (error) {
-                winston.error(error);
+                winston.error(error.message);
 
-                return reject(new Error(error));
+                return reject(error);
             } else {
                 var data: INews[] = [];
 
@@ -73,7 +73,7 @@ export function getClientIp(req: Request) {
         ipAddress = req.connection.remoteAddress;
     }
 
-    return tryConvertIpv6ToIpv4(ipAddress);
+    return ipAddress && tryConvertIpv6ToIpv4(ipAddress);
 };
 
 export function aIncludesB(a: string[], b: string[]) {
@@ -96,7 +96,7 @@ export function getFullMapName(map: string){
     else return possibleMaps.map(x => x.map).sort()[0];
 }
 
-export const handlebars_helpers = {
+export const handlebars_helpers: Record<string, (...params: any[]) => string> = {
     json: function (context) { return JSON.stringify(context); },
     urlencode: function (context) { return encodeURIComponent(context); },
     showMinutes: function (context) {
@@ -173,7 +173,7 @@ export function matchClan(name: string) {
         if (regex.test(name)) {
             return {
                 clan: i,
-                name: regex.exec(name)[1]
+                name: regex.exec(name)![1]
             };
         }
     }

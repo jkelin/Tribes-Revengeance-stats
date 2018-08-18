@@ -1,8 +1,13 @@
-export interface IMatchResultFull {
-
-}
-
-export interface IFullReportPlayer {
+export interface IFullReportPlayer extends Record<string, number | string> {
+    ip: string;
+    name: string;
+    team: string;
+    score: number;
+    kills: number;
+    deaths: number;
+    offense: number;
+    defense: number;
+    style: number;
 }
 
 export interface IFullReport {
@@ -25,7 +30,7 @@ export interface ITribesServerQueryResponse {
     maxplayers: number;
     numplayers: number;
     hostport: number;
-    players: Record<string, string | number>[]; // TODO
+    players: IUploadedPlayer[];
 }
 
 export interface IChatSay {
@@ -49,7 +54,7 @@ export interface INews {
     date: Date;
 }
 
-export interface IUploadedPlayer {
+export interface IUploadedPlayer extends Record<string, undefined | string | number | boolean> {
     ip?: string;
     name: string;
     score: number;

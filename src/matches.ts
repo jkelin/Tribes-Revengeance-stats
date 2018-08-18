@@ -5,11 +5,11 @@ import sha1 from 'sha1';
 
 import { Player, Server, Match, IMatchModel } from "./db";
 import { getChatFor } from "./chat";
-import { ITribesServerQueryResponse } from "./types";
+import { ITribesServerQueryResponse, IFullReportPlayer } from "./types";
 
 let router = express.Router();
 
-function getPlayersForTeam(data, team) {
+function getPlayersForTeam(data: IMatchModel, team: string) {
     return data.fullReport.players
     .filter(p => p.team === team)
     .map(x => {
@@ -27,7 +27,7 @@ function getPlayersForTeam(data, team) {
     .sort((a, b) => b.score - a.score)
 }
 
-function handleItem(key, player) {
+function handleItem(key: string, player: IFullReportPlayer) {
     return {
         value: player[key],
         name: player.name,
@@ -35,7 +35,7 @@ function handleItem(key, player) {
     }
 }
 
-function prepareStats(data) {
+function prepareStats(data: IMatchModel) {
     const keys = Object.keys(data.fullReport.players[0]).filter(x => [
         'style',
         'defense',
@@ -52,14 +52,20 @@ function prepareStats(data) {
         'ip'
     ].indexOf(x) === -1);
 
-    const ret: Record<string, { min: { value: number, name: string, team: string }, max: { value: number, name: string, team: string }, sum: number, avg: number, key: string }> = {};
-    keys.forEach(k => ret[k] = ({
-        max: handleItem(k, _.maxBy(data.fullReport.players, k)),
-        min: handleItem(k, _.minBy(data.fullReport.players, k)),
-        sum: _.sumBy(data.fullReport.players, k),
-        avg: _.meanBy(data.fullReport.players, k),
-        key: k
-    }));
+    function getDataForKey(k: string) {
+        return {
+            max: handleItem(k, _.maxBy(data.fullReport.players, x => x[k])!),
+            min: handleItem(k, _.minBy(data.fullReport.players, x => x[k])!),
+            sum: _.sumBy(data.fullReport.players, k),
+            avg: _.meanBy(data.fullReport.players, k),
+            key: k
+        };
+    }
+
+    const ret: Record<string, ReturnType<typeof getDataForKey>> = keys.reduce(
+        (o, k) => o[k] = getDataForKey(k),
+        {}
+    );
 
     return _.sortBy(_.values(ret).filter(x => x.sum > 0), x => (require('../data/statorder.json'))[x.key] || "99" + x.key);
 }

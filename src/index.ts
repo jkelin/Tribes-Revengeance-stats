@@ -1,7 +1,7 @@
 require('dotenv').config()
-require('./src/logger');
+import './logger';
 
-import express from "express";
+import express, { Request, Response } from "express";
 import exphbs from "express-handlebars";
 import compression from "compression";
 import winston from "winston";
@@ -10,16 +10,16 @@ import http from 'http';
 import bodyParser from 'body-parser';
 import SocketIO from "socket.io";
 
-import {getTribesServersFromMasterServer, queryTribesServer} from "./src/serverQuery";
-import {Player, Server, IPlayerModel} from "./src/db";
-import {tryConvertIpv6ToIpv4, tribes_news, handlebars_helpers} from "./src/helpers";
-import {handleTribesServerData, addServerLastFullReport, handlePlayer, router as trackerRouter} from "./src/tracker";
+import {getTribesServersFromMasterServer, queryTribesServer} from "./serverQuery";
+import {Player, Server, IPlayerModel} from "./db";
+import {tryConvertIpv6ToIpv4, tribes_news, handlebars_helpers} from "./helpers";
+import {handleTribesServerData, addServerLastFullReport, handlePlayer, router as trackerRouter} from "./tracker";
 import { CronJob } from 'cron';
 import Raven from 'raven';
 
-require('./src/discord');
+import './discord';
 
-import Events from "./src/events";
+import Events from "./events";
 import { exec } from "shelljs";
 
 const STATS_WEB = (process.env.STATS_WEB || 'true') === 'true';
@@ -51,23 +51,23 @@ app.use(function (req, res, next) {
 });
 
 if (STATS_WEB) {
-    app.set('views', path.join(__dirname, "views"));
+    app.set('views', path.join(__dirname, "../views"));
     app.engine('handlebars', exphbs({defaultLayout: 'main', helpers: handlebars_helpers}));
     app.set('view engine', 'handlebars');
 
     //app.use(bodyParser.json());
     //app.use(bodyParser.urlencoded({extended: true})); 
 
-    app.use("/public", express.static(path.join(__dirname, "public"), { maxAge: "365d" }));
+    app.use("/public", express.static(path.join(__dirname, "../public"), { maxAge: "365d" }));
 
-    app.use("/static", express.static(path.join(__dirname, "static"), { maxAge: "365d" }));
+    app.use("/static", express.static(path.join(__dirname, "../static"), { maxAge: "365d" }));
 }
 
 if (STATS_WEB) {
-    const ticker = require("./src/ticker");
-    const servers = require("./src/servers");
-    const players = require("./src/players");
-    const matches = require("./src/matches");
+    const ticker = require("./ticker");
+    const servers = require("./servers");
+    const players = require("./players");
+    const matches = require("./matches");
 
     app.use("/", players.router);
     app.use("/", servers.router);
@@ -109,7 +109,7 @@ if (STATS_WEB) {
             Player.find().sort({ minutesonline: -1 }).limit(20).exec(),
             Server.find().where({ lastseen: { "$gte": compDate } }).limit(20).exec(),
             tribes_news
-        ];
+        ] as Promise<any>[];
 
         Promise.all(promises)
         .then(function (data) {
@@ -152,7 +152,7 @@ if (process.env.SENTRY_DSN) {
     app.use(Raven.errorHandler());
 }
 
-app.use(function (err, req, res, next) {
+app.use(function (err: Error, req: Request, res: Response, next: () => void) {
     winston.error("App error:", err);
     res.send(err);
 });
@@ -191,7 +191,12 @@ process.on('uncaughtException', (ex) => {
     Raven.captureException(ex, () => process.exit(1));
 });
 
-new CronJob('0 0 0 * * *', function() {
-    console.warn('Running CRON')
-    exec('yarn script:recalculate_identities')
-}, null, true);
+new CronJob(
+    '0 0 0 * * *',
+    function() {
+        console.warn('Running CRON')
+        exec('yarn script:recalculate_identities')
+    },
+    () => {},
+    true
+);

@@ -1,5 +1,7 @@
 import express, { Request } from "express";
 import Events from "events";
+import { IServerModel } from "./db";
+import { IUploadedPlayer } from "./types";
 
 export let router = express.Router();
 export let emitter = new Events();
@@ -8,8 +10,8 @@ router.get('/ticker', function (req, res) {
     res.render('ticker');
 });
 
-export function handleWs(ws, req: Request) {
-    function listen(type, data) {
+export function handleWs(ws: any, req: Request) {
+    function listen(type: string, data: { server: IServerModel, player: IUploadedPlayer }) {
         var wsData = {
             type: type,
             server: data.server._id,

@@ -1,7 +1,7 @@
 import { InfluxDB, FieldType } from "influx";
 import mongoose, { Document } from "mongoose";
 import winston from "winston";
-import { ITribesServerQueryResponse, IMatchResultFull } from "./types";
+import { ITribesServerQueryResponse, IFullReport } from "./types";
 
 mongoose.Promise = Promise;
 
@@ -16,8 +16,8 @@ export interface IServerChat {
 export interface IServer {
     _id: string;
     name: string;
-    adminname: string;
-    adminemail: string;
+    adminname?: string;
+    adminemail?: string;
     country: string;
     ip: string;
     port: number;
@@ -59,7 +59,7 @@ export const Server = mongoose.model<IServerModel>('Server', {
 
 export interface IPlayer {
     _id: string,
-    ip: string,
+    ip?: string,
     lastserver: string,
     score: number,
     kills: number,
@@ -111,7 +111,7 @@ export interface IMatch {
     server: string;
     when: Date;
     basicReport: ITribesServerQueryResponse;
-    fullReport: IMatchResultFull;
+    fullReport: IFullReport;
 }
 
 export interface IMatchModel extends IMatch, Document {}

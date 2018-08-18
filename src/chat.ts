@@ -5,8 +5,8 @@ import cheerio from 'cheerio';
 import url from 'url';
 import crypto from 'crypto';
 import winston from "winston";
-import Rx  from"rxjs/Rx";
 import qs from 'qs';
+import { Observable } from 'rxjs';
 
 const axiosInstance = axios.create({
     timeout: 1000,
@@ -71,7 +71,7 @@ function makeMessageFromRaw(message: string){
     let matches = /\((QuickChat|TeamQuickChat)\) ([A-Za-z_0-9]+)\?/g.exec(message);
 
     if(matches && matches.length > 2) {
-        if(QcMappings[matches[2]]){
+        if(matches[2] in QcMappings){
             return `(${matches[1]}) ${QcMappings[matches[2]]}`;
         }
 
@@ -96,7 +96,7 @@ function getServerChat(serverId: string, server: string, username: string, passw
 
     return axiosInstance.get((u as any).format())
     .then(resp => cheerio.load(resp.data))
-    .then(($: CheerioAPI) => {
+    .then($ => {
         let contents = $("table tr:nth-child(2) td:nth-child(2)").contents();
 
         let messages: {user: string, message: string}[] = [];
@@ -156,10 +156,10 @@ setInterval(() => {
 
             activeChatRequests[server._id] = getServerChat(server._id, server.chat.server, server.chat.username, server.chat.password)
             .then(x => {
+                winston.debug("Got server chat from", {id: server._id});
+
                 server.chat.ok = true;
                 server.save();
-
-                winston.debug("Got server chat from", {id: server._id});
                 delete activeChatRequests[server._id];
             })
             .catch(x => {
@@ -179,26 +179,27 @@ export function getChatFor(server: string) {
 }
 
 function serverFromId(id: string){
-    return Rx.Observable.fromPromise<IServerModel>(Server.findById(id).exec());
+    return Observable.fromPromise<IServerModel | null>(Server.findById(id).exec());
 }
 
 let sayMessages$ = Events
-    .filter(x => x.type == "say")
+    .filter(x => x.type === "say")
     .flatMap((m: EventSay) => 
         serverFromId(m.data.server)
+        .filter(x => !!x)
         .map(s => ({
             user: m.data.usr,
             message: m.data.message,
-            server: s.chat.server,
-            username: s.chat.username,
-            password: s.chat.password
+            server: s!.chat.server,
+            username: s!.chat.username,
+            password: s!.chat.password
         }))
     )
     .publish()
     .refCount();
 
 sayMessages$
-    .debounce(() => Rx.Observable.interval(500))
+    .debounce(() => Observable.interval(500))
     .flatMap(({user, message, server, username, password}) => {
         let u = url.parse(server, true);
         u.auth = username + ":" + password;
@@ -221,6 +222,6 @@ sayMessages$
             })
         )
 
-        return Rx.Observable.fromPromise(post.then(x => x.data));
+        return Observable.fromPromise(post.then(x => x.data));
     })
     .subscribe();
