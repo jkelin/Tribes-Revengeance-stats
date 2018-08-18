@@ -1,5 +1,5 @@
 import winston from "winston";
-import freegeoip from "node-freegeoip";
+import geoip from "geoip-lite";
 import express from "express";
 import atob from "atob";
 
@@ -90,13 +90,8 @@ export async function handleTribesServerData(data: ITribesServerQueryResponse) {
     data.players.forEach(timePlayer);
 
     if (!server.country) {
-        try {
-            const location = await promisify(freegeoip.getLocation)(server.ip);
-
-            server.country = location["country_code"].toLowerCase();
-        } catch (ex) {
-            winston.error("Error getting country", ex);
-        }
+        const location = geoip.lookup(server.ip);
+        server.country = location.country.toLowerCase();
     }
 
     await server.save()

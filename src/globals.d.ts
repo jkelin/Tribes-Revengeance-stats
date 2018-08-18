@@ -1,7 +1,3 @@
-declare module "node-freegeoip" {
-    function getLocation(ip: string, cb: (err: Error, location: { country_code: string }) => any): void;
-}
-
 declare module "octonode" {
     interface Commit {
         html_url: string;
