@@ -107,7 +107,7 @@ if (STATS_WEB) {
         var promises = [
             Player.find().sort({ kills: -1 }).limit(20).exec(),
             Player.find().sort({ minutesonline: -1 }).limit(20).exec(),
-            Server.find().where({ lastseen: { "$gte": compDate } }).limit(20).exec(),
+            Server.find().where('lastseen').gte(compDate.getTime()).limit(20).exec(),
             tribes_news
         ] as Promise<any>[];
 
@@ -126,21 +126,29 @@ if (STATS_WEB) {
             next(error);
         });
     })
-
-    app.get('/search', function (req, res) {
-        var name = req.query.name !== undefined ? req.query.name : "";
-        Player
-        .where('_id')
-        .regex(new RegExp(name, "i"))
+    
+    function searchPlayers(name: string) {
+        return Player
+        .where('_id').regex(new RegExp(name, "i"))
         .sort({ lastseen: -1 })
+        .select(['_id', 'score', 'kills', 'deaths', 'offense', 'defense', 'style', 'minutesonline', 'lastseen', 'stats.flagCaptureStat'])
         .find()
-        .exec(function (err, data: IPlayerModel[]) {
-            if (err) throw err;
-            res.render('players', {
-                data: data,
-                alerts: [{ text: data.length + " results" }]
-            });
+        .exec();
+    }
+
+    app.get('/search', async function (req, res) {
+        var name = req.query.name !== undefined ? decodeURIComponent(req.query.name) : "";
+        const data = await searchPlayers(name);
+        res.render('players', {
+            data: data,
+            alerts: [{ text: data.length + " results" }]
         });
+    })
+
+    app.get('/search.json', async function (req, res) {
+        var name = req.query.name !== undefined ? decodeURIComponent(req.query.name) : "";
+        const data = await searchPlayers(name);
+        res.json(data);
     })
 }
 

@@ -33,8 +33,8 @@ router.get('/server/:id', async function (req, res, next) {
     d.setDate(d.getDate() - numDays);
 
     try {
-        const data = await Promise.all([
-            Server.where('_id', id).findOne().exec() as Promise<IServerModel>,
+        const data = await Promise.all<IServerModel, Record<number, number>>([
+            Server.where('_id', id).findOne().exec(),
             getServerChartData(id, numDays)
         ]);
 

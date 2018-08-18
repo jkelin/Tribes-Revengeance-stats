@@ -24,9 +24,9 @@ export async function handleTribesServerData(data: ITribesServerQueryResponse) {
     winston.debug("Handling data from", id);
     
     let server: IServerModel = await Server
-    .where('_id')
-    .equals(id)
-    .findOne();
+    .where('_id').equals(id)
+    .findOne()
+    .exec();
     
     if (server === null) {
         server = new Server(<IServer>{
@@ -126,8 +126,7 @@ export function pushPlayersTrackings(serverIdIn: string, data: ITribesServerQuer
 export function timePlayer(player: IUploadedPlayer) {
     if(!player.player) return winston.error('[timePlayer] Player does not have a name', player);
     Player
-        .where('_id')
-        .equals(player.player)
+        .where('_id').equals(player.player)
         .findOne(function (err, pl: IPlayerModel) {
             if (err) throw err;
             if (pl === null) {
@@ -161,8 +160,7 @@ export function handlePlayer(input: IUploadedPlayer, ip: string, port: number) {
     if(!input.name) return winston.error('Player does not have a name');
 
     Player
-    .where('_id')
-    .equals(input.name)
+    .where('_id').equals(input.name)
     .findOne(function (err, player: IPlayerModel) {
         if (err) throw err;
         var changeCountry = false;
@@ -242,8 +240,7 @@ export function handlePlayer(input: IUploadedPlayer, ip: string, port: number) {
 export function addServerLastFullReport(ip: string, port: number) {
     var id = ip + ":" + port;
     Server
-        .where('_id')
-        .equals(id)
+        .where('_id').equals(id)
         .findOne(function (err, server: IServerModel) {
             if (err) throw err;
             if (server == null) {
@@ -278,8 +275,7 @@ export function saveMatchResult(ip: string, port: number, fullReport: IUploadedD
 
     // Server.where({ _id: '45.32.157.166:8777' })
     Server
-    .where('_id')
-    .equals(id)
+    .where('_id').equals(id)
     .findOne(function (err, server: IServerModel) {
         if (err) {
             console.error('Could not find saveMatchResult')
