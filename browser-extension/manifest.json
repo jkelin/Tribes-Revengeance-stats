@@ -4,7 +4,7 @@
     "short_name": "T:V Ticker",
     "author": "Jan Kelin",
     "homepage_url": "http://tribesrevengeance.net",
-    "version": "1.0",
+    "version": "1.1",
     "description": "Shows current player count in Tribes Vengeance",
     "icons": {
         "128": "favicon.png"
