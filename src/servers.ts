@@ -2,8 +2,8 @@ import express from "express";
 import winston from "winston";
 
 import { escape } from "influx";
-import {Player, Server, influx, IPlayerModel, IServerModel} from "./db";
-import {getChatFor} from "./chat";
+import { Player, Server, influx, IPlayerModel, IServerModel } from "./db";
+import { getChatFor } from "./chat";
 
 let router = express.Router();
 
@@ -13,15 +13,15 @@ function getServerChartData(id: string, days: number) {
         WHERE server = ${escape.stringLit(id)} AND time > now() - ${days}d
         GROUP BY time(10m)
     `)
-    .then(function (data) {
-        let map: Record<number, number> = {};
+        .then(function (data) {
+            let map: Record<number, number> = {};
 
-        data
-        .filter(x => x.players !== null)
-        .forEach(x => map[new Date(x.time).getTime()] = (x.players || 0));
+            data
+                .filter(x => x.players !== null)
+                .forEach(x => map[new Date(x.time).getTime()] = (x.players || 0));
 
-        return map;
-    });
+            return map;
+        });
 }
 
 router.get('/server/:id', async function (req, res, next) {
@@ -49,7 +49,7 @@ router.get('/server/:id', async function (req, res, next) {
             online: data != null && data[0].lastseen > compDate,
             numdays: numDays
         });
-    } catch(error) {
+    } catch (error) {
         next(error);
     }
 });
@@ -61,19 +61,19 @@ router.get('/server/:id/chat/:from', function (req, res, next) {
     let resp = [];
     let data = getChatFor(id);
 
-    if(!frm) return res.json(data);
+    if (!frm) return res.json(data);
 
     let seenFrom = false;
-    
-    for(let i in data){
-        if(data[i].id == frm) {
+
+    for (let i in data) {
+        if (data[i].id == frm) {
             seenFrom = true;
             continue;
         }
 
-        if(!seenFrom) continue;
+        if (!seenFrom) continue;
 
-        resp.push(Object.assign({}, data[i], {html: "TODO"}));
+        resp.push(Object.assign({}, data[i], { html: "TODO" }));
     }
 
     res.json(resp);
@@ -92,9 +92,14 @@ router.get('/servers', function (req, res) {
 router.get('/servers.json', function (req, res) {
     Server.find().sort({ lastseen: -1 }).exec(function (err, data) {
         if (err) throw err;
-        res.header("Access-Control-Allow-Origin", "*");
-        res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
         res.json(data);
+    });
+});
+
+router.get('/servers.players.json', function (req, res) {
+    Server.find().sort({ lastseen: -1 }).exec(function (err, data) {
+        if (err) throw err;
+        res.json(data.filter(x => (Date.now() - 60 * 1000) < x.lastseen.getTime()).map(x => ({ id: x._id, name: x.name, players: x.lastdata.players })));
     });
 });
 

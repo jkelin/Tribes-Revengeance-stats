@@ -1,3 +1,5 @@
+var serverPlayerMap = {};
+
 function countToFgColor(cnt) {
     if (cnt < 4) {
         return "white";
@@ -22,7 +24,13 @@ function countToBgColor(cnt) {
     return "red";
 }
 
-function updateIcon(numPlayers) {
+function updateIcon() {
+    var numPlayers = 0;
+
+    for (var i in serverPlayerMap) {
+        numPlayers += serverPlayerMap[i];
+    }
+
     browser.browserAction.setBadgeTextColor({
         color: countToFgColor(numPlayers)
     });
@@ -36,30 +44,43 @@ function updateIcon(numPlayers) {
     });
 }
 
-browser.browserAction.onClicked.addListener(() => {
-    browser.tabs.create({
-        active: true,
-        url: 'https://stats.tribesrevengeance.net'
-    })
-});
+function addListeners() {
+    browser.browserAction.onClicked.addListener(() => {
+        browser.tabs.create({
+            active: true,
+            url: 'https://stats.tribesrevengeance.net'
+        })
+    });
+}
 
+function initSocketIo() {
+    var socket = io("https://stats.tribesrevengeance.net/");
 
-var serverPlayerMap = {};
+    socket.on("connect", function () {
+        console.info("Connected")
+    });
 
-var socket = io("wss://stats.tribesrevengeance.net");
+    socket.on('player-count-change', function (data) {
+        console.debug('player-count-change', data);
+        serverPlayerMap[data.server] = data.players;
+        updateIcon();
+    });
+}
 
-socket.on("connect", function () {
-    console.info("Connected")
-});
+function manualUpdate() {
+    axios.get('http://localhost:5000/servers.players.json').then(response => {
+        console.debug('Manual update', response);
+        serverPlayerMap = {};
+        response.data.forEach(x => {
+            serverPlayerMap[x.id] = x.players.length
+        });
 
-socket.on('player-count-change', function (data) {
-    console.debug('player-count-change', data);
-    serverPlayerMap[data.server] = data.players;
-    var total = 0;
+        updateIcon();
+    });
+}
 
-    for (var i in serverPlayerMap) {
-        total += serverPlayerMap[i];
-    }
+addListeners();
+manualUpdate();
+initSocketIo();
 
-    updateIcon(total);
-});
+setInterval(manualUpdate, 60 * 1000);

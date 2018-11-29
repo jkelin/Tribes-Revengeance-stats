@@ -13,6 +13,7 @@
     },
     "background": {
         "scripts": [
+            "axios.min.js",
             "socket.io.js",
             "ticker.js"
         ]
