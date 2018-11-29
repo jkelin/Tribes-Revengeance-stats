@@ -118,7 +118,8 @@ export function pushPlayersTrackings(serverIdIn: string, data: ITribesServerQuer
 export function timePlayer(player: IUploadedPlayer) {
     if (!player.player) return winston.error('[timePlayer] Player does not have a name', player);
     Player
-        .where('_id').equals(player.player)
+        .where('_id')
+        .equals(player.player)
         .findOne(function (err, pl: IPlayerModel) {
             if (err) throw err;
             if (pl === null) {
@@ -232,7 +233,8 @@ export function handlePlayer(input: IUploadedPlayer, ip: string, port: number) {
 export function addServerLastFullReport(ip: string, port: number) {
     var id = ip + ":" + port;
     Server
-        .where('_id').equals(id)
+        .where('_id')
+        .equals(id)
         .findOne(function (err, server: IServerModel) {
             if (err) throw err;
             if (server == null) {

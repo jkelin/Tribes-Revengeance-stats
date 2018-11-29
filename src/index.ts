@@ -110,7 +110,7 @@ if (STATS_WEB) {
         var promises = [
             Player.find().sort({ kills: -1 }).limit(20).exec(),
             Player.find().sort({ minutesonline: -1 }).limit(20).exec(),
-            Server.find().where('lastseen').gte(compDate.getTime()).limit(20).exec(),
+            Server.find().where({ lastseen: { "$gte": compDate } }).limit(20).exec(),
             tribes_news
         ] as Promise<any>[];
 
@@ -146,12 +146,6 @@ if (STATS_WEB) {
             data: data,
             alerts: [{ text: data.length + " results" }]
         });
-    })
-
-    app.get('/search.json', async function (req, res) {
-        var name = req.query.name !== undefined ? decodeURIComponent(req.query.name) : "";
-        const data = await searchPlayers(name);
-        res.json(data);
     })
 }
 

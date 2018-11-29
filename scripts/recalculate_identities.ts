@@ -106,8 +106,7 @@ function expandIdentities(identities: Identity[], nameCounts: Dictionary<Diction
 async function main() {
     console.info('Downloading data');
     const data: { fullReport?: { players?: { name: string, ip: string }[] } }[] = await db.Match
-        .select({ 'fullReport.players.name': true, 'fullReport.players.ip': true })
-        .exec();
+        .find({}, { 'fullReport.players.name': true, 'fullReport.players.ip': true })
         // .limit(1000);
     console.info('Generting graph');
 

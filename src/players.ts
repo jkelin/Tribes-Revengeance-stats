@@ -2,18 +2,14 @@ import express from "express";
 import winston from "winston";
 import { sortBy, toPairs } from "lodash";
 
-import {Player, Identity, IPlayerModel, IIdentityModel, IIdentity} from "./db";
+import {Player, Identity, IPlayerModel} from "./db";
 import { cleanPlayerName } from "./helpers";
 
 let router = express.Router();
 
 async function findRelatedNicknames(name: string) {
     name = cleanPlayerName(name);
-    const data: IIdentity = await Identity
-        .where('namesAndIps').in([ name ])
-        .select({ names: true })
-        .findOne()
-        .exec();
+    const data = await Identity.find({ 'namesAndIps': { $in: [ name ] } }, { names: true }).findOne();
 
     if(data) {
         return sortBy(toPairs(data.names), x => -x[1])
@@ -38,10 +34,7 @@ router.get('/player/:name.json', async function (req, res) {
 router.get('/player/:name', async function (req, res) {
     var name = decodeURIComponent(req.params["name"]);
     const similar = await findRelatedNicknames(name);
-    const data: IPlayerModel = await Player
-        .where('_id').equals(name)
-        .findOne()
-        .exec();
+    const data: IPlayerModel = await Player.where('_id').equals(name).findOne().exec();
 
     res.render('player', {
         data: data,

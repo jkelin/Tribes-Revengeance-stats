@@ -82,18 +82,18 @@ function generateResultInfo(data: ITribesServerQueryResponse) {
 
 function getMatchData(id: string) {
     return Match
-        .where('_id').equals(id)
-        .findOne()
-        .exec()
-        .then((data: IMatchModel) => ({
-            id: data._id,
-            when: data.when,
-            result: generateResultInfo(data.basicReport) ,
-            info: { ...data.basicReport, players: undefined },
-            team1: getPlayersForTeam(data, data.basicReport.teamone),
-            team2: getPlayersForTeam(data, data.basicReport.teamtwo),
-            stats: prepareStats(data),
-        }));
+    .where('_id').equals(id)
+    .findOne()
+    .exec()
+    .then((data: IMatchModel) => ({
+        id: data._id,
+        when: data.when,
+        result: generateResultInfo(data.basicReport) ,
+        info: { ...data.basicReport, players: undefined },
+        team1: getPlayersForTeam(data, data.basicReport.teamone),
+        team2: getPlayersForTeam(data, data.basicReport.teamtwo),
+        stats: prepareStats(data),
+    }));
 }
 
 router.get('/matches/:id.json', function (req, res, next) {
@@ -107,9 +107,9 @@ router.get('/matches/:id', function (req, res, next) {
 async function getMatchesData(page: number) {
     const perPage = 50;
 
-    const [data, count] = await Promise.all<IMatchModel[], number>([
+    const [data, count] = await Promise.all([
         Match
-            .where('basicReport.numplayers').ne(0)
+            .find({ 'basicReport.numplayers': { $ne: '0' }})
             .sort('-when')
             .select({
                 basicReport: true,
@@ -119,7 +119,7 @@ async function getMatchesData(page: number) {
             .limit(perPage)
             .exec(),
         Match
-            .where('basicReport.numplayers').ne(0)
+            .find({ 'basicReport.numplayers': { $ne: '0' }})
             .count()
             .exec()
     ]);

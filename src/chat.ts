@@ -144,32 +144,34 @@ function getServerChat(serverId: string, server: string, username: string, passw
     });
 }
 
-setInterval(async () => {
-    const servers: IServerModel[] = await Server
-        .where('chat').exists(true)
-        .where('chat.enabled').equals(true)
-        .exec();
+setInterval(() => {
+    Server
+    .where('chat', { $exists: true })
+    .where('chat.enabled').equals(true)
+    .find(function (err, servers: IServerModel[]) {
+        if (err) throw err;
 
-    servers.forEach(server => {
-        if(activeChatRequests[server._id]) return;
+        servers.forEach(server => {
+            if(activeChatRequests[server._id]) return;
 
-        activeChatRequests[server._id] = getServerChat(server._id, server.chat.server, server.chat.username, server.chat.password)
-        .then(x => {
-            winston.debug("Got server chat from", {id: server._id});
+            activeChatRequests[server._id] = getServerChat(server._id, server.chat.server, server.chat.username, server.chat.password)
+            .then(x => {
+                winston.debug("Got server chat from", {id: server._id});
 
-            server.chat.ok = true;
-            server.save();
-            delete activeChatRequests[server._id];
+                server.chat.ok = true;
+                server.save();
+                delete activeChatRequests[server._id];
+            })
+            .catch(x => {
+                winston.info("Error getting chat from " + server._id, x.message);
+                winston.debug(x);
+
+                server.chat.ok = false;
+                server.save();
+                delete activeChatRequests[server._id];
+            });
         })
-        .catch(x => {
-            winston.info("Error getting chat from " + server._id, x.message);
-            winston.debug(x);
-
-            server.chat.ok = false;
-            server.save();
-            delete activeChatRequests[server._id];
-        });
-    })
+    });
 }, 1000);
 
 export function getChatFor(server: string) {
