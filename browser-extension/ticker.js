@@ -1,27 +1,30 @@
+var isChrome = typeof chrome !== 'undefined';
+
+var browser_action = isChrome ? chrome.browserAction : browser.browserAction;
 var serverPlayerMap = {};
 
 function countToFgColor(cnt) {
     if (cnt < 4) {
-        return "white";
+        return "#fff";
     }
 
     if (cnt < 8) {
-        return "black";
+        return "#000";
     }
 
-    return "white";
+    return "#fff";
 }
 
 function countToBgColor(cnt) {
     if (cnt < 4) {
-        return "grey";
+        return "#aaa";
     }
 
     if (cnt < 8) {
-        return "orange";
+        return "#FFA500";
     }
 
-    return "red";
+    return "#B22222";
 }
 
 function updateIcon() {
@@ -31,21 +34,23 @@ function updateIcon() {
         numPlayers += serverPlayerMap[i];
     }
 
-    browser.browserAction.setBadgeTextColor({
-        color: countToFgColor(numPlayers)
-    });
+    if (browser_action.setBadgeTextColor) {
+        browser_action.setBadgeTextColor({
+            color: countToFgColor(numPlayers)
+        });
+    }
 
-    browser.browserAction.setBadgeBackgroundColor({
+    browser_action.setBadgeBackgroundColor({
         color: countToBgColor(numPlayers)
     });
 
-    browser.browserAction.setBadgeText({
+    browser_action.setBadgeText({
         text: numPlayers === 0 ? null : numPlayers + ''
     });
 }
 
 function addListeners() {
-    browser.browserAction.onClicked.addListener(() => {
+    browser_action.onClicked.addListener(() => {
         browser.tabs.create({
             active: true,
             url: 'https://stats.tribesrevengeance.net'

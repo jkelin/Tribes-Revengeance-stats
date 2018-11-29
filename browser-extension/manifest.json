@@ -24,6 +24,5 @@
     "web_accessible_resources": [
         "axios.min.map",
         "socket.io.js.map"
-    ],
-    "default_locale": "en"
+    ]
 }
