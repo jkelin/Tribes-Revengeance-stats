@@ -1,6 +1,9 @@
 {
     "manifest_version": 2,
     "name": "Tribes Vengeance player count",
+    "short_name": "T:V Ticker",
+    "author": "Jan Kelin",
+    "homepage_url": "http://tribesrevengeance.net",
     "version": "1.0",
     "description": "Shows current player count in Tribes Vengeance",
     "icons": {
@@ -17,5 +20,10 @@
             "socket.io.js",
             "ticker.js"
         ]
-    }
+    },
+    "web_accessible_resources": [
+        "axios.min.map",
+        "socket.io.js.map"
+    ],
+    "default_locale": "en"
 }

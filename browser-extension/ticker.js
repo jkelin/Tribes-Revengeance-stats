@@ -68,7 +68,7 @@ function initSocketIo() {
 }
 
 function manualUpdate() {
-    axios.get('http://localhost:5000/servers.players.json').then(response => {
+    axios.get('https://stats.tribesrevengeance.net/servers.players.json').then(response => {
         console.debug('Manual update', response);
         serverPlayerMap = {};
         response.data.forEach(x => {
