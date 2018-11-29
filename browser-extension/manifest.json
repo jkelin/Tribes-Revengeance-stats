@@ -1,6 +1,6 @@
 {
     "manifest_version": 2,
-    "name": "Tribes Vengeance player count",
+    "name": "Tribes Vengeance Ticker",
     "short_name": "T:V Ticker",
     "author": "Jan Kelin",
     "homepage_url": "http://tribesrevengeance.net",
@@ -16,6 +16,7 @@
     },
     "background": {
         "scripts": [
+            "lodash.min.js",
             "axios.min.js",
             "socket.io.js",
             "ticker.js"

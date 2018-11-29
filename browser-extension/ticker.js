@@ -1,7 +1,8 @@
 var isChrome = typeof chrome !== 'undefined';
 
 var browser_action = isChrome ? chrome.browserAction : browser.browserAction;
-var serverPlayerMap = {};
+var serverPlayerCountMap = {};
+var lastFullResponse = [];
 
 function countToFgColor(cnt) {
     if (cnt < 4) {
@@ -27,11 +28,31 @@ function countToBgColor(cnt) {
     return "#B22222";
 }
 
+function calculatePlayerList() {
+    if (_(serverPlayerCountMap).values().sum()) {
+        var str = "";
+
+        for (var server of _.sortBy(lastFullResponse, x => x.name)) {
+            if (server.players.length) {
+                str += server.name + (server.players.length > 0 ? ` (${server.players.length})` : '') + "\n";
+            }
+
+            for (var player of server.players) {
+                str += "  " + player.player + "\n";
+            }
+        }
+
+        return str;
+    } else {
+        return "Servers are empty";
+    }
+}
+
 function updateIcon() {
     var numPlayers = 0;
 
-    for (var i in serverPlayerMap) {
-        numPlayers += serverPlayerMap[i];
+    for (var i in serverPlayerCountMap) {
+        numPlayers += serverPlayerCountMap[i];
     }
 
     if (browser_action.setBadgeTextColor) {
@@ -39,6 +60,10 @@ function updateIcon() {
             color: countToFgColor(numPlayers)
         });
     }
+
+    browser_action.setTitle({
+        title: calculatePlayerList()
+    });
 
     browser_action.setBadgeBackgroundColor({
         color: countToBgColor(numPlayers)
@@ -67,17 +92,19 @@ function initSocketIo() {
 
     socket.on('player-count-change', function (data) {
         console.debug('player-count-change', data);
-        serverPlayerMap[data.server] = data.players;
+        serverPlayerCountMap[data.server] = data.players;
         updateIcon();
+        manualUpdate();
     });
 }
 
 function manualUpdate() {
-    axios.get('https://stats.tribesrevengeance.net/servers.players.json').then(response => {
+    return axios.get('https://stats.tribesrevengeance.net/servers.players.json').then(response => {
         console.debug('Manual update', response);
-        serverPlayerMap = {};
+        serverPlayerCountMap = {};
+        lastFullResponse = response.data;
         response.data.forEach(x => {
-            serverPlayerMap[x.id] = x.players.length
+            serverPlayerCountMap[x.id] = x.players.length
         });
 
         updateIcon();
@@ -88,4 +115,4 @@ addListeners();
 manualUpdate();
 initSocketIo();
 
-setInterval(manualUpdate, 60 * 1000);
+setInterval(manualUpdate, 10 * 60 * 1000);
