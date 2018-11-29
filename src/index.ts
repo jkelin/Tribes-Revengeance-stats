@@ -7,15 +7,17 @@ import compression from "compression";
 import winston from "winston";
 import path from 'path';
 import http from 'http';
+import cors from 'cors';
 import bodyParser from 'body-parser';
 import SocketIO from "socket.io";
 
-import {getTribesServersFromMasterServer, queryTribesServer} from "./serverQuery";
-import {Player, Server, IPlayerModel} from "./db";
-import {tryConvertIpv6ToIpv4, tribes_news, handlebars_helpers} from "./helpers";
-import {handleTribesServerData, addServerLastFullReport, handlePlayer, router as trackerRouter} from "./tracker";
+import { getTribesServersFromMasterServer, queryTribesServer } from "./serverQuery";
+import { Player, Server, IPlayerModel } from "./db";
+import { tryConvertIpv6ToIpv4, tribes_news, handlebars_helpers } from "./helpers";
+import { handleTribesServerData, addServerLastFullReport, handlePlayer, router as trackerRouter } from "./tracker";
 import { CronJob } from 'cron';
 import Raven from 'raven';
+import { emitter as tickerEvents } from './ticker';
 
 import './discord';
 
@@ -28,13 +30,14 @@ const STATS_REPORT = (process.env.STATS_REPORT || 'true') === 'true';
 
 let app = express();
 app.use(compression());
+app.use(cors())
 
 if (process.env.SENTRY_DSN) {
     app.use(Raven.requestHandler());
 }
 
 let server = new http.Server(app);
-let io = SocketIO(server);
+let io = SocketIO(server, { origins: '*:*' });
 
 // This is needed for /upload
 app.use(function (req, res, next) {
@@ -52,7 +55,7 @@ app.use(function (req, res, next) {
 
 if (STATS_WEB) {
     app.set('views', path.join(__dirname, "../views"));
-    app.engine('handlebars', exphbs({defaultLayout: 'main', helpers: handlebars_helpers}));
+    app.engine('handlebars', exphbs({ defaultLayout: 'main', helpers: handlebars_helpers }));
     app.set('view engine', 'handlebars');
 
     //app.use(bodyParser.json());
@@ -83,19 +86,19 @@ if (STATS_REPORT) {
     app.use("/", trackerRouter);
 }
 
-
 if (STATS_WEB) {
     io.on('connection', function (socket) {
         socket.on("say", data => {
             const nameRegex = /(A-Za-z0-9\| \-_\?\*\/:\.){3,29}/;
             const messageRegex = /(A-Za-z0-9\| \-_\?\*\/:\.)/;
             if (nameRegex.test(data.usr) && messageRegex.test(data.message)) {
-              Events.next({type: "say", data: {server: data.server, usr: data.usr, message: data.message}})
+                Events.next({ type: "say", data: { server: data.server, usr: data.usr, message: data.message } })
             }
         });
     });
 
     Events.filter(x => x.type == "chat-message").subscribe(e => io.emit(e.type, e.data));
+    Events.filter(x => x.type == "player-count-change").subscribe(e => io.emit(e.type, e.data));
 
     Events.subscribe(e => winston.info("EVENT:", e))
 
@@ -112,28 +115,28 @@ if (STATS_WEB) {
         ] as Promise<any>[];
 
         Promise.all(promises)
-        .then(function (data) {
-            var obj = {
-                playersKills: data[0],
-                playersTime: data[1],
-                servers: data[2],
-                news: data[3].slice(0, 5),
-                now: new Date()
-            };
-            res.render('home', obj);
-        })
-        .catch(function (error) {
-            next(error);
-        });
+            .then(function (data) {
+                var obj = {
+                    playersKills: data[0],
+                    playersTime: data[1],
+                    servers: data[2],
+                    news: data[3].slice(0, 5),
+                    now: new Date()
+                };
+                res.render('home', obj);
+            })
+            .catch(function (error) {
+                next(error);
+            });
     })
-    
+
     function searchPlayers(name: string) {
         return Player
-        .where('_id').regex(new RegExp(name, "i"))
-        .sort({ lastseen: -1 })
-        .select(['_id', 'score', 'kills', 'deaths', 'offense', 'defense', 'style', 'minutesonline', 'lastseen', 'stats.flagCaptureStat'])
-        .find()
-        .exec();
+            .where('_id').regex(new RegExp(name, "i"))
+            .sort({ lastseen: -1 })
+            .select(['_id', 'score', 'kills', 'deaths', 'offense', 'defense', 'style', 'minutesonline', 'lastseen', 'stats.flagCaptureStat'])
+            .find()
+            .exec();
     }
 
     app.get('/search', async function (req, res) {
@@ -152,7 +155,7 @@ if (STATS_WEB) {
     })
 }
 
-app.get('/status.json', function(req, res) {
+app.get('/status.json', function (req, res) {
     res.json({ status: 'ok' });
 });
 
@@ -170,7 +173,7 @@ server.listen(process.env.PORT || 5000, function () {
     var host = server.address().address;
     var port = server.address().port;
 
-    winston.info('App listening', {host: host, port: port});
+    winston.info('App listening', { host: host, port: port });
 });
 
 if (STATS_REPORT) {
@@ -187,7 +190,7 @@ if (STATS_REPORT) {
 
 process.on('unhandledRejection', (reason, p) => {
     winston.error('Unhandled Rejection at: Promise', p, 'reason:', reason);
-    Raven.captureException(reason, { 
+    Raven.captureException(reason, {
         extra: {
             promise: p
         },

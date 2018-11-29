@@ -1,0 +1,20 @@
+{
+    "manifest_version": 2,
+    "name": "Tribes Vengeance player count",
+    "version": "1.0",
+    "description": "Shows current player count in Tribes Vengeance",
+    "icons": {
+        "128": "favicon.png"
+    },
+    "browser_action": {
+        "default_icon": {
+            "128": "favicon.png"
+        }
+    },
+    "background": {
+        "scripts": [
+            "socket.io.js",
+            "ticker.js"
+        ]
+    }
+}

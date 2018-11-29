@@ -10,24 +10,27 @@ import { mean, min, max } from "lodash";
 import { IUploadedData, IUploadedPlayer, IFullReport, ITribesServerQueryResponse } from "./types";
 import { isValid } from "./anticheat";
 import { promisify } from "util";
+import Events from "./events";
 
 export let router = express.Router();
 
+const persistentPlayerCounts: Record<string, number> = {};
+
 export async function handleTribesServerData(data: ITribesServerQueryResponse) {
     //console.log(data);
-    if(!data.ip && !data.hostport) {
+    if (!data.ip && !data.hostport) {
         return winston.error('[handleTribesServerData] Server does not have an id', data);
     }
 
     var id = data.ip + ':' + data.hostport;
 
     winston.debug("Handling data from", id);
-    
+
     let server: IServerModel = await Server
-    .where('_id').equals(id)
-    .findOne()
-    .exec();
-    
+        .where('_id').equals(id)
+        .findOne()
+        .exec();
+
     if (server === null) {
         server = new Server(<IServer>{
             _id: id,
@@ -63,22 +66,11 @@ export async function handleTribesServerData(data: ITribesServerQueryResponse) {
 
     await server.save();
 
-    if (server.lastdata) {
-        data.players
-            .forEach(function (player) {
-                var wasbefore = server.lastdata.players.some(function (p) { return p.player == player.player });
-                if (!wasbefore) emitter.emit("join", { server: server, player: player });
-            });
+    if (data.players.length !== persistentPlayerCounts[`${server.ip}:${server.port}`]) {
+        Events.next({ type: "player-count-change", data: { server: `${server.ip}:${server.port}`, players: data.players.length } });
     }
 
-    if (server.lastdata && server.lastdata.players) {
-        server.lastdata.players
-            .forEach(function (player) {
-                var hasLeft = data.players.some(function (p) { return p.player == player.player });
-                if (!hasLeft) emitter.emit("left", { server: server, player: player });
-            });
-    }
-
+    persistentPlayerCounts[`${server.ip}:${server.port}`] = data.players.length;
     server.lastdata = data;
 
     if (server.lastdata.mapname) {
@@ -124,7 +116,7 @@ export function pushPlayersTrackings(serverIdIn: string, data: ITribesServerQuer
 }
 
 export function timePlayer(player: IUploadedPlayer) {
-    if(!player.player) return winston.error('[timePlayer] Player does not have a name', player);
+    if (!player.player) return winston.error('[timePlayer] Player does not have a name', player);
     Player
         .where('_id').equals(player.player)
         .findOne(function (err, pl: IPlayerModel) {
@@ -157,84 +149,84 @@ export function timePlayer(player: IUploadedPlayer) {
 
 export function handlePlayer(input: IUploadedPlayer, ip: string, port: number) {
     winston.debug("handling player", input);
-    if(!input.name) return winston.error('Player does not have a name');
+    if (!input.name) return winston.error('Player does not have a name');
 
     Player
-    .where('_id').equals(input.name)
-    .findOne(function (err, player: IPlayerModel) {
-        if (err) throw err;
-        var changeCountry = false;
-        if (player === null) {
-            player = new Player(<IPlayer>{
-                _id: input.name,
-                stats: {},
-                score: 0,
-                kills: 0,
-                deaths: 0,
-                offense: 0,
-                defense: 0,
-                style: 0,
-                minutesonline: 20,
-                lastTiming: new Date()
-            });
-        }
-
-        if (player.offense == undefined) player.offense = 0;
-
-        player.ip = input.ip;
-        player.lastserver = ip + ":" + port;
-        player.score += input.score;
-        player.kills += input.kills;
-        player.deaths += input.deaths;
-        player.offense += input.offense;
-        player.defense += input.defense;
-        player.style += input.style;
-        player.lastseen = new Date();
-
-        if (!player.stats) {
-            player.stats = {};
-        }
-
-        if (player.stats.StatHighestSpeed == undefined) player.stats.StatHighestSpeed = 0;
-
-        var highestSpeed = input["StatClasses.StatHighestSpeed"] == undefined ? 0 : parseInt(input["StatClasses.StatHighestSpeed"] + '');
-        if (highestSpeed > player.stats.StatHighestSpeed) {
-            player.stats.StatHighestSpeed = highestSpeed;
-            player.markModified('stats');
-        }
-
-        for (var i in input) {
-            var value = input[i];
-            if(typeof value !== 'number') {
-                continue;
+        .where('_id').equals(input.name)
+        .findOne(function (err, player: IPlayerModel) {
+            if (err) throw err;
+            var changeCountry = false;
+            if (player === null) {
+                player = new Player(<IPlayer>{
+                    _id: input.name,
+                    stats: {},
+                    score: 0,
+                    kills: 0,
+                    deaths: 0,
+                    offense: 0,
+                    defense: 0,
+                    style: 0,
+                    minutesonline: 20,
+                    lastTiming: new Date()
+                });
             }
 
-            winston.debug("handle player stat", { name: i, value: value });
-            if (i === "StatClasses.StatHighestSpeed"){
-                continue;
+            if (player.offense == undefined) player.offense = 0;
+
+            player.ip = input.ip;
+            player.lastserver = ip + ":" + port;
+            player.score += input.score;
+            player.kills += input.kills;
+            player.deaths += input.deaths;
+            player.offense += input.offense;
+            player.defense += input.defense;
+            player.style += input.style;
+            player.lastseen = new Date();
+
+            if (!player.stats) {
+                player.stats = {};
             }
 
-            if (i.indexOf('.') !== -1) {
-                var name = i.split('.')[1];
+            if (player.stats.StatHighestSpeed == undefined) player.stats.StatHighestSpeed = 0;
 
-                if(!player.stats) {
-                    player.stats = {};
-                }
-
-                if (!player.stats[name]) {
-                    player.stats[name] = 0;
-                }
-
-                player.stats[name] += value;
-                //console.log("addded",name,value);
+            var highestSpeed = input["StatClasses.StatHighestSpeed"] == undefined ? 0 : parseInt(input["StatClasses.StatHighestSpeed"] + '');
+            if (highestSpeed > player.stats.StatHighestSpeed) {
+                player.stats.StatHighestSpeed = highestSpeed;
                 player.markModified('stats');
             }
-        }
-        winston.debug("statted", input.name);
+
+            for (var i in input) {
+                var value = input[i];
+                if (typeof value !== 'number') {
+                    continue;
+                }
+
+                winston.debug("handle player stat", { name: i, value: value });
+                if (i === "StatClasses.StatHighestSpeed") {
+                    continue;
+                }
+
+                if (i.indexOf('.') !== -1) {
+                    var name = i.split('.')[1];
+
+                    if (!player.stats) {
+                        player.stats = {};
+                    }
+
+                    if (!player.stats[name]) {
+                        player.stats[name] = 0;
+                    }
+
+                    player.stats[name] += value;
+                    //console.log("addded",name,value);
+                    player.markModified('stats');
+                }
+            }
+            winston.debug("statted", input.name);
 
 
-        player.save(function (err) { if (err) throw err; });
-    });
+            player.save(function (err) { if (err) throw err; });
+        });
 };
 
 export function addServerLastFullReport(ip: string, port: number) {
@@ -252,11 +244,11 @@ export function addServerLastFullReport(ip: string, port: number) {
         });
 }
 
-export function removeDotStatNamesFromFullReport(fullReport: IUploadedData){
+export function removeDotStatNamesFromFullReport(fullReport: IUploadedData) {
     return {
         ...fullReport,
         players: fullReport.players.map(p => {
-            const player = {...p};
+            const player = { ...p };
             for (var i in player) {
                 const value = player[i];
                 if (i.indexOf('.') !== -1) {
@@ -275,31 +267,31 @@ export function saveMatchResult(ip: string, port: number, fullReport: IUploadedD
 
     // Server.where({ _id: '45.32.157.166:8777' })
     Server
-    .where('_id').equals(id)
-    .findOne(function (err, server: IServerModel) {
-        if (err) {
-            console.error('Could not find saveMatchResult')
-        }
-
-        var match = new Match({
-            server: id,
-            when: new Date(),
-            fullReport: removeDotStatNamesFromFullReport(fullReport),
-            basicReport: server.lastdata
-        });
-
-        match.save(function(err) {
+        .where('_id').equals(id)
+        .findOne(function (err, server: IServerModel) {
             if (err) {
-                console.error('Could not save saveMatchResult', err)
+                console.error('Could not find saveMatchResult')
             }
+
+            var match = new Match({
+                server: id,
+                when: new Date(),
+                fullReport: removeDotStatNamesFromFullReport(fullReport),
+                basicReport: server.lastdata
+            });
+
+            match.save(function (err) {
+                if (err) {
+                    console.error('Could not save saveMatchResult', err)
+                }
+            });
         });
-    });
 }
 
 router.post('/upload', function (req, res) {
     var ip = getClientIp(req);
 
-    if(!ip) {
+    if (!ip) {
         winston.info("Upload without an ip attempted?!");
         return;
     }
@@ -313,10 +305,10 @@ router.post('/upload', function (req, res) {
     object.players.forEach(p => p.isUntracked = !isValid(p, object));
 
     object.players
-    .filter(p => !p.isUntracked)
-    .forEach(function (player) {
-        handlePlayer(player, ip!, object.port);
-    });
+        .filter(p => !p.isUntracked)
+        .forEach(function (player) {
+            handlePlayer(player, ip!, object.port);
+        });
 
     addServerLastFullReport(ip, object.port);
 

@@ -99,7 +99,7 @@ export interface IIdentity {
     namesAndIps: string[];
 }
 
-export interface IIdentityModel extends IIdentity, Document {}
+export interface IIdentityModel extends IIdentity, Document { }
 
 export const Identity = mongoose.model<IIdentityModel>('Identity', {
     ips: mongoose.Schema.Types.Mixed,
@@ -114,7 +114,7 @@ export interface IMatch {
     fullReport: IFullReport;
 }
 
-export interface IMatchModel extends IMatch, Document {}
+export interface IMatchModel extends IMatch, Document { }
 
 export const Match = mongoose.model<IMatchModel>('Match', {
     server: String,
@@ -142,7 +142,7 @@ export const influx = new InfluxDB({
 
 async function connect() {
     const conn = mongoose.connect(
-        process.env.MONGODB || "mongodb://localhost/tribes",
+        process.env.MONGODB || "mongodb://localhost:3000/tribes",
         // { useNewUrlParser: true }
     );
 
@@ -150,8 +150,8 @@ async function connect() {
 }
 
 connect()
-.then(() => winston.info("DB connected"))
-.catch(err => {
-    winston.error("Error connecting to DB", err);
-    process.exit(1);
-})
+    .then(() => winston.info("DB connected"))
+    .catch(err => {
+        winston.error("Error connecting to DB", err);
+        process.exit(1);
+    })
