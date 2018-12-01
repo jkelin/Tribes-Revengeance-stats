@@ -41,7 +41,7 @@ if (process.env.SENTRY_DSN) {
 
   winston.configure({
     transports: [
-      new winston.transports.Console({ level: 'info' }),
+      new winston.transports.Console({ level: 'debug' }),
       new SentryTransport() as any
     ]
   });
@@ -50,7 +50,7 @@ if (process.env.SENTRY_DSN) {
 } else {
   winston.configure({
     transports: [
-      new winston.transports.Console({ level: 'info' }),
+      new winston.transports.Console({ level: 'debug' }),
     ]
   });
 }
