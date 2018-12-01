@@ -20,6 +20,8 @@ build:
 deploy:
   stage: deploy
   image: ubuntu:18.04
+  variables:
+    CONTAINER_IMAGE: registry.gitlab.com/$CI_PROJECT_PATH
   before_script:
     - 'which ssh-agent || ( apt-get update -y && apt-get install openssh-client -y )'
     - eval $(ssh-agent -s)
