@@ -31,9 +31,9 @@ deploy:
     - mkdir -p ~/.ssh
     - chmod 700 ~/.ssh
   script:
-    - docker tag $CONTAINER_IMAGE:$CI_COMMIT_SHA $CONTAINER_IMAGE:latest
-    - docker push $CONTAINER_IMAGE:latest
-    - ssh -o StrictHostKeyChecking=no $DEPLOY_HOST "docker pull $CONTAINER_IMAGE:latest && docker service update --image $CONTAINER_IMAGE:latest $DEPLOY_SERVICE || docker service rollback $DEPLOY_SERVICE"
+    # - docker tag $CONTAINER_IMAGE:$CI_COMMIT_SHA $CONTAINER_IMAGE:latest
+    # - docker push $CONTAINER_IMAGE:latest
+    - ssh -o StrictHostKeyChecking=no $DEPLOY_HOST "docker pull $CONTAINER_IMAGE:$CI_COMMIT_SHA && docker service update --image $CONTAINER_IMAGE:$CI_COMMIT_SHA $DEPLOY_SERVICE || docker service rollback $DEPLOY_SERVICE"
 
 rollback:
   stage: rollback
