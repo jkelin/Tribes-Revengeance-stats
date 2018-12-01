@@ -29,4 +29,4 @@ deploy:
     - mkdir -p ~/.ssh
     - chmod 700 ~/.ssh
   script:
-    - ssh -o StrictHostKeyChecking=no $DEPLOY_HOST "docker pull $CONTAINER_IMAGE:latest && docker service update --image $CONTAINER_IMAGE:latest $DEPLOY_SERVICE"
+    - ssh -o StrictHostKeyChecking=no $DEPLOY_HOST "docker pull $CONTAINER_IMAGE:latest && docker service update --image $CONTAINER_IMAGE:latest $DEPLOY_SERVICE || docker service rollback $DEPLOY_SERVICE"
