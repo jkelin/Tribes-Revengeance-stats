@@ -19,7 +19,7 @@ HEALTHCHECK --interval=5s --timeout=1s CMD curl -sSf "http://localhost:5000/stat
 RUN apk add --no-cache curl
 
 COPY package.json yarn.lock /app/
-RUN yarn install
+RUN yarn install --production=false
 RUN yarn cache clean
 
 COPY --from=build /app/dist/src /app/dist
