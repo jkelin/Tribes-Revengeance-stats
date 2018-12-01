@@ -1,6 +1,7 @@
 stages:
   - build
   - deploy
+  - rollback
 
 build:
   stage: build
@@ -30,3 +31,18 @@ deploy:
     - chmod 700 ~/.ssh
   script:
     - ssh -o StrictHostKeyChecking=no $DEPLOY_HOST "docker pull $CONTAINER_IMAGE:latest && docker service update --image $CONTAINER_IMAGE:latest $DEPLOY_SERVICE || docker service rollback $DEPLOY_SERVICE"
+
+deploy:
+  stage: rollback
+  image: ubuntu:18.04
+  when: on_failure
+  variables:
+    CONTAINER_IMAGE: registry.gitlab.com/$CI_PROJECT_PATH
+  before_script:
+    - 'which ssh-agent || ( apt-get update -y && apt-get install openssh-client -y )'
+    - eval $(ssh-agent -s)
+    - echo "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add - > /dev/null
+    - mkdir -p ~/.ssh
+    - chmod 700 ~/.ssh
+  script:
+    - ssh -o StrictHostKeyChecking=no $DEPLOY_HOST "docker service rollback $DEPLOY_SERVICE"
