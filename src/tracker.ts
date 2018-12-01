@@ -1,7 +1,7 @@
 import * as winston from "winston";
 import * as geoip from "geoip-lite";
 import * as express from "express";
-import atob from "atob";
+import * as atob from "atob";
 
 import { Player, Server, Match, influx, IPlayerModel, IServerModel, IServer, IPlayer } from "./db";
 import { emitter } from "./ticker";
@@ -301,7 +301,7 @@ router.post('/upload', function (req, res) {
   res.send('Hello World!')
   winston.info("Received /upload request from", { ip });
   winston.debug("received upload request", { ip: ip, data: req.body })
-  var decoded = atob(req.body);
+  var decoded = (atob as any)(req.body);
   var object: IUploadedData = JSON.parse(decoded); // TODO actually verify this
 
   object.players.forEach(p => p.isUntracked = !isValid(p, object));
