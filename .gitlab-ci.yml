@@ -1,0 +1,31 @@
+image: docker:stable
+services:
+  - docker:dind
+
+stages:
+  - build
+  - deploy
+
+variables:
+  DOCKER_DRIVER: overlay2
+  CONTAINER_IMAGE: registry.gitlab.com/$CI_PROJECT_PATH
+
+before_script:
+  - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN registry.gitlab.com
+  - 'which ssh-agent || ( apt-get update -y && apt-get install openssh-client -y )'
+  - eval $(ssh-agent -s)
+  - echo "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add - > /dev/null
+  - mkdir -p ~/.ssh
+  - chmod 700 ~/.ssh
+
+build:
+  stage: build
+  script:
+    - docker pull $CONTAINER_IMAGE:latest
+    - docker build --pull -t $CONTAINER_IMAGE:latest .
+    - docker push $CONTAINER_IMAGE:latest
+
+deploy:
+  stage: deploy
+  script:
+    - ssh $DEPLOY_HOST "docker service update --image $CONTAINER_IMAGE:latest $DEPLOY_SERVICE"
