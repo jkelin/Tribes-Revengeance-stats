@@ -1,40 +1,40 @@
 import { IUploadedPlayer, IUploadedData } from "./types";
 import { mean, min, max, mapValues, values, sum, mapKeys, Dictionary } from "lodash";
-import _ from "lodash";
+import * as _ from "lodash";
 
 export function isValidPreprocess(player: IUploadedPlayer, data: IUploadedData) {
-    const trackedStats = {
-        score: player.score,
-        kills: player.kills,
-        deaths: player.deaths,
-        offense: player.offense,
-        defense: player.defense,
-        style: player.style,
-    }
+  const trackedStats = {
+    score: player.score,
+    kills: player.kills,
+    deaths: player.deaths,
+    offense: player.offense,
+    defense: player.defense,
+    style: player.style,
+  }
 
-    // const averages = mapValues(trackedStats, (value, key) => mean(data.players.map(x => x[key])));
-    // const averageDistances = mapValues(trackedStats, (value, key) => Math.abs(averages[key] - player[key]));
+  // const averages = mapValues(trackedStats, (value, key) => mean(data.players.map(x => x[key])));
+  // const averageDistances = mapValues(trackedStats, (value, key) => Math.abs(averages[key] - player[key]));
 
-    // Following can be useful for manual analysis
+  // Following can be useful for manual analysis
 
-    // const avgAvgDist = mean(values(averageDistances));
-    // const minAvgDist = min(values(averageDistances));
-    // const maxAvgDist = max(values(averageDistances));
-    // const totalAvgDist = sum(values(averageDistances));
+  // const avgAvgDist = mean(values(averageDistances));
+  // const minAvgDist = min(values(averageDistances));
+  // const maxAvgDist = max(values(averageDistances));
+  // const totalAvgDist = sum(values(averageDistances));
 
-    // const finalObj = {
-    //     ...trackedStats,
-    //     ...(mapKeys(averages, (value, key) => 'avg_' + key)),
-    //     ...(mapKeys(averageDistances, (value, key) => 'avgDist_' + key)),
-    //     avgAvgDist,
-    //     minAvgDist,
-    //     maxAvgDist,
-    //     totalAvgDist
-    // }
+  // const finalObj = {
+  //     ...trackedStats,
+  //     ...(mapKeys(averages, (value, key) => 'avg_' + key)),
+  //     ...(mapKeys(averageDistances, (value, key) => 'avgDist_' + key)),
+  //     avgAvgDist,
+  //     minAvgDist,
+  //     maxAvgDist,
+  //     totalAvgDist
+  // }
 
-    // return finalObj;
+  // return finalObj;
 
-    return trackedStats;
+  return trackedStats;
 }
 
 /**
@@ -43,26 +43,26 @@ export function isValidPreprocess(player: IUploadedPlayer, data: IUploadedData) 
  * This could be improved by grouping the stats by player count and using current player count to judge
  */
 export function isValid(player: IUploadedPlayer, data: IUploadedData) {
-    const preprocessed = isValidPreprocess(player, data);
-    const stats: Dictionary<{max: number, avg: number, median: number, p90: number, p95: number, p99: number}> = require('./data/anticheat-stats.json');
+  const preprocessed = isValidPreprocess(player, data);
+  const stats: Dictionary<{ max: number, avg: number, median: number, p90: number, p95: number, p99: number }> = require('./data/anticheat-stats.json');
 
-    const absoluteTolerance =  data.players.length * 5;
+  const absoluteTolerance = data.players.length * 5;
 
-    const difference = _(preprocessed)
-        .mapValues((value, key) => Math.max(0, value - (stats[key].p99 + absoluteTolerance))) // absolute differences
-        .mapValues((diff, key) => diff / stats[key].p99) // percentage differences
-        .values() // percentages
-        .sum();
-    
-        
-    const tolerance = Math.max(0, data.players.length - 4) * 0.025; // 2.5% per player in games with more than 4 players
-    // console.warn({ difference });
-    // console.warn({ tolerance });
+  const difference = _(preprocessed)
+    .mapValues((value, key) => Math.max(0, value - (stats[key].p99 + absoluteTolerance))) // absolute differences
+    .mapValues((diff, key) => diff / stats[key].p99) // percentage differences
+    .values() // percentages
+    .sum();
 
-    if (data.players.length >= 2 && difference <= tolerance) {
-        return true;
-    } else {
-        console.log("Player stats not tracked", player.name, data);
-        return false;
-    }
+
+  const tolerance = Math.max(0, data.players.length - 4) * 0.025; // 2.5% per player in games with more than 4 players
+  // console.warn({ difference });
+  // console.warn({ tolerance });
+
+  if (data.players.length >= 2 && difference <= tolerance) {
+    return true;
+  } else {
+    console.log("Player stats not tracked", player.name, data);
+    return false;
+  }
 }

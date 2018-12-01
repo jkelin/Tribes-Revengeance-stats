@@ -202,6 +202,7 @@
 "@types/sha1@^1.1.1":
   version "1.1.1"
   resolved "https://registry.yarnpkg.com/@types/sha1/-/sha1-1.1.1.tgz#ab34efa782ff948d402d896afc9f10f41e94dd44"
+  integrity sha512-Yrz4TPsm/xaw7c39aTISskNirnRJj2W9OVeHv8ooOR9SG8NHEfh4lwvGeN9euzxDyPfBdFkvL/VHIY3kM45OpQ==
   dependencies:
     "@types/node" "*"
 

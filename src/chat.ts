@@ -1,11 +1,11 @@
 import axios from 'axios';
-import http from 'http';
-import https from 'https';
-import cheerio from 'cheerio';
-import url from 'url';
-import crypto from 'crypto';
+import * as http from 'http';
+import * as https from 'https';
+import * as cheerio from 'cheerio';
+import * as url from 'url';
+import * as crypto from 'crypto';
 import winston from "winston";
-import qs from 'qs';
+import * as qs from 'qs';
 import { Observable } from 'rxjs';
 
 const axiosInstance = axios.create({
@@ -19,7 +19,7 @@ const axiosInstance = axios.create({
 require("rxjs/operator/debounceTime");
 
 import { Server, IServerModel } from './db';
-import QcMappings from '../data/qcmappings.json';
+import * as QcMappings from '../data/qcmappings.json';
 import Events, { EventSay } from "./events";
 import { IChatMessage } from './types';
 

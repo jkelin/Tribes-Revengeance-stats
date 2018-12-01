@@ -1,16 +1,17 @@
 require('dotenv').config()
 import './logger';
 
-import express, { Request, Response } from "express";
-import exphbs from "express-handlebars";
-import compression from "compression";
+import * as express from "express";
+import { Request, Response } from 'express';
+import * as exphbs from "express-handlebars";
+import * as compression from "compression";
 import winston from "winston";
-import path from 'path';
-import http from 'http';
-import cors from 'cors';
-import bodyParser from 'body-parser';
-import SocketIO from "socket.io";
-import Sentry from '@sentry/node';
+import * as path from 'path';
+import * as http from 'http';
+import * as cors from 'cors';
+import * as bodyParser from 'body-parser';
+import * as SocketIO from "socket.io";
+import * as Sentry from '@sentry/node';
 
 import { getTribesServersFromMasterServer, queryTribesServer } from "./serverQuery";
 import { Player, Server, IPlayerModel } from "./db";

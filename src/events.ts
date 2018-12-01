@@ -1,4 +1,4 @@
-import Rx from "rxjs/Rx";
+import * as Rx from "rxjs/Rx";
 import { IChatMessage, IChatSay } from "./types";
 
 export type EventSay = { type: 'say', data: IChatSay };

@@ -1,12 +1,12 @@
-import Sentry, { Severity } from '@sentry/node';
+import * as Sentry from '@sentry/node';
 import winston from "winston";
-import path from 'path';
+import * as path from 'path';
 
 class SentryTransport {
   log(level: string, message: string, data: any) {
     Sentry.addBreadcrumb({
       message: message,
-      level: Severity[level],
+      level: Sentry.Severity[level],
       data: data
     });
 

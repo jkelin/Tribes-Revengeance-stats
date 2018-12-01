@@ -27,4 +27,4 @@ deploy:
     - mkdir -p ~/.ssh
     - chmod 700 ~/.ssh
   script:
-    - ssh $DEPLOY_HOST "docker service update --image $CONTAINER_IMAGE:latest $DEPLOY_SERVICE"
+    - ssh $DEPLOY_HOST "docker pull $CONTAINER_IMAGE:latest && docker service update --image $CONTAINER_IMAGE:latest $DEPLOY_SERVICE"
