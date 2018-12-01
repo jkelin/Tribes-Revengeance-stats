@@ -1,19 +1,33 @@
-FROM node:alpine
-
-RUN apk add --no-cache curl
-
+FROM node:8-alpine AS build
 WORKDIR /app
 
-COPY package.json /app
-COPY yarn.lock /app
+COPY package.json yarn.lock /app/
+RUN yarn install --verbose
 
-RUN ["yarn"]
+COPY tsconfig.json /app/
+COPY src /app/src
+COPY scripts /app/scripts
+COPY data /app/data
+RUN yarn build
 
-COPY . /app
 
+FROM node:8-alpine AS runtime
+WORKDIR /app
+ENV NODE_ENV=production
 EXPOSE 5000
-ENV MONGODB mongodb://localhost/tribes
-
 HEALTHCHECK --interval=5s --timeout=1s CMD curl -sSf "http://localhost:5000/status.json" || exit 1 
+RUN apk add --no-cache curl
 
-CMD ["yarn", "start"]
+COPY package.json yarn.lock /app/
+RUN yarn install --production --verbose
+RUN yarn cache clean
+
+COPY --from=build /app/dist/src /app/dist
+COPY --from=build /app/dist/scripts /app/scripts
+COPY static /app/static
+COPY views /app/views
+COPY public /app/public
+COPY data /app/data
+
+USER node
+CMD ["node", "dist/index.js"]
