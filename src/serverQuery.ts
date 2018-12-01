@@ -1,7 +1,7 @@
 import * as http from "http";
 import * as dgram from "dgram";
 import * as net from "net";
-import winston from "winston";
+import * as winston from "winston";
 import { ITribesServerQueryResponse } from "./types";
 
 const timeoutMs = 1000;

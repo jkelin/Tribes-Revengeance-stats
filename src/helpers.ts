@@ -1,11 +1,11 @@
-import winston from "winston";
+import * as winston from "winston";
 import * as moment from "moment";
 import * as countryNames from "../data/countrynames.json";
 import * as availableMapImages from "../data/available-map-images.json";
 import * as timespan from "timespan";
 import * as github from 'octonode';
 import * as path from 'path';
-import sha1File from 'sha1-file';
+import * as sha1File from 'sha1-file';
 import * as tags from '../data/clan-tags.json';
 import { removeDiacritics } from "./removeAccents";
 import { Request } from "../node_modules/@types/express-serve-static-core";
@@ -169,8 +169,8 @@ export const handlebars_helpers: Record<string, (...params: any[]) => string> = 
   humanTime: function (date) {
     return moment(date).format('HH:mm');
   },
-  csshash: () => sha1File(path.join(__dirname, '..', 'public', 'custom.css')),
-  jshash: () => sha1File(path.join(__dirname, '..', 'public', 'custom.js'))
+  csshash: () => (sha1File as any)(path.join(__dirname, '..', 'public', 'custom.css')),
+  jshash: () => (sha1File as any)(path.join(__dirname, '..', 'public', 'custom.js'))
 };
 
 export function matchClan(name: string) {

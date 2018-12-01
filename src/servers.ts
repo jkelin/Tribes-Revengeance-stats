@@ -1,5 +1,5 @@
 import * as express from "express";
-import winston from "winston";
+import * as winston from "winston";
 
 import { escape } from "influx";
 import { Player, Server, influx, IPlayerModel, IServerModel } from "./db";

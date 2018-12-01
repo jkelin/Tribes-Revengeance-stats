@@ -1,5 +1,5 @@
 import * as express from "express";
-import winston from "winston";
+import * as winston from "winston";
 import * as _ from 'lodash';
 import * as crypto from 'crypto';
 

@@ -10,7 +10,7 @@
     ],
     "resolveJsonModule": true,
     "sourceMap": true,
-    "strict": false,
+    "strict": true,
     "moduleResolution": "node",
     "suppressImplicitAnyIndexErrors": true,
     "strictFunctionTypes": false

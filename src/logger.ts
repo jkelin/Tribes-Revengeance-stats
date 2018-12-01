@@ -1,5 +1,5 @@
 import * as Sentry from '@sentry/node';
-import winston from "winston";
+import * as winston from "winston";
 import * as path from 'path';
 
 class SentryTransport {

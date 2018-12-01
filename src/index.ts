@@ -5,7 +5,7 @@ import * as express from "express";
 import { Request, Response } from 'express';
 import * as exphbs from "express-handlebars";
 import * as compression from "compression";
-import winston from "winston";
+import * as winston from "winston";
 import * as path from 'path';
 import * as http from 'http';
 import * as cors from 'cors';

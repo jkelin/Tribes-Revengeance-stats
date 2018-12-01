@@ -1,4 +1,4 @@
-import winston from "winston";
+import * as winston from "winston";
 import * as geoip from "geoip-lite";
 import * as express from "express";
 import atob from "atob";

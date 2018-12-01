@@ -1,5 +1,5 @@
 import * as express from "express";
-import winston from "winston";
+import * as winston from "winston";
 import { sortBy, toPairs } from "lodash";
 
 import { Player, Identity, IPlayerModel } from "./db";

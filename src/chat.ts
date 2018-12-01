@@ -4,7 +4,7 @@ import * as https from 'https';
 import * as cheerio from 'cheerio';
 import * as url from 'url';
 import * as crypto from 'crypto';
-import winston from "winston";
+import * as winston from "winston";
 import * as qs from 'qs';
 import { Observable } from 'rxjs';
 

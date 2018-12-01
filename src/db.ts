@@ -1,7 +1,7 @@
 import { InfluxDB, FieldType } from "influx";
 import * as mongoose from "mongoose";
 import { Document } from 'mongoose';
-import winston from "winston";
+import * as winston from "winston";
 import { ITribesServerQueryResponse, IFullReport } from "./types";
 
 (mongoose as any).Promise = Promise;
