@@ -87,6 +87,15 @@ if (STATS_REPORT) {
   app.use("/", trackerRouter);
 }
 
+function searchPlayers(name: string) {
+  return Player
+    .where('_id').regex(new RegExp(name, "i"))
+    .sort({ lastseen: -1 })
+    .select(['_id', 'score', 'kills', 'deaths', 'offense', 'defense', 'style', 'minutesonline', 'lastseen', 'stats.flagCaptureStat'])
+    .find()
+    .exec();
+}
+
 if (STATS_WEB) {
   io.on('connection', function (socket) {
     socket.on("say", data => {
@@ -131,15 +140,6 @@ if (STATS_WEB) {
       });
   })
 
-  function searchPlayers(name: string) {
-    return Player
-      .where('_id').regex(new RegExp(name, "i"))
-      .sort({ lastseen: -1 })
-      .select(['_id', 'score', 'kills', 'deaths', 'offense', 'defense', 'style', 'minutesonline', 'lastseen', 'stats.flagCaptureStat'])
-      .find()
-      .exec();
-  }
-
   app.get('/search', async function (req, res) {
     var name = req.query.name !== undefined ? decodeURIComponent(req.query.name) : "";
     const data = await searchPlayers(name);
@@ -171,15 +171,15 @@ server.listen(process.env.PORT || 5000, function () {
   winston.info('App listening', { host: host, port: port });
 });
 
-if (STATS_REPORT) {
-  function updateFromMaster() {
-    getTribesServersFromMasterServer(function (servers) {
-      servers.forEach(function (item) {
-        queryTribesServer(item[0], parseInt(item[1]), handleTribesServerData);
-      });
+function updateFromMaster() {
+  getTribesServersFromMasterServer(function (servers) {
+    servers.forEach(function (item) {
+      queryTribesServer(item[0], parseInt(item[1]), handleTribesServerData);
     });
-  }
+  });
+}
 
+if (STATS_REPORT) {
   setInterval(updateFromMaster, 5 * 1000);
 }
 
