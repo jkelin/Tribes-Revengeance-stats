@@ -14,15 +14,16 @@ build:
     DOCKER_DRIVER: overlay2
     CONTAINER_IMAGE: registry.gitlab.com/$CI_PROJECT_PATH
   script:
-    - docker pull $CONTAINER_IMAGE:latest || true
-    - docker build --pull -t $CONTAINER_IMAGE:latest .
-    - docker push $CONTAINER_IMAGE:latest
+    - docker build --pull -t $CONTAINER_IMAGE:$CI_COMMIT_SHA .
 
 deploy:
   stage: deploy
   image: ubuntu:18.04
   variables:
     CONTAINER_IMAGE: registry.gitlab.com/$CI_PROJECT_PATH
+  environment:
+    name: production
+    url: https://tribesrevengeance.net
   before_script:
     - 'which ssh-agent || ( apt-get update -y && apt-get install openssh-client -y )'
     - eval $(ssh-agent -s)
@@ -30,9 +31,11 @@ deploy:
     - mkdir -p ~/.ssh
     - chmod 700 ~/.ssh
   script:
+    - docker tag $CONTAINER_IMAGE:$CI_COMMIT_SHA $CONTAINER_IMAGE:latest
+    - docker push $CONTAINER_IMAGE:latest
     - ssh -o StrictHostKeyChecking=no $DEPLOY_HOST "docker pull $CONTAINER_IMAGE:latest && docker service update --image $CONTAINER_IMAGE:latest $DEPLOY_SERVICE || docker service rollback $DEPLOY_SERVICE"
 
-deploy:
+rollback:
   stage: rollback
   image: ubuntu:18.04
   when: on_failure
