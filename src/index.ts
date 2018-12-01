@@ -36,7 +36,10 @@ if (process.env.SENTRY_DSN) {
 }
 
 app.use(compression());
-app.use(cors())
+app.use(cors({
+  credentials: true,
+  origin: "*"
+}));
 
 let server = new http.Server(app);
 let io = SocketIO(server, { origins: '*:*' });
