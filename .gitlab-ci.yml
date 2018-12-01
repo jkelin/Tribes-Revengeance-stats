@@ -14,7 +14,9 @@ build:
     DOCKER_DRIVER: overlay2
     CONTAINER_IMAGE: registry.gitlab.com/$CI_PROJECT_PATH
   script:
-    - docker build --pull -t $CONTAINER_IMAGE:$CI_COMMIT_SHA .
+    - docker build --pull -t $CONTAINER_IMAGE:$CI_COMMIT_SHA -t $CONTAINER_IMAGE:latest .
+    - docker push $CONTAINER_IMAGE:CI_COMMIT_SHA
+    - docker push $CONTAINER_IMAGE:latest
 
 deploy:
   stage: deploy
@@ -31,8 +33,6 @@ deploy:
     - mkdir -p ~/.ssh
     - chmod 700 ~/.ssh
   script:
-    # - docker tag $CONTAINER_IMAGE:$CI_COMMIT_SHA $CONTAINER_IMAGE:latest
-    # - docker push $CONTAINER_IMAGE:latest
     - ssh -o StrictHostKeyChecking=no $DEPLOY_HOST "docker pull $CONTAINER_IMAGE:$CI_COMMIT_SHA && docker service update --image $CONTAINER_IMAGE:$CI_COMMIT_SHA $DEPLOY_SERVICE || docker service rollback $DEPLOY_SERVICE"
 
 rollback:
