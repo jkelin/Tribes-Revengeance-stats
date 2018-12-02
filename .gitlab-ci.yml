@@ -1,11 +1,25 @@
 stages:
   - build
+  - post-build
   - deploy
   - rollback
 
 build:
   stage: build
+  image: node:8-alpine
+  before_script:
+    - yarn install
+  script:
+    - yarn build
+  artifacts:
+    paths:
+      - dist/
+
+docker-build:
+  stage: post-build
   image: docker:stable
+  dependencies:
+    - build
   services:
     - docker:dind
   before_script:
@@ -17,6 +31,17 @@ build:
     - docker build --pull -t $CONTAINER_IMAGE:$CI_COMMIT_SHA -t $CONTAINER_IMAGE:latest .
     - docker push $CONTAINER_IMAGE:$CI_COMMIT_SHA
     - docker push $CONTAINER_IMAGE:latest
+
+sentry:
+  stage: post-deploy
+  image: getsentry/sentry-cli
+  dependencies:
+    - build
+  script:
+    - sentry-cli releases new "$CI_COMMIT_SHA"
+    - sentry-cli releases set-commits "$CI_COMMIT_SHA" --auto
+    - sentry-cli releases files "$CI_COMMIT_SHA" upload-sourcemaps ./dist
+    - sentry-cli releases finalize "$CI_COMMIT_SHA"
 
 deploy:
   stage: deploy
@@ -32,8 +57,10 @@ deploy:
     - echo "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add - > /dev/null
     - mkdir -p ~/.ssh
     - chmod 700 ~/.ssh
+    - curl -sL https://sentry.io/get-cli/ | bash
   script:
     - ssh -o StrictHostKeyChecking=no $DEPLOY_HOST "docker pull $CONTAINER_IMAGE:$CI_COMMIT_SHA && docker service update --image $CONTAINER_IMAGE:$CI_COMMIT_SHA $DEPLOY_SERVICE"
+    - sentry-cli releases deploys "$CI_COMMIT_SHA" new -e production
 
 rollback:
   stage: rollback

@@ -1,14 +1,3 @@
-FROM node:8-alpine AS build
-WORKDIR /app
-
-COPY package.json yarn.lock /app/
-RUN yarn install
-
-COPY tsconfig.json /app/
-COPY src /app/src
-RUN yarn build
-
-
 FROM node:8-alpine AS runtime
 WORKDIR /app
 ENV NODE_ENV=production
@@ -20,7 +9,7 @@ COPY package.json yarn.lock /app/
 RUN yarn install --production
 RUN yarn cache clean
 
-COPY --from=build /app/dist /app/dist
+COPY dist /app/dist
 COPY static /app/static
 COPY views /app/views
 COPY public /app/public
