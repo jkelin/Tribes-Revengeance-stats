@@ -73,9 +73,6 @@ function prepareStats(data: IMatchModel) {
     .filter(k => data.fullReport.players.find(p => !!p[k]))
     .forEach(k => ret[k] = getDataForKey(k));
 
-  console.warn('preparestats', data)
-  console.warn('preparestats2', ret)
-  console.warn('preparestats3', _.sortBy(_.values(ret).filter(x => x.sum > 0), x => StatOrder[x.key] || "99" + x.key))
   return _.sortBy(_.values(ret).filter(x => x.sum > 0), x => StatOrder[x.key] || "99" + x.key);
 }
 
