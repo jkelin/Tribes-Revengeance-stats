@@ -4,11 +4,20 @@ stages:
   - deploy
   - rollback
 
+cache:
+  untracked: true
+  key: "$CI_PROJECT_ID"
+  paths:
+    - node_modules/
+    - _site/vendor/
+    - .bundled/
+    - .yarn
+
 build:
   stage: build
   image: node:8-alpine
   before_script:
-    - yarn install
+    - yarn install --pure-lockfile --cache-folder .yarn
   script:
     - yarn build
   artifacts:
@@ -28,6 +37,7 @@ docker-build:
     DOCKER_DRIVER: overlay2
     CONTAINER_IMAGE: registry.gitlab.com/$CI_PROJECT_PATH
   script:
+    - yarn install --pure-lockfile --cache-folder .yarn --production
     - docker build --pull -t $CONTAINER_IMAGE:$CI_COMMIT_SHA -t $CONTAINER_IMAGE:latest .
     - docker push $CONTAINER_IMAGE:$CI_COMMIT_SHA
     - docker push $CONTAINER_IMAGE:latest
