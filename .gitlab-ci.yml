@@ -67,7 +67,7 @@ docker-build:
 sentry:
   stage: post-build
   image: 
-    name: getsentry/sentry-cli
+    name: getsentry/sentry-cli:1
     entrypoint: ["/bin/sh"]
   dependencies:
     - build
@@ -79,20 +79,29 @@ sentry:
 
 deploy:
   stage: deploy
-  image: ubuntu:18.04
+  image: docker:git
+  services:
+    - docker:dind
   variables:
     CONTAINER_IMAGE: registry.gitlab.com/$CI_PROJECT_PATH
   environment:
     name: production
     url: https://tribesrevengeance.net
   before_script:
-    - 'which ssh-agent || ( apt-get update -y && apt-get install openssh-client -y )'
-    - eval $(ssh-agent -s)
-    - echo "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add - > /dev/null
     - mkdir -p ~/.ssh
     - chmod 700 ~/.ssh
-    - curl -sL https://sentry.io/get-cli/ | bash
+    - echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config
+    - echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
+    - chmod 600 ~/.ssh/id_rsa
   script:
-    - ssh -o StrictHostKeyChecking=no $DEPLOY_HOST "docker pull $CONTAINER_IMAGE:$CI_COMMIT_SHA"
-    - ssh -o StrictHostKeyChecking=no $DEPLOY_HOST "docker service update --image $CONTAINER_IMAGE:$CI_COMMIT_SHA --env-add SENTRY_RELEASE:$CI_COMMIT_SHA $DEPLOY_SERVICE || (docker service rollback $DEPLOY_SERVICE && exit 1)"
-    - sentry-cli releases deploys "$CI_COMMIT_SHA" new -e production
+    - ssh $DEPLOY_HOST "docker pull $CONTAINER_IMAGE:$CI_COMMIT_SHA)"
+    - >
+      ssh $DEPLOY_HOST "
+      (docker service update --image $CONTAINER_IMAGE:$CI_COMMIT_SHA --env-add SENTRY_RELEASE:$CI_COMMIT_SHA $DEPLOY_SERVICE) ||
+      (docker service rollback $DEPLOY_SERVICE && exit 1)"
+    - >
+      docker run
+      -e "SENTRY_AUTH_TOKEN=$SENTRY_AUTH_TOKEN"
+      -e "SENTRY_ORG=$SENTRY_ORG"
+      -e "SENTRY_PROJECT=$SENTRY_PROJECT"
+      -it sentry-cli releases deploys "$CI_COMMIT_SHA" new -e production
