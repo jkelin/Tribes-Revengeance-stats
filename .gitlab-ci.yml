@@ -96,8 +96,11 @@ deploy:
     - ssh $DEPLOY_HOST "docker pull $CONTAINER_IMAGE:$CI_COMMIT_SHA)"
     - >
       ssh $DEPLOY_HOST "
-      (docker service update --image $CONTAINER_IMAGE:$CI_COMMIT_SHA --env-add SENTRY_RELEASE:$CI_COMMIT_SHA $DEPLOY_SERVICE) ||
-      (docker service rollback $DEPLOY_SERVICE && exit 1)"
+      docker service update
+      --image $CONTAINER_IMAGE:$CI_COMMIT_SHA
+      --env-add SENTRY_RELEASE:$CI_COMMIT_SHA 
+      --update-failure-action=rollback
+      $DEPLOY_SERVICE"
     - >
       docker run -it sentry-cli
       -e "SENTRY_AUTH_TOKEN=$SENTRY_AUTH_TOKEN"
