@@ -33,7 +33,7 @@ docker-build:
     - docker push $CONTAINER_IMAGE:latest
 
 sentry:
-  stage: post-deploy
+  stage: post-build
   image: getsentry/sentry-cli
   dependencies:
     - build
