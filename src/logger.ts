@@ -16,41 +16,30 @@ class SentryTransport {
   }
 }
 
-if (process.env.SENTRY_DSN) {
-  const root = (global as any).__rootdir__;
+export function initLogger() {
+  if (process.env.SENTRY_DSN) {
+    const root = (global as any).__rootdir__;
 
-  Sentry.init(
-    {
-      dsn: process.env.SENTRY_DSN,
-      // captureUnhandledRejections: true,
-      // dataCallback: function (data) {
-      //   var stacktrace = data.exception && data.exception[0].stacktrace;
+    Sentry.init(
+      {
+        dsn: process.env.SENTRY_DSN,
+        release: process.env.SENTRY_RELEASE
+      }
+    );
 
-      //   if (stacktrace && stacktrace.frames) {
-      //     stacktrace.frames.forEach(function (frame: { filename: string }) {
-      //       if (frame.filename.startsWith('/')) {
-      //         frame.filename = "app:///" + path.relative(root, frame.filename);
-      //       }
-      //     });
-      //   }
+    winston.configure({
+      transports: [
+        new winston.transports.Console({ level: 'debug' }),
+        new SentryTransport() as any
+      ]
+    });
 
-      //   return data;
-      // }
-    }
-  );
-
-  winston.configure({
-    transports: [
-      new winston.transports.Console({ level: 'debug' }),
-      new SentryTransport() as any
-    ]
-  });
-
-  winston.info('Registering sentry raven');
-} else {
-  winston.configure({
-    transports: [
-      new winston.transports.Console({ level: 'debug' }),
-    ]
-  });
+    winston.info('Registering sentry raven');
+  } else {
+    winston.configure({
+      transports: [
+        new winston.transports.Console({ level: 'debug' }),
+      ]
+    });
+  }
 }

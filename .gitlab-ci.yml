@@ -59,7 +59,8 @@ deploy:
     - chmod 700 ~/.ssh
     - curl -sL https://sentry.io/get-cli/ | bash
   script:
-    - ssh -o StrictHostKeyChecking=no $DEPLOY_HOST "docker pull $CONTAINER_IMAGE:$CI_COMMIT_SHA && docker service update --image $CONTAINER_IMAGE:$CI_COMMIT_SHA $DEPLOY_SERVICE"
+    - ssh -o StrictHostKeyChecking=no $DEPLOY_HOST "docker pull $CONTAINER_IMAGE:$CI_COMMIT_SHA"
+    - ssh -o StrictHostKeyChecking=no $DEPLOY_HOST "docker service update --image $CONTAINER_IMAGE:$CI_COMMIT_SHA --env-add SENTRY_RELEASE:$CI_COMMIT_SHA $DEPLOY_SERVICE"
     - sentry-cli releases deploys "$CI_COMMIT_SHA" new -e production
 
 rollback:
