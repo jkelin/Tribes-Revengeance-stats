@@ -13,6 +13,11 @@
     "strict": true,
     "moduleResolution": "node",
     "suppressImplicitAnyIndexErrors": true,
-    "strictFunctionTypes": false
+    "strictFunctionTypes": false,
+    "sourceRoot": "./src",
+    "typeRoots": [
+      "./node_modules/@types",
+      "./typings"
+    ]
   },
 }

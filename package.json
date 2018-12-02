@@ -25,6 +25,7 @@
     "@types/winston": "^2.3.9",
     "cross-env": "^5.2.0",
     "ts-node": "^7.0.1",
+    "ts-node-dev": "^1.0.0-pre.31",
     "typescript": "^3.0.1"
   },
   "dependencies": {
@@ -57,7 +58,7 @@
     "winston": "2"
   },
   "scripts": {
-    "start": "ts-node --files ./src/index.ts",
+    "start": "ts-node-dev --project tsconfig.json src/index.ts",
     "start:web": "cross-env STATS_REPORT=false yarn start",
     "start:report": "cross-env STATS_WEB=false yarn start",
     "script:recalculate_identities": "ts-node scripts/recalculate_identities.ts",

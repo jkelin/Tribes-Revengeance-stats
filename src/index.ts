@@ -1,5 +1,5 @@
 require('dotenv').config()
-import './logger';
+import * as logger from './logger';
 
 import * as express from "express";
 import { Request, Response } from 'express';

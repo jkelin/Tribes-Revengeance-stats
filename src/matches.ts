@@ -6,6 +6,7 @@ import * as crypto from 'crypto';
 import { Player, Server, Match, IMatchModel } from "./db";
 import { getChatFor } from "./chat";
 import { ITribesServerQueryResponse, IFullReportPlayer } from "./types";
+import * as StatOrder from '../data/statorder.json';
 
 function sha1(input: string) {
   const shasum = crypto.createHash('sha1');
@@ -67,12 +68,15 @@ function prepareStats(data: IMatchModel) {
     };
   }
 
-  const ret: Record<string, ReturnType<typeof getDataForKey>> = keys.reduce(
-    (o, k) => o[k] = getDataForKey(k),
-    {}
-  );
+  const ret: Record<string, ReturnType<typeof getDataForKey>> = {};
+  keys
+    .filter(k => data.fullReport.players.find(p => !!p[k]))
+    .forEach(k => ret[k] = getDataForKey(k));
 
-  return _.sortBy(_.values(ret).filter(x => x.sum > 0), x => (require('../data/statorder.json'))[x.key] || "99" + x.key);
+  console.warn('preparestats', data)
+  console.warn('preparestats2', ret)
+  console.warn('preparestats3', _.sortBy(_.values(ret).filter(x => x.sum > 0), x => StatOrder[x.key] || "99" + x.key))
+  return _.sortBy(_.values(ret).filter(x => x.sum > 0), x => StatOrder[x.key] || "99" + x.key);
 }
 
 function generateResultInfo(data: ITribesServerQueryResponse) {
