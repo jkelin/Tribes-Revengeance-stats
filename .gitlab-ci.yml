@@ -9,7 +9,6 @@ install-dev:
   stage: install
   image: node:8-alpine
   cache:
-    untracked: true
     key: "$CI_PROJECT_ID-dev"
     paths:
       - node_modules/
@@ -43,9 +42,8 @@ build:
   script:
     - yarn build
   artifacts:
-    untracked: true
     paths:
-      - dist/
+      - dist
 
 docker-build:
   stage: post-build
