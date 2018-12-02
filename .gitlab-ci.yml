@@ -46,7 +46,7 @@ sentry:
     - build
   script:
     - sentry-cli releases new $CI_COMMIT_SHA
-    - sentry-cli releases set-commits $CI_COMMIT_SHA --auto
+    - sentry-cli releases set-commits $CI_COMMIT_SHA --commit $SENTRY_REPOSITORY@$CI_COMMIT_SHA
     - sentry-cli releases files $CI_COMMIT_SHA upload-sourcemaps ./dist
     - sentry-cli releases finalize $CI_COMMIT_SHA
 
