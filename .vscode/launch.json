@@ -1,25 +1,48 @@
 {
-    // Use IntelliSense to learn about possible Node.js debug attributes.
-    // Hover to view descriptions of existing attributes.
-    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
-    "version": "0.2.0",
-    "configurations": [
-        {
-            "type": "node",
-            "request": "launch",
-            "name": "start",
-            "program": "${workspaceRoot}\\index.js",
-            "env": {
-            }
-        },
-        {
-            "type": "node",
-            "request": "launch",
-            "name": "start:web",
-            "program": "${workspaceRoot}\\index.js",
-            "env": {
-                "STATS_REPORT": "false"
-            }
-        },
-    ]
+  // Use IntelliSense to learn about possible Node.js debug attributes.
+  // Hover to view descriptions of existing attributes.
+  // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "start",
+      "args": [
+        "${workspaceRoot}/src/index.ts"
+      ],
+      "runtimeArgs": [
+        "--nolazy",
+        "-r",
+        "ts-node/register"
+      ],
+      "sourceMaps": true,
+      "cwd": "${workspaceRoot}",
+      "protocol": "inspector",
+      "env": {
+        "TS_NODE_TRANSPILE_ONLY": "true"
+      }
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "start:web",
+      "args": [
+        "${workspaceRoot}/src/index.ts"
+      ],
+      "runtimeArgs": [
+        "--nolazy",
+        "-r",
+        "ts-node/register"
+      ],
+      "sourceMaps": true,
+      "cwd": "${workspaceRoot}",
+      "protocol": "inspector",
+      "console": "integratedTerminal",
+      "env": {
+        "STATS_REPORT": "false",
+        "TS_NODE_TRANSPILE_ONLY": "true"
+      }
+    }
+  ]
 }

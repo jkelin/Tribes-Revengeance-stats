@@ -6,7 +6,7 @@ import * as crypto from 'crypto';
 import { Player, Server, Match, IMatchModel } from "./db";
 import { getChatFor } from "./chat";
 import { ITribesServerQueryResponse, IFullReportPlayer } from "./types";
-import * as StatOrder from '../data/statorder.json';
+import * as StatOrder from './data/statorder.json';
 
 function sha1(input: string) {
   const shasum = crypto.createHash('sha1');

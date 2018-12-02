@@ -1,8 +1,8 @@
 import * as fs from 'fs-extra';
-import { isValidPreprocess } from '../src/anticheat';
+import { isValidPreprocess } from '../anticheat';
 import { flatMap, max, mean, keys, sortBy, range } from 'lodash';
-import { Match } from '../src/db';
-import { IUploadedPlayer } from '../src/types';
+import { Match } from '../db';
+import { IUploadedPlayer } from '../types';
 
 require('dotenv').config()
 

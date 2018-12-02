@@ -2,6 +2,8 @@ import { IUploadedPlayer, IUploadedData } from "./types";
 import { mean, min, max, mapValues, values, sum, mapKeys, Dictionary } from "lodash";
 import * as _ from "lodash";
 
+import * as AnticheatStats from './data/anticheat-stats.json';
+
 export function isValidPreprocess(player: IUploadedPlayer, data: IUploadedData) {
   const trackedStats = {
     score: player.score,
@@ -44,13 +46,12 @@ export function isValidPreprocess(player: IUploadedPlayer, data: IUploadedData) 
  */
 export function isValid(player: IUploadedPlayer, data: IUploadedData) {
   const preprocessed = isValidPreprocess(player, data);
-  const stats: Dictionary<{ max: number, avg: number, median: number, p90: number, p95: number, p99: number }> = require('../data/anticheat-stats.json');
 
   const absoluteTolerance = data.players.length * 5;
 
   const difference = _(preprocessed)
-    .mapValues((value, key) => Math.max(0, value - (stats[key].p99 + absoluteTolerance))) // absolute differences
-    .mapValues((diff, key) => diff / stats[key].p99) // percentage differences
+    .mapValues((value, key) => Math.max(0, value - (AnticheatStats[key].p99 + absoluteTolerance))) // absolute differences
+    .mapValues((diff, key) => diff / AnticheatStats[key].p99) // percentage differences
     .values() // percentages
     .sum();
 

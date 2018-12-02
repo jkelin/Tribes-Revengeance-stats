@@ -1,12 +1,13 @@
 import * as winston from "winston";
 import * as moment from "moment";
-import * as countryNames from "../data/countrynames.json";
-import * as availableMapImages from "../data/available-map-images.json";
+import * as countryNames from "./data/countrynames.json";
+import * as availableMapImages from "./data/available-map-images.json";
 import * as timespan from "timespan";
 import * as github from 'octonode';
 import * as path from 'path';
 import * as sha1File from 'sha1-file';
-import * as tags from '../data/clan-tags.json';
+import * as tags from './data/clan-tags.json';
+import * as StatNames from './data/statnames.json';
 import { removeDiacritics } from "./removeAccents";
 import { Request } from "../node_modules/@types/express-serve-static-core";
 import { INews } from "./types";
@@ -119,9 +120,8 @@ export const handlebars_helpers: Record<string, (...params: any[]) => string> = 
   },
   showMoment: function (context) { return moment(context).fromNow(); },
   translateStatName: function (context) {
-    var table = require("../data/statnames.json");
-    for (var i in table) {
-      if (context == i) return table[i];
+    for (var i in StatNames) {
+      if (context == i) return StatNames[i];
     };
     return context;
   },

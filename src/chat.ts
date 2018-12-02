@@ -19,7 +19,7 @@ const axiosInstance = axios.create({
 require("rxjs/operator/debounceTime");
 
 import { Server, IServerModel } from './db';
-import * as QcMappings from '../data/qcmappings.json';
+import * as QcMappings from './data/qcmappings.json';
 import Events, { EventSay } from "./events";
 import { IChatMessage } from './types';
 
