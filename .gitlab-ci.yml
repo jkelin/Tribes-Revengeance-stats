@@ -23,7 +23,6 @@ install-prod:
   stage: install
   image: node:8-alpine
   cache:
-    untracked: true
     key: "$CI_PROJECT_ID-prod"
     paths:
       - node_modules/
