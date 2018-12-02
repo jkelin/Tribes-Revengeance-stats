@@ -66,9 +66,7 @@ docker-build:
 
 sentry:
   stage: post-build
-  image: 
-    name: getsentry/sentry-cli:1
-    entrypoint: ["/bin/sh"]
+  image: getsentry/sentry-cli
   dependencies:
     - build
   script:
