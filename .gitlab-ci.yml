@@ -65,7 +65,7 @@ deploy:
     - echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
     - chmod 600 ~/.ssh/id_rsa
   script:
-    - ssh $DEPLOY_HOST "docker pull $CONTAINER_IMAGE:$CI_COMMIT_SHA)"
+    - ssh $DEPLOY_HOST "docker pull $CONTAINER_IMAGE:$CI_COMMIT_SHA"
     - >
       ssh $DEPLOY_HOST "
       docker service update
