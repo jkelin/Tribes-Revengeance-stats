@@ -71,10 +71,10 @@ sentry:
   dependencies:
     - build
   script:
-    - sentry-cli releases new "$CI_COMMIT_SHA"
-    - sentry-cli releases set-commits "$CI_COMMIT_SHA" --auto
-    - sentry-cli releases files "$CI_COMMIT_SHA" upload-sourcemaps ./dist
-    - sentry-cli releases finalize "$CI_COMMIT_SHA"
+    - sentry-cli releases new $CI_COMMIT_SHA
+    - sentry-cli releases set-commits $CI_COMMIT_SHA --auto
+    - sentry-cli releases files $CI_COMMIT_SHA upload-sourcemaps ./dist
+    - sentry-cli releases finalize $CI_COMMIT_SHA
 
 deploy:
   stage: deploy
@@ -99,8 +99,8 @@ deploy:
       (docker service update --image $CONTAINER_IMAGE:$CI_COMMIT_SHA --env-add SENTRY_RELEASE:$CI_COMMIT_SHA $DEPLOY_SERVICE) ||
       (docker service rollback $DEPLOY_SERVICE && exit 1)"
     - >
-      docker run
+      docker run -it sentry-cli
       -e "SENTRY_AUTH_TOKEN=$SENTRY_AUTH_TOKEN"
       -e "SENTRY_ORG=$SENTRY_ORG"
       -e "SENTRY_PROJECT=$SENTRY_PROJECT"
-      -it sentry-cli releases deploys "$CI_COMMIT_SHA" new -e production
+      "releases deploys $CI_COMMIT_SHA new -e production"
