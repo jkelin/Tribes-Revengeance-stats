@@ -43,6 +43,7 @@ build:
   script:
     - yarn build
   artifacts:
+    untracked: true
     paths:
       - dist/
 
