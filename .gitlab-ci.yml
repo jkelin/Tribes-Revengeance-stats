@@ -74,8 +74,8 @@ deploy:
       --update-failure-action=rollback
       $DEPLOY_SERVICE"
     - >
-      docker run -it sentry-cli
+      docker run
       -e "SENTRY_AUTH_TOKEN=$SENTRY_AUTH_TOKEN"
       -e "SENTRY_ORG=$SENTRY_ORG"
       -e "SENTRY_PROJECT=$SENTRY_PROJECT"
-      "sentry-cli releases deploys $CI_COMMIT_SHA new -e production"
+      getsentry/sentry-cli releases deploys $CI_COMMIT_SHA new -e production
