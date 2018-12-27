@@ -118,6 +118,9 @@ export const handlebars_helpers: Record<string, (...params: any[]) => string> = 
     str += span.minutes + " minutes";
     return str;
   },
+  showHours: function (context) {
+    return Math.round((parseInt(context) / 60)) + " hours";
+  },
   showMoment: function (context) { return moment(context).fromNow(); },
   translateStatName: function (context) {
     for (var i in StatNames) {
