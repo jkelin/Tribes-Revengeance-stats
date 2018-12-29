@@ -279,6 +279,7 @@ export function saveMatchResult(ip: string, port: number, fullReport: IUploadedD
         server: id,
         when: new Date(),
         fullReport: removeDotStatNamesFromFullReport(fullReport),
+        numplayers: parseInt(server.lastdata.numplayers + ''),
         basicReport: server.lastdata
       });
 

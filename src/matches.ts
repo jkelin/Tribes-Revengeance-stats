@@ -115,8 +115,8 @@ async function getMatchesData(page: number, sort: string) {
 
   const [data, count] = await Promise.all([
     Match
-      .find({ 'basicReport.numplayers': { $ne: '0' } })
-      .sort(sort).collation({locale: "en_US", numericOrdering: true})
+      .find({ 'numplayers': { $gt: 0 } })
+      .sort(sort)
       .select({
         basicReport: true,
         when: true
@@ -125,7 +125,7 @@ async function getMatchesData(page: number, sort: string) {
       .limit(perPage)
       .exec(),
     Match
-      .find({ 'basicReport.numplayers': { $ne: '0' } })
+      .find({ 'numplayers': { $gt: 0 } })
       .count()
       .exec()
   ]);
@@ -160,7 +160,7 @@ async function getMatchesData(page: number, sort: string) {
 function parseSort(sort: 'players' | 'time') {
   switch(sort) {
     case 'players':
-      return '-basicReport.numplayers';
+      return '-numplayers';
     default:
       return '-when';
   }

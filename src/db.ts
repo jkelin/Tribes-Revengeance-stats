@@ -111,6 +111,7 @@ export const Identity = mongoose.model<IIdentityModel>('Identity', {
 export interface IMatch {
   server: string;
   when: Date;
+  numplayers: number;
   basicReport: ITribesServerQueryResponse;
   fullReport: IFullReport;
 }
@@ -120,10 +121,13 @@ export interface IMatchModel extends IMatch, Document { }
 const MatchSchema = new mongoose.Schema({
   server: String,
   when: Date,
+  numplayers: Number,
   basicReport: mongoose.Schema.Types.Mixed,
   fullReport: mongoose.Schema.Types.Mixed
 });
+
 MatchSchema.index({ "basicReport.numplayers": 1 });
+MatchSchema.index({ "numplayers": 1 });
 MatchSchema.index({ "when": 1 });
 
 export const Match = mongoose.model<IMatchModel>('Match', MatchSchema);
