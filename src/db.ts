@@ -117,12 +117,16 @@ export interface IMatch {
 
 export interface IMatchModel extends IMatch, Document { }
 
-export const Match = mongoose.model<IMatchModel>('Match', {
+const MatchSchema = new mongoose.Schema({
   server: String,
   when: Date,
   basicReport: mongoose.Schema.Types.Mixed,
   fullReport: mongoose.Schema.Types.Mixed
-} as any);
+});
+MatchSchema.index({ "basicReport.numplayers": 1 });
+MatchSchema.index({ "when": 1 });
+
+export const Match = mongoose.model<IMatchModel>('Match', MatchSchema);
 
 export const influx = new InfluxDB({
   username: process.env.INFLUXDB_USER,
