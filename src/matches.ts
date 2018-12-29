@@ -110,13 +110,13 @@ router.get('/matches/:id', function (req, res, next) {
   return getMatchData(req.params.id).then(data => res.render('match', data))
 });
 
-async function getMatchesData(page: number) {
+async function getMatchesData(page: number, sort: string) {
   const perPage = 50;
 
   const [data, count] = await Promise.all([
     Match
       .find({ 'basicReport.numplayers': { $ne: '0' } })
-      .sort('-when')
+      .sort(sort).collation({locale: "en_US", numericOrdering: true})
       .select({
         basicReport: true,
         when: true
@@ -157,6 +157,15 @@ async function getMatchesData(page: number) {
   };
 }
 
+function parseSort(sort: 'players' | 'time') {
+  switch(sort) {
+    case 'players':
+      return '-basicReport.numplayers';
+    default:
+      return '-when';
+  }
+}
+
 function parsePage(page: string) {
   try {
     return parseInt((page || 1) + '');
@@ -166,13 +175,13 @@ function parsePage(page: string) {
 }
 
 router.get('/matches.json', function (req, res, next) {
-  return getMatchesData(parsePage(req.query.page))
-    .then(data => res.json(data))
+  return getMatchesData(parsePage(req.query.page), parseSort(req.query.sort))
+    .then(data => res.json({ ...data, sort: req.query.sort }))
 });
 
 router.get('/matches', function (req, res, next) {
-  return getMatchesData(parsePage(req.query.page))
-    .then(data => res.render('matches', data))
+  return getMatchesData(parsePage(req.query.page), parseSort(req.query.sort))
+    .then(data => res.render('matches', { ...data, sort: req.query.sort }))
 });
 
 module.exports = {

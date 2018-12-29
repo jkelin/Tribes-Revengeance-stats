@@ -1,29 +1,29 @@
 <nav aria-label="Page navigation">
     <ul class="pagination">
         <li {{#unless pagination.prev}}class="disabled"{{/unless}}>
-            <a {{#if pagination.first}}href="?page={{pagination.first}}"{{/if}} aria-label="First">
+            <a {{#if pagination.first}}href="?page={{pagination.first}}&sort={{sort}}"{{/if}} aria-label="First">
                 {{pagination.first}}
             </a>
         </li>
         <li {{#unless pagination.prev}}class="disabled"{{/unless}}>
-            <a {{#if pagination.prev}}href="?page={{pagination.prev}}"{{/if}} aria-label="prev">
+            <a {{#if pagination.prev}}href="?page={{pagination.prev}}&sort={{sort}}"{{/if}} aria-label="prev">
                 &laquo;
             </a>
         </li>
 
         <li class="active">
-            <a href="?page={{pagination.page}}">
+            <a href="?page={{pagination.page}}&sort={{sort}}">
                 {{pagination.page}} <span class="sr-only">(current)
             </a>
         </li>
 
         <li {{#unless pagination.next}}class="disabled"{{/unless}}>
-            <a {{#if pagination.next}}href="?page={{pagination.next}}"{{/if}} aria-label="Next">
+            <a {{#if pagination.next}}href="?page={{pagination.next}}&sort={{sort}}"{{/if}} aria-label="Next">
                 &raquo;
             </a>
         </li>
         <li {{#unless pagination.next}}class="disabled"{{/unless}}>
-            <a {{#if pagination.last}}href="?page={{pagination.last}}"{{/if}} aria-label="Last">
+            <a {{#if pagination.last}}href="?page={{pagination.last}}&sort={{sort}}"{{/if}} aria-label="Last">
                 {{pagination.last}}
             </a>
         </li>
