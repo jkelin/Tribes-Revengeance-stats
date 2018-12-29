@@ -85,7 +85,11 @@ if (STATS_WEB) {
   app.use("/", matches.router);
 
   app.get('/about', function (req, res) {
-    res.render('about');
+    res.redirect(301, 'https://tribesrevengeance.net');
+  });
+
+  app.get('/extension', function (req, res) {
+    res.render('extension');
   });
 }
 
