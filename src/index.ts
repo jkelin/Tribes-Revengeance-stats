@@ -109,8 +109,8 @@ function searchPlayers(name: string) {
 if (STATS_WEB) {
   io.on('connection', function (socket) {
     socket.on("say", data => {
-      const nameRegex = /^[A-Za-z0-9\| \-_\?\*\/:\.]{3,29}$/;
-      const messageRegex = /^[A-Za-z0-9\| \-_\?\*\/:\.]{1,127}$/;
+      const nameRegex = /^[A-Za-z0-9\| \-_\?\!\*\/:\.]{3,29}$/;
+      const messageRegex = /^[A-Za-z0-9\| \-_\?\!\*\/:\.]{1,196}$/;
       if (nameRegex.test(data.usr) && messageRegex.test(data.message)) {
         Events.next({ type: "say", data: { server: data.server, usr: data.usr, message: data.message } })
       }
