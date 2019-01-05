@@ -112,10 +112,10 @@
   </div>
   <div class="row">
     <div class="col-sm-2">
-      <input type="text" class="form-control input-sm" placeholder="Username" maxlength="29" required id="usr" pattern="(A-Za-z0-9\| \-_\?\*\/:\.){3,29}">
+      <input type="text" class="form-control input-sm" placeholder="Username" maxlength="29" required id="usr" pattern="^[A-Za-z0-9\| \-_\?\*\/:\.]{3,29}$">
     </div>
     <div class="col-sm-8">
-      <input type="text" class="form-control input-sm" placeholder="Message" required maxlength="196" id="msg" pattern="(A-Za-z0-9\| \-_\?\*\/:\.)">
+      <input type="text" class="form-control input-sm" placeholder="Message" required maxlength="196" id="msg" pattern="^[A-Za-z0-9\| \-_\?\*\/:\.]{1,196}$">
     </div>
     <div class="col-sm-2">
       <button type="submit" class="btn btn-block btn-sm btn-primary" disabled data-loading-text="Sending..." id="snd">
