@@ -64,10 +64,12 @@
     "start:report": "cross-env STATS_WEB=false yarn start",
     "script:recalculate_identities": "ts-node src/scripts/recalculate_identities.ts",
     "script:prod:recalculate_identities": "node src/scripts/recalculate_identities.js",
-    "script:export_anticheat_data": "ts-node src/scripts/export_anticheat_data.ts",
+    "script:export_anticheat_data": "ts-node --files src/scripts/export_anticheat_data.ts",
     "script:prod:export_anticheat_data": "node src/scripts/export_anticheat_data.js",
-    "script:test_anticheat": "ts-node src/scripts/test_anticheat.ts",
+    "script:test_anticheat": "ts-node --files src/scripts/test_anticheat.ts",
     "script:prod:test_anticheat": "node src/scripts/test_anticheat.js",
+    "script:normalize_names": "ts-node --files src/scripts/normalize_names.ts",
+    "script:prod:normalize_names": "node src/scripts/normalize_names.js",
     "typecheck": "tsc --noEmit",
     "build": "tsc"
   }

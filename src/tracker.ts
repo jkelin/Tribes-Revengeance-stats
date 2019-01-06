@@ -5,7 +5,7 @@ import * as atob from "atob";
 
 import { Player, Server, Match, influx, IPlayerModel, IServerModel, IServer, IPlayer } from "./db";
 import { emitter } from "./ticker";
-import { getClientIp, getFullMapName } from "./helpers";
+import { getClientIp, getFullMapName, cleanPlayerName } from "./helpers";
 import { mean, min, max } from "lodash";
 import { IUploadedData, IUploadedPlayer, IFullReport, ITribesServerQueryResponse } from "./types";
 import { isValid } from "./anticheat";
@@ -125,6 +125,7 @@ export function timePlayer(player: IUploadedPlayer) {
       if (pl === null) {
         pl = new Player(<IPlayer>{
           _id: player.player,
+          normalizedName: cleanPlayerName(player.player + ''),
           stats: {},
           score: 0,
           kills: 0,
@@ -143,6 +144,7 @@ export function timePlayer(player: IUploadedPlayer) {
         winston.debug("Timing player", player.player);
       }
 
+      pl.normalizedName = cleanPlayerName(player.player + '');
       pl.lastseen = new Date();
       pl.save(function (err) { if (err) throw err; });
     });
@@ -160,6 +162,7 @@ export function handlePlayer(input: IUploadedPlayer, ip: string, port: number) {
       if (player === null) {
         player = new Player(<IPlayer>{
           _id: input.name,
+          normalizedName: cleanPlayerName(input.name),
           stats: {},
           score: 0,
           kills: 0,
@@ -174,6 +177,7 @@ export function handlePlayer(input: IUploadedPlayer, ip: string, port: number) {
 
       if (player.offense == undefined) player.offense = 0;
 
+      player.normalizedName = cleanPlayerName(input.name);
       player.ip = input.ip;
       player.lastserver = ip + ":" + port;
       player.score += input.score;

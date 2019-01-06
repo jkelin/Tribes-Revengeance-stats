@@ -60,6 +60,7 @@ export const Server = mongoose.model<IServerModel>('Server', {
 
 export interface IPlayer {
   _id: string,
+  normalizedName: string,
   ip?: string,
   lastserver: string,
   score: number,
@@ -80,6 +81,7 @@ export interface IPlayerModel extends IPlayer, Document {
 
 export const Player = mongoose.model<IPlayerModel>('Player', {
   _id: String,
+  normalizedName: String,
   ip: String,
   lastserver: String,
   score: Number,
