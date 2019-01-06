@@ -6,7 +6,7 @@ import * as crypto from 'crypto';
 import { Player, Server, Match, IMatchModel } from "./db";
 import { getChatFor } from "./chat";
 import { ITribesServerQueryResponse, IFullReportPlayer } from "./types";
-import * as StatOrder from './data/statorder.json';
+import { prepareStats } from "./helpers";
 
 function sha1(input: string) {
   const shasum = crypto.createHash('sha1');
@@ -33,49 +33,6 @@ function getPlayersForTeam(data: IMatchModel, team: string) {
     .sort((a, b) => b.score - a.score)
 }
 
-function handleItem(key: string, player: IFullReportPlayer) {
-  return {
-    value: player[key],
-    name: player.name,
-    team: player.team
-  }
-}
-
-function prepareStats(data: IMatchModel) {
-  const keys = Object.keys(data.fullReport.players[0]).filter(x => [
-    'style',
-    'defense',
-    'offense',
-    'deaths',
-    'kills',
-    'score',
-    'team',
-    'voice',
-    'starttime',
-    'ping',
-    'name',
-    'url',
-    'ip'
-  ].indexOf(x) === -1);
-
-  function getDataForKey(k: string) {
-    return {
-      max: handleItem(k, _.maxBy(data.fullReport.players, x => x[k])!),
-      min: handleItem(k, _.minBy(data.fullReport.players, x => x[k])!),
-      sum: _.sumBy(data.fullReport.players, k),
-      avg: _.meanBy(data.fullReport.players, k),
-      key: k
-    };
-  }
-
-  const ret: Record<string, ReturnType<typeof getDataForKey>> = {};
-  keys
-    .filter(k => data.fullReport.players.find(p => !!p[k]))
-    .forEach(k => ret[k] = getDataForKey(k));
-
-  return _.sortBy(_.values(ret).filter(x => x.sum > 0), x => StatOrder[x.key] || "99" + x.key);
-}
-
 function generateResultInfo(data: ITribesServerQueryResponse) {
   if (data.teamonescore > data.teamtwoscore) {
     return { text: `${data.teamone} won the match!`, team: data.teamone };
@@ -98,7 +55,7 @@ function getMatchData(id: string) {
       info: { ...data.basicReport, players: undefined },
       team1: getPlayersForTeam(data, data.basicReport.teamone),
       team2: getPlayersForTeam(data, data.basicReport.teamtwo),
-      stats: prepareStats(data),
+      stats: prepareStats(data.fullReport.players),
     }));
 }
 

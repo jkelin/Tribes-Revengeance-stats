@@ -10,8 +10,10 @@ import * as tags from './data/clan-tags.json';
 import * as StatNames from './data/statnames.json';
 import { removeDiacritics } from "./removeAccents";
 import { Request } from "../node_modules/@types/express-serve-static-core";
-import { INews } from "./types";
+import { INews, IFullReportPlayer } from "./types";
 import { CronJob } from "cron";
+import * as StatOrder from './data/statorder.json';
+import { maxBy, minBy, sumBy, meanBy, sortBy, values } from "lodash";
 
 export function tryConvertIpv6ToIpv4(ip: string) {
   var regex = /^::ffff:([0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3})$/;
@@ -220,13 +222,64 @@ export function removeSpaces(name: string) {
   return name;
 }
 
+export function removeTrailingDigits(name: string) {
+  name = name.replace(/\d{1,3}$/g, ' ');
+
+  return name;
+}
+
 export function cleanPlayerName(name: string) {
   name = name.toLocaleLowerCase();
   name = removeDiacritics(name)
   name = stripClanTags(name)
   name = stripFormating(name)
   name = name.replace(/[^a-z0-9\-\_]/ig, ' ');
+  name = removeTrailingDigits(name)
   name = removeSpaces(name)
 
   return name.trim();
+}
+
+
+function handleItem(key: string, player: IFullReportPlayer) {
+  return {
+    value: player[key],
+    name: player.name,
+    team: player.team
+  }
+}
+
+export function getStatAggregateForPlayer(statName: string, players: IFullReportPlayer[]) {
+  return {
+    max: handleItem(statName, maxBy(players, x => x[statName])!),
+    min: handleItem(statName, minBy(players, x => x[statName])!),
+    sum: sumBy(players, statName),
+    avg: meanBy(players, statName),
+    key: statName
+  };
+}
+
+export function prepareStats(players: IFullReportPlayer[]):  ReturnType<typeof getStatAggregateForPlayer>[] {
+  const keys = Object.keys(players[0]).filter(x => [
+    'style',
+    'defense',
+    'offense',
+    'deaths',
+    'kills',
+    'score',
+    'team',
+    'voice',
+    'starttime',
+    'ping',
+    'name',
+    'url',
+    'ip'
+  ].indexOf(x) === -1);
+
+  const ret: Record<string, ReturnType<typeof getStatAggregateForPlayer>> = {};
+  keys
+    .filter(k => players.find(p => !!p[k]))
+    .forEach(k => ret[k] = getStatAggregateForPlayer(k, players));
+
+  return sortBy(values(ret).filter(x => x.sum > 0), x => StatOrder[x.key] || "99" + x.key) as any;
 }

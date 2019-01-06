@@ -1,9 +1,18 @@
 {{#if data}}
-<h2>{{data._id}}</h2>
-{{#if relatedNicknamesString}}
+<h2>
+  {{data._id}}
+  {{#if persona}}
+    (<a href="/persona/{{urlencode persona}}">{{persona}}</a>)
+  {{/if}}
+</h2>
+
+{{#if relatedNicknames.length}}
     <h4>
-        Also known as:
-        <span class="match-when">{{relatedNicknamesString}}</span>
+        Related personas:
+        {{#each relatedNicknames}}
+          {{#if @key}}<span style="display: inline-block; margin-left: -4px; margin-right: 5px">,</span>{{/if}}
+          <a href="/persona/{{urlencode this}}">{{this}}</a>
+        {{/each}}
     </h4>
 {{/if}}
 

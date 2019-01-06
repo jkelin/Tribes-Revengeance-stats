@@ -1,3 +1,5 @@
+
+
 <table class="table table-bordered playertable table-hover">
 	<thead>
 		<tr>
@@ -14,15 +16,21 @@
 		</tr>
 	</thead>
 	<tbody>
-	{{#each data}}
+	{{#each data as |item key|}}
 		<tr>
 			<td class="hidden-xs">{{inc @index}}</td>
-			<td><a href="/player/{{urlencode _id}}">{{_id}}</a></td>
+			<td><a href="/{{#if ../linkPrefix}}{{../linkPrefix}}{{else}}player{{/if}}/{{urlencode _id}}">{{_id}}</a></td>
 			<td>{{emptyIfZero this kills}}</td>
 			<td class="hidden-xs">{{emptyIfZero this deaths}}</td>
 			<td class="hidden-xs">{{killsperminute this}}</td>
 			<td>{{emptyIfZero this style}}</td>
-			<td class="hidden-xs">{{emptyIfZero this stats.flagCaptureStat}}</td>
+			<td class="hidden-xs">
+        {{#if stats.flagCaptureStat}}
+          {{emptyIfZero this stats.flagCaptureStat}}
+        {{else}}
+          {{emptyIfZero this captures}}
+        {{/if}}
+      </td>
 			<td>{{emptyIfZero this score}}</td>
 			<td class="hidden-xs">{{showHours minutesonline}}</td>
 			<td class="hidden-xs">{{showMoment lastseen}}</td>
