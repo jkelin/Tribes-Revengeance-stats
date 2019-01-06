@@ -110,7 +110,7 @@ router.get("/player/:name", async function(req, res) {
 
   res.render("player", {
     data: data,
-    persona: personaCount > 0 ? data.normalizedName : null,
+    persona: (data && personaCount > 0) ? data.normalizedName : null,
     relatedNicknames: similar,
     relatedNicknamesString: similar && similar.join(", ")
   });
