@@ -125,7 +125,7 @@ router.get("/players", function(req, res) {
         if (e) throw e;
         res.render("players", {
           data: data,
-          alerts: [{ text: c + " names total" }]
+          alerts: [{ text: c + " aliases total" }]
         });
       });
     });
