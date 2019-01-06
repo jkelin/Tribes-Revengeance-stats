@@ -155,7 +155,7 @@ router.get("/persona/:name", async function(req, res) {
     defense: sumBy(names, 'defense'),
     style: sumBy(names, 'style'),
     minutesonline: sumBy(names, 'minutesonline'),
-    lastseen: maxBy(names, 'lastseen'),
+    lastseen: sortBy(names, 'lastseen').reverse()[0],
     names: sortBy(names, 'minutesonline').reverse(),
     stats: stats,
     relatedNicknames: relatedNicknames
