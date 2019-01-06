@@ -195,7 +195,7 @@ router.get("/personas", async function(req, res) {
 
   res.render("personas", {
     data: personas,
-    alerts: [{ text: personas.length + " personas total. Only personas with aggregate play time of 60 minutes and 100 score are shown." }],
+    alerts: [{ text: personas.length + " tribals total. Only tribals with aggregate play time of 60 minutes and 100 score are shown." }],
     linkPrefix: 'persona'
   });
 });

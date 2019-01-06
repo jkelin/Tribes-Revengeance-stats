@@ -13,7 +13,7 @@
 
 {{#if relatedNicknames.length}}
     <h4>
-        Related personas:
+        Related tribals:
         {{#each relatedNicknames}}
           {{#if @key}}<span style="display: inline-block; margin-left: -4px; margin-right: 5px">,</span>{{/if}}
           <a href="/persona/{{urlencode this}}">{{this}}</a>
@@ -41,5 +41,5 @@
     {{/each}}
 </table>
 {{else}}
-Persona not found
+Tribal not found
 {{/if}}
