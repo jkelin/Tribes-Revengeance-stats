@@ -142,7 +142,7 @@ if (STATS_WEB) {
           servers: data[2],
           news: data[3].slice(0, 5),
           now: new Date(),
-          warnings: [{ text: "If you have issues seeing servers in-game, download this <a href='https://downloads.tribesrevengeance.net/other/Engine.dll'>Engine.dll</a> and put it into your Tribes/Program/Bin folder next to your TV_CD_DVD.exe file. If you are asked to overwrite the old one, click yes." }]
+          // warnings: [{ text: "If you have issues seeing servers in-game, download this <a href='https://downloads.tribesrevengeance.net/other/Engine.dll'>Engine.dll</a> and put it into your Tribes/Program/Bin folder next to your TV_CD_DVD.exe file. If you are asked to overwrite the old one, click yes." }]
         };
         res.render('home', obj);
       })
