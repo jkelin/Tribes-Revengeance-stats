@@ -15,7 +15,7 @@ import * as bodyParser from 'body-parser';
 import * as SocketIO from "socket.io";
 import * as Sentry from '@sentry/node';
 
-import { getTribesServersFromMasterServer, queryTribesServer } from "./serverQuery";
+import { getTribesServersFromMasterServer, queryTribesServer, getTribesServersFromDb } from "./serverQuery";
 import { Player, Server, IPlayerModel } from "./db";
 import { tryConvertIpv6ToIpv4, tribes_news, handlebars_helpers } from "./helpers";
 import { handleTribesServerData, addServerLastFullReport, handlePlayer, router as trackerRouter } from "./tracker";
@@ -182,16 +182,29 @@ server.listen(process.env.PORT || 5000, function () {
   winston.info('App listening', { host: host, port: port });
 });
 
-function updateFromMaster() {
-  getTribesServersFromMasterServer(function (servers) {
-    servers.forEach(function (item) {
-      queryTribesServer(item[0], parseInt(item[1]), handleTribesServerData);
-    });
-  });
+async function queryLiveServers() {
+  winston.debug("Query live servers");
+  let servers: { ip: string, port: number }[] | undefined;
+
+  try {
+    servers = await getTribesServersFromMasterServer();
+  } catch(er) {
+    console.error("Could not read servers from master", er.message);
+  }
+
+  // servers = await getTribesServersFromDb();
+
+  if(servers) {
+    winston.debug("Query live servers, servers:", servers);
+
+    servers
+    .filter(server => server.ip && server.port)
+    .forEach(server => queryTribesServer(server.ip, server.port, handleTribesServerData));
+  }
 }
 
 if (STATS_REPORT) {
-  setInterval(updateFromMaster, 5 * 1000);
+  setInterval(queryLiveServers, 5 * 1000);
 }
 
 process.on('unhandledRejection', (reason, p) => {

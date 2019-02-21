@@ -1,38 +1,38 @@
 import * as http from "http";
+import * as https from "https";
 import * as dgram from "dgram";
 import * as net from "net";
 import * as winston from "winston";
+import axios from 'axios';
 import { ITribesServerQueryResponse } from "./types";
+import { Server } from "./db";
 
 const timeoutMs = 1000;
+const masterClient = axios.create({
+  timeout: 1000,
+  httpAgent: new http.Agent({ keepAlive: true }),
+  httpsAgent: new https.Agent({ keepAlive: true }),
+});
 
-export function getTribesServersFromMasterServer(callback: (data: string[][]) => any) {
-  let options = {
-    host: 'qtracker.com',
-    path: '/server_list_details.php?game=tribesvengeance'
-  };
+export async function getTribesServersFromMasterServer(): Promise<{ ip: string, port: number }[]> {
+  const resp = await masterClient.get<string>("http://qtracker.com/server_list_details.php?game=tribesvengeance");
+  var lines = resp.data.split("\r\n");
+  var servers = lines
+  .map(function (item) {
+    const splat = item.split(":");
+    return {
+      ip: splat[0],
+      port: parseInt(splat[1])
+    }
+  })
+  .filter(s => s.ip && s.port);
 
-  http.request(options, function (response) {
-    var str = '';
+  return servers;
+}
 
-    response.on('data', function (chunk) {
-      str += chunk;
-    });
-
-    response.on('end', function () {
-      var text = str;
-      var lines = text.split("\r\n");
-      var items = lines.map(function (item) {
-        return item.split(":");
-      });
-
-      var filtered = items.filter(function (item) {
-        return item.length === 2;
-      });
-
-      callback(filtered);
-    });
-  }).end();
+export async function getTribesServersFromDb() {
+  const servers = await Server.find().select({ ip: 1, port: 1 }).exec();
+  return servers.filter(x => x.ip && x.port).map(x => ({ ip: x.ip, port: x.port }));
 }
 
 export function parseTribesServerQueryReponse(ip: string, port: number, message: string, ping: number): ITribesServerQueryResponse {
