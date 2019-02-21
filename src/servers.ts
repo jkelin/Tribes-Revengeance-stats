@@ -99,7 +99,7 @@ router.get('/servers.json', function (req, res) {
 router.get('/servers.players.json', function (req, res) {
   Server.find().sort({ lastseen: -1 }).exec(function (err, data) {
     if (err) throw err;
-    res.json(data.filter(x => (Date.now() - 60 * 1000) < x.lastseen.getTime()).map(x => ({ id: x._id, name: x.name, players: x.lastdata.players })));
+    res.json(data.filter(x => x.lastdata).filter(x => (Date.now() - 60 * 1000) < x.lastseen.getTime()).map(x => ({ id: x._id, name: x.name, players: x.lastdata.players })));
   });
 });
 
