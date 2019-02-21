@@ -6,16 +6,25 @@ import * as winston from "winston";
 import axios from 'axios';
 import { ITribesServerQueryResponse } from "./types";
 import { Server } from "./db";
+import { handleTribesServerData } from "./tracker";
 
-const timeoutMs = 1000;
 const masterClient = axios.create({
   timeout: 1000,
   httpAgent: new http.Agent({ keepAlive: true }),
-  httpsAgent: new https.Agent({ keepAlive: true }),
+  httpsAgent: new https.Agent({ keepAlive: true, rejectUnauthorized: false }),
 });
 
+const udpSocket = dgram.createSocket('udp4', function (message, remote) {
+  const data = parseTribesServerQueryReponse(remote.address, remote.port - 1, message.toString('ascii'));
+  if (data.hostport) {
+    handleTribesServerData(data).catch(er => winston.error("Could not handleTribesServerData for", data));
+  }
+});
+
+udpSocket.bind();
+
 export async function getTribesServersFromMasterServer(): Promise<{ ip: string, port: number }[]> {
-  const resp = await masterClient.get<string>("http://qtracker.com/server_list_details.php?game=tribesvengeance");
+  const resp = await masterClient.get<string>("https://qtracker.com/server_list_details.php?game=tribesvengeance");
   var lines = resp.data.split("\r\n");
   var servers = lines
   .map(function (item) {
@@ -35,7 +44,7 @@ export async function getTribesServersFromDb() {
   return servers.filter(x => x.ip && x.port).map(x => ({ ip: x.ip, port: x.port }));
 }
 
-export function parseTribesServerQueryReponse(ip: string, port: number, message: string, ping: number): ITribesServerQueryResponse {
+export function parseTribesServerQueryReponse(ip: string, port: number, message: string): ITribesServerQueryResponse {
   var items = message.split('\\');
   items.splice(0, 1);
   var dict = {};
@@ -50,7 +59,6 @@ export function parseTribesServerQueryReponse(ip: string, port: number, message:
 
   var data: Partial<ITribesServerQueryResponse> = {
     ip,
-    ping,
     players: []
   };
 
@@ -67,40 +75,12 @@ export function parseTribesServerQueryReponse(ip: string, port: number, message:
   }
 
   data.ip = ip;
-  data.ping = ping;
 
   return data as ITribesServerQueryResponse;
 }
 
-export function queryTribesServer(ip: string, port: number, callback: (data: ITribesServerQueryResponse) => any) {
-  var message = new Buffer('\\basic\\');
-  var client = dgram.createSocket('udp4');
-  var timer = setTimeout(function () {
-    closeAll();
-    winston.info('Timeout on ' + ip + ":" + port);
-
-  }, timeoutMs);
-
-  var start = new Date().getTime();
-
-  client.on('listening', function () {
-    //console.log('Listening on ' + ip + ":" + port);
-  });
-
-  client.on('message', function (message, remote) {
-    //console.log("Response from",ip + ':' + port)
-    closeAll();
-    var end = new Date().getTime();
-    var time = end - start;
-    let parsed = parseTribesServerQueryReponse(ip, port, message.toString('utf8'), time);
-    callback(parsed);
-  });
-
-  var closeAll = function () {
-    clearTimeout(timer);
-    client.close();
-  };
-
-  client.send(message, 0, message.length, port, ip);
-  //client.bind(ip, port);
+export function queryTribesServer(ip: string, port: number) {
+  var message = new Buffer('\\basic\\', 'ascii');
+  
+  udpSocket.send(message, port, ip);
 }

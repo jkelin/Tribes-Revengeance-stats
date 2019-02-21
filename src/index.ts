@@ -192,14 +192,16 @@ async function queryLiveServers() {
     console.error("Could not read servers from master", er.message);
   }
 
-  // servers = await getTribesServersFromDb();
+  if(!servers) {
+    servers = await getTribesServersFromDb();
+  }
 
   if(servers) {
     winston.debug("Query live servers, servers:", servers);
 
     servers
     .filter(server => server.ip && server.port)
-    .forEach(server => queryTribesServer(server.ip, server.port, handleTribesServerData));
+    .forEach(server => queryTribesServer(server.ip, server.port));
   }
 }
 
