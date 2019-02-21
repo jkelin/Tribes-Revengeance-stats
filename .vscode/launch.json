@@ -21,7 +21,8 @@
       "protocol": "inspector",
       "env": {
         "TS_NODE_TRANSPILE_ONLY": "true"
-      }
+      },
+      "outputCapture": "std"
     },
     {
       "type": "node",
@@ -42,7 +43,8 @@
       "env": {
         "STATS_REPORT": "false",
         "TS_NODE_TRANSPILE_ONLY": "true"
-      }
+      },
+      "outputCapture": "std"
     }
   ]
 }

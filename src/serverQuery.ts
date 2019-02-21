@@ -9,15 +9,20 @@ import { Server } from "./db";
 import { handleTribesServerData } from "./tracker";
 
 const masterClient = axios.create({
-  timeout: 1000,
+  timeout: 5000,
   httpAgent: new http.Agent({ keepAlive: true }),
   httpsAgent: new https.Agent({ keepAlive: true, rejectUnauthorized: false }),
+  responseType: 'text'
 });
 
 const udpSocket = dgram.createSocket('udp4', function (message, remote) {
-  const data = parseTribesServerQueryReponse(remote.address, remote.port - 1, message.toString('ascii'));
-  if (data.hostport) {
-    handleTribesServerData(data).catch(er => winston.error("Could not handleTribesServerData for", data));
+  try {
+    const data = parseTribesServerQueryReponse(remote.address, remote.port - 1, message.toString('ascii'));
+    if (data && data.hostport) {
+      handleTribesServerData(data).catch(er => winston.error("Could not handleTribesServerData for", data));
+    }
+  } catch(er) {
+    winston.warn("Error in UDP server response", er);
   }
 });
 
