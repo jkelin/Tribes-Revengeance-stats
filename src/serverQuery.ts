@@ -17,7 +17,7 @@ const masterClient = axios.create({
 
 const udpSocket = dgram.createSocket('udp4', function (message, remote) {
   try {
-    const data = parseTribesServerQueryReponse(remote.address, remote.port - 1, message.toString('ascii'));
+    const data = parseTribesServerQueryReponse(remote.address, remote.port - 1, message.toString('utf-8'));
     if (data && data.hostport) {
       handleTribesServerData(data).catch(er => winston.error("Could not handleTribesServerData for", data));
     }
