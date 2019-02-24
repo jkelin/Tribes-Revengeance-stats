@@ -37,7 +37,8 @@ export function getNews() {
       if (error) {
         winston.error(error.message);
 
-        return reject(error);
+        // return reject(error);
+        return [];
       } else {
         var data: INews[] = [];
 
