@@ -200,7 +200,7 @@ async function queryLiveServers() {
     winston.debug("Query live servers, servers:", servers);
 
     servers
-    .filter(server => server.ip && server.port)
+    .filter(server => server.ip && server.port && parseInt(server.port.toString()) < 65536 && parseInt(server.port.toString()) > 0)
     .forEach(server => queryTribesServer(server.ip, server.port));
   }
 }

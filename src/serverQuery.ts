@@ -86,6 +86,6 @@ export function parseTribesServerQueryReponse(ip: string, port: number, message:
 
 export function queryTribesServer(ip: string, port: number) {
   var message = new Buffer('\\basic\\', 'ascii');
-  
+
   udpSocket.send(message, port, ip);
 }
