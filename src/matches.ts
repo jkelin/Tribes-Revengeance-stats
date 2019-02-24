@@ -34,9 +34,9 @@ function getPlayersForTeam(data: IMatchModel, team: string) {
 }
 
 function generateResultInfo(data: ITribesServerQueryResponse) {
-  if (data.teamonescore > data.teamtwoscore) {
+  if (parseInt(data.teamonescore) > parseInt(data.teamtwoscore)) {
     return { text: `${data.teamone} won the match!`, team: data.teamone };
-  } else if (data.teamonescore < data.teamtwoscore) {
+  } else if (parseInt(data.teamonescore) < parseInt(data.teamtwoscore)) {
     return { text: `${data.teamtwo} won the match!`, team: data.teamtwo };
   } else {
     return { text: 'Match ended in a tie!' }

@@ -18,8 +18,8 @@ export interface ITribesServerQueryResponse {
     ip: string;
     teamone: string;
     teamtwo: string;
-    teamonescore: number;
-    teamtwoscore: number;
+    teamonescore: string;
+    teamtwoscore: string;
     hostname: string;
     gametype: string;
     adminname?: string;
