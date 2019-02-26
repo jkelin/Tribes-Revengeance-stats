@@ -53,29 +53,35 @@ sentry:
 deploy:
   stage: deploy
   image: docker:git
-  services:
-    - docker:dind
-  environment:
-    name: production
-    url: https://tribesrevengeance.net
-  before_script:
-    - mkdir -p ~/.ssh
-    - chmod 700 ~/.ssh
-    - echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config
-    - echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
-    - chmod 600 ~/.ssh/id_rsa
   script:
-    - ssh $DEPLOY_HOST "docker pull $CONTAINER_IMAGE:$CI_COMMIT_SHA"
-    - >
-      ssh $DEPLOY_HOST "
-      docker service update
-      --image $CONTAINER_IMAGE:$CI_COMMIT_SHA
-      --env-add SENTRY_RELEASE:$CI_COMMIT_SHA 
-      --update-failure-action=rollback
-      $DEPLOY_SERVICE"
-    - >
-      docker run
-      -e "SENTRY_AUTH_TOKEN=$SENTRY_AUTH_TOKEN"
-      -e "SENTRY_ORG=$SENTRY_ORG"
-      -e "SENTRY_PROJECT=$SENTRY_PROJECT"
-      getsentry/sentry-cli releases deploys $CI_COMMIT_SHA new -e production
+    wget -q -O - --post-data=" " $DEPLOY_NOTIFICATION_URI
+
+# deploy:
+#   stage: deploy
+#   image: docker:git
+#   services:
+#     - docker:dind
+#   environment:
+#     name: production
+#     url: https://tribesrevengeance.net
+#   before_script:
+#     - mkdir -p ~/.ssh
+#     - chmod 700 ~/.ssh
+#     - echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config
+#     - echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
+#     - chmod 600 ~/.ssh/id_rsa
+#   script:
+#     - ssh $DEPLOY_HOST "docker pull $CONTAINER_IMAGE:$CI_COMMIT_SHA"
+#     - >
+#       ssh $DEPLOY_HOST "
+#       docker service update
+#       --image $CONTAINER_IMAGE:$CI_COMMIT_SHA
+#       --env-add SENTRY_RELEASE:$CI_COMMIT_SHA 
+#       --update-failure-action=rollback
+#       $DEPLOY_SERVICE"
+#     - >
+#       docker run
+#       -e "SENTRY_AUTH_TOKEN=$SENTRY_AUTH_TOKEN"
+#       -e "SENTRY_ORG=$SENTRY_ORG"
+#       -e "SENTRY_PROJECT=$SENTRY_PROJECT"
+#       getsentry/sentry-cli releases deploys $CI_COMMIT_SHA new -e production
