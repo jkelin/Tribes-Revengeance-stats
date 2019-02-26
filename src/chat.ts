@@ -8,6 +8,14 @@ import * as winston from "winston";
 import * as qs from 'qs';
 import { Observable } from 'rxjs';
 
+import { Server, IServerModel, redisClient, redisSubClient } from './db';
+import * as QcMappings from './data/qcmappings.json';
+import Events, { EventSay, EventChatMessage } from "./events";
+import { IChatMessage } from './types';
+import { promisify } from 'util';
+import * as moment from 'moment';
+import { v4 } from 'uuid';
+
 const axiosInstance = axios.create({
   timeout: 1000,
   httpAgent: new http.Agent({ keepAlive: true }),
@@ -18,14 +26,40 @@ const axiosInstance = axios.create({
 
 require("rxjs/operator/debounceTime");
 
-import { Server, IServerModel } from './db';
-import * as QcMappings from './data/qcmappings.json';
-import Events, { EventSay } from "./events";
-import { IChatMessage } from './types';
-
+const selfId = v4();
 
 let chatCache: Record<string, IChatMessage[]> = {};
 let activeChatRequests = {};
+
+function createRedisBucket(date: Date | moment.Moment) {
+  return moment(date).format("YYYY-MM-DDTHH");
+}
+
+export async function loadChatCacheFromRedis() {
+  const lrangeAsync = promisify(redisClient!.LRANGE).bind(redisClient);
+
+  var buckets = [
+    createRedisBucket(moment()),
+    createRedisBucket(moment().subtract(1, 'hour'))
+  ];
+
+  const messages: IChatMessage[] = [];
+
+  for (const bucket of buckets) {
+    const data = await lrangeAsync(bucket, 0, 1000);
+
+    for (const item of data) {
+      const message: IChatMessage = JSON.parse(item);
+
+      if (message.id && !messages.find(x => x.id === message.id)) {
+        Events.next({ type: "chat-message", data: message });
+      }
+    }
+  }
+
+
+  winston.info("Bootstrapped chat cache with", messages.length, "messages");
+}
 
 function arraysMatch<T>(a: T[], b: T[]) {
   if (a.length !== b.length) return false;
@@ -129,11 +163,12 @@ function getServerChat(serverId: string, server: string, username: string, passw
       for (let i in newMessages) {
         let msg: IChatMessage = {
           when: new Date(),
-          id: hashStringIntoNumber("" + Date.now() + i),
+          id: v4(),
           user: newMessages[i].user,
           message: newMessages[i].message,
           messageFriendly: makeMessageFromRaw(newMessages[i].message),
-          server: serverId
+          server: serverId,
+          origin: selfId
         };
 
         cache.push(msg);
@@ -144,34 +179,36 @@ function getServerChat(serverId: string, server: string, username: string, passw
     });
 }
 
-setInterval(() => {
-  Server
-    .where('chat', { $exists: true })
-    .where('chat.enabled').equals(true)
-    .find(function (err, servers: IServerModel[]) {
-      if (err) throw err;
+export function queryServersForChat() {
+  return setInterval(() => {
+    Server
+      .where('chat', { $exists: true })
+      .where('chat.enabled').equals(true)
+      .find(function (err, servers: IServerModel[]) {
+        if (err) throw err;
 
-      servers.forEach(server => {
-        if (activeChatRequests[server._id]) return;
+        servers.forEach(server => {
+          if (activeChatRequests[server._id]) return;
 
-        activeChatRequests[server._id] = getServerChat(server._id, server.chat.server, server.chat.username, server.chat.password)
-          .then(x => {
-            winston.debug("Got server chat from", { id: server._id });
+          activeChatRequests[server._id] = getServerChat(server._id, server.chat.server, server.chat.username, server.chat.password)
+            .then(x => {
+              winston.debug("Got server chat from", { id: server._id });
 
-            server.chat.ok = true;
-            server.save();
-            delete activeChatRequests[server._id];
-          })
-          .catch(x => {
-            winston.info("Error getting chat from " + server._id, x.message);
+              server.chat.ok = true;
+              server.save();
+              delete activeChatRequests[server._id];
+            })
+            .catch(x => {
+              winston.info("Error getting chat from " + server._id, x.message);
 
-            server.chat.ok = false;
-            server.save();
-            delete activeChatRequests[server._id];
-          });
-      })
-    });
-}, 1000);
+              server.chat.ok = false;
+              server.save();
+              delete activeChatRequests[server._id];
+            });
+        })
+      });
+  }, 1000);
+}
 
 export function getChatFor(server: string) {
   return (chatCache[server] || []).filter(x => x.when.getTime() > Date.now() - 3600 * 1000);
@@ -224,3 +261,39 @@ sayMessages$
     return Observable.fromPromise(post.then(x => x.data));
   })
   .subscribe();
+
+export function publishMessagesToRedis() {
+  const lpushAsync = promisify<string, string>(redisClient!.lpush).bind(redisClient);
+  const expireatAsync = promisify(redisClient!.expireat).bind(redisClient);
+  const publishAsync = promisify(redisClient!.publish).bind(redisClient);
+
+  async function handleMsg(msg: EventChatMessage) {
+    if (msg.data.origin === selfId) {
+      const now = moment();
+      const bucket = createRedisBucket(now);
+      const data = JSON.stringify(msg.data);
+
+      await lpushAsync(bucket, data);
+      await expireatAsync(bucket, moment(bucket).add(2, 'hours').unix());
+      await publishAsync("chat-message", data);
+    }
+  }
+
+  return Events
+  .filter(x => x.type === "chat-message")
+  .subscribe(handleMsg);
+}
+
+export function subscribeToMessagesFromRedis() {
+  redisSubClient!.subscribe("chat-message");
+
+  redisSubClient!.on("message", (channel, data) => {
+    if (channel === "chat-message") {
+      const message: IChatMessage = JSON.parse(data);
+
+      if (message.id && message.origin !== selfId) {
+        Events.next({ type: "chat-message", data: message });
+      }
+    }
+  });
+}

@@ -46,6 +46,7 @@ export interface IChatMessage {
     message: string;
     messageFriendly: string;
     server: string;
+    origin: string;
 }
 
 export interface INews {

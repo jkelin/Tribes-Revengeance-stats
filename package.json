@@ -19,6 +19,7 @@
     "@types/lodash": "^4.14.116",
     "@types/mongoose": "^5.2.6",
     "@types/qs": "^6.5.1",
+    "@types/redis": "^2.8.10",
     "@types/sha1": "^1.1.1",
     "@types/shelljs": "^0.8.0",
     "@types/socket.io": "^1.4.37",
@@ -30,6 +31,7 @@
   },
   "dependencies": {
     "@sentry/node": "4.4.1",
+    "@types/uuid": "^3.4.4",
     "atob": "^2.1.2",
     "axios": "^0.18.0",
     "body-parser": "^1.18.3",
@@ -49,12 +51,14 @@
     "mongoose": "5.3.14",
     "octonode": "^0.9.5",
     "qs": "^6.6.0",
+    "redis": "^2.8.0",
     "rxjs": "5",
     "sha1": "^1.1.1",
     "sha1-file": "^1.0.4",
     "shelljs": "^0.8.3",
     "socket.io": "2.2.0",
     "timespan": "^2.3.0",
+    "uuid": "^3.3.2",
     "winston": "2"
   },
   "scripts": {

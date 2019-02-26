@@ -20,6 +20,8 @@ import { handlebars_helpers } from "./helpers";
 import './discord';
 
 import { initSocketIO } from "./socketio";
+import { queryServersForChat as startQueryingServersForChat, loadChatCacheFromRedis, publishMessagesToRedis, subscribeToMessagesFromRedis } from "./chat";
+import { redisClient } from "./db";
 
 const RUN_WEB = (process.env.STATS_WEB || 'true') === 'true';
 const RUN_REPORT = (process.env.STATS_REPORT || 'true') === 'true';
@@ -102,3 +104,11 @@ process.on('uncaughtException', (ex) => {
   winston.error('uncaughtException', ex.message, ex);
   setTimeout(() => process.exit(1), 1000);
 });
+
+startQueryingServersForChat();
+
+if (redisClient) {
+  loadChatCacheFromRedis();
+  publishMessagesToRedis();
+  subscribeToMessagesFromRedis();
+}

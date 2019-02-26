@@ -3,6 +3,7 @@ import * as mongoose from "mongoose";
 import { Document } from 'mongoose';
 import * as winston from "winston";
 import { ITribesServerQueryResponse, IFullReport } from "./types";
+import * as redis from 'redis';
 
 (mongoose as any).Promise = Promise;
 
@@ -161,8 +162,47 @@ async function connect() {
 }
 
 connect()
-  .then(() => winston.info("DB connected"))
+  .then(() => winston.info("MongoDB connected"))
   .catch(err => {
-    winston.error("Error connecting to DB", err);
+    winston.error("Error connecting to MongoDB", err);
     process.exit(1);
-  })
+  });
+
+export let redisClient: redis.RedisClient | undefined;
+export let redisSubClient: redis.RedisClient | undefined;
+
+if(process.env.REDIS) {
+  redisClient = redis.createClient(process.env.REDIS);
+  redisSubClient = redis.createClient(process.env.REDIS);
+
+  redisClient.on("error", function (err) {
+    winston.error("Redis error", err);
+  });
+  
+  redisClient.on("connect", function () {
+    winston.info("Redis connected");
+  });
+  
+  redisClient.on("end", function () {
+    winston.info("Redis disconnected");
+  });
+  
+  redisSubClient.on("warning", winston.warn);
+
+  redisSubClient.on("error", function (err) {
+    winston.error("Redis error", err);
+  });
+  
+  redisSubClient.on("connect", function () {
+    winston.info("Redis connected");
+  });
+  
+  redisSubClient.on("end", function () {
+    winston.info("Redis disconnected");
+  });
+  
+  redisSubClient.on("warning", winston.warn);
+} else {
+  winston.info("REDIS env variable not specified");
+}
+
