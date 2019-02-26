@@ -89,3 +89,26 @@ export function queryTribesServer(ip: string, port: number) {
 
   udpSocket.send(message, port, ip);
 }
+
+export async function queryLiveServers() {
+  winston.debug("Query live servers");
+  let servers: { ip: string, port: number }[] | undefined;
+
+  try {
+    servers = await getTribesServersFromMasterServer();
+  } catch(er) {
+    console.error("Could not read servers from master", er.message);
+  }
+
+  if(!servers) {
+    servers = await getTribesServersFromDb();
+  }
+
+  if(servers) {
+    winston.debug("Query live servers, servers:", servers);
+
+    servers
+    .filter(server => server.ip && server.port && parseInt(server.port.toString()) < 65536 && parseInt(server.port.toString()) > 0)
+    .forEach(server => queryTribesServer(server.ip, server.port));
+  }
+}

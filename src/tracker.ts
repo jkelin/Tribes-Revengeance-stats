@@ -12,7 +12,7 @@ import { isValid } from "./anticheat";
 import { promisify } from "util";
 import Events from "./events";
 
-export let router = express.Router();
+export const router = express.Router();
 
 const persistentPlayerCounts: Record<string, number> = {};
 
@@ -294,6 +294,20 @@ export function saveMatchResult(ip: string, port: number, fullReport: IUploadedD
       });
     });
 }
+
+// This is needed for /upload
+router.use('/upload', function (req, res, next) {
+  var data = '';
+  req.setEncoding('utf8');
+  req.on('data', function (chunk) {
+    data += chunk;
+  });
+
+  req.on('end', function () {
+    req.body = data;
+    next();
+  });
+});
 
 router.post('/upload', function (req, res) {
   var ip = getClientIp(req);
