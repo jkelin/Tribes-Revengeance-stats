@@ -176,7 +176,7 @@ function getServerChat(serverId: string, server: string, username: string, passw
     });
 }
 
-export function queryServersForChat() {
+export function startQueryingServersForChat() {
   return setInterval(() => {
     Server
       .where('chat', { $exists: true })

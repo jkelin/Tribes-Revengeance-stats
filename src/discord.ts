@@ -10,7 +10,9 @@ const token = process.env.DISCORD_TOKEN;
 const channelId = process.env.DISCORD_CHANNEL_ID || '375031503710846976';
 const serverId = process.env.DISCORD_SERVER_ID || '45.32.157.166:8777';
 
-if (webhookId && webhookToken) {
+const RUN_DISCORD = process.env.RUN_DISCORD === 'true';
+
+if (RUN_DISCORD && webhookId && webhookToken) {
   const hook = new Discord.WebhookClient(webhookId, webhookToken);
 
   // Send a message using the webhook
@@ -24,7 +26,7 @@ if (webhookId && webhookToken) {
   }, 10 * 1000);
 }
 
-if (token) {
+if (RUN_DISCORD && token) {
   const client = new Discord.Client();
   client.login(token);
 

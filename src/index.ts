@@ -20,11 +20,12 @@ import { handlebars_helpers } from "./helpers";
 import './discord';
 
 import { initSocketIO } from "./socketio";
-import { queryServersForChat as startQueryingServersForChat, loadChatCacheFromRedis, publishMessagesToRedis, subscribeToMessagesFromRedis } from "./chat";
+import { startQueryingServersForChat, loadChatCacheFromRedis, publishMessagesToRedis, subscribeToMessagesFromRedis } from "./chat";
 import { redisClient } from "./db";
 
-const RUN_WEB = (process.env.STATS_WEB || 'true') === 'true';
-const RUN_REPORT = (process.env.STATS_REPORT || 'true') === 'true';
+const RUN_WEB = process.env.RUN_WEB === 'true';
+const RUN_SERVER_QUERY = process.env.RUN_SERVER_QUERY === 'true';
+const RUN_CHAT_QUERY = process.env.RUN_CHAT_QUERY === 'true';
 
 
 let app = express();
@@ -69,7 +70,7 @@ if (RUN_WEB) {
   app.use("/", search.router);
 }
 
-if (RUN_REPORT) {
+if (RUN_SERVER_QUERY) {
   const tracker = require("./tracker");
 
   app.use("/", tracker.router);
@@ -86,7 +87,7 @@ app.use(function (err: Error, req: Request, res: Response, next: () => void) {
   res.send(err);
 });
 
-if (RUN_WEB || RUN_REPORT) {
+if (RUN_WEB || RUN_SERVER_QUERY) {
   server.listen(process.env.PORT || 5000, function () {
     var host = server.address().address;
     var port = server.address().port;
@@ -105,10 +106,15 @@ process.on('uncaughtException', (ex) => {
   setTimeout(() => process.exit(1), 1000);
 });
 
-startQueryingServersForChat();
+if (RUN_CHAT_QUERY) {
+  startQueryingServersForChat();
+
+  if (redisClient) {
+    publishMessagesToRedis();
+  }
+}
 
 if (redisClient) {
   loadChatCacheFromRedis();
-  publishMessagesToRedis();
   subscribeToMessagesFromRedis();
 }

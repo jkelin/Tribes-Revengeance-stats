@@ -20,7 +20,10 @@
       "cwd": "${workspaceRoot}",
       "protocol": "inspector",
       "env": {
-        "TS_NODE_TRANSPILE_ONLY": "true"
+        "TS_NODE_TRANSPILE_ONLY": "true",
+        "RUN_WEB": "true",
+        "RUN_SERVER_QUERY": "true",
+        "RUN_CHAT_QUERY": "true",
       },
       "outputCapture": "std"
     },
@@ -41,7 +44,7 @@
       "protocol": "inspector",
       "console": "integratedTerminal",
       "env": {
-        "STATS_REPORT": "false",
+        "RUN_WEB": "true",
         "TS_NODE_TRANSPILE_ONLY": "true"
       },
       "outputCapture": "std"
