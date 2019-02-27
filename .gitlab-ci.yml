@@ -54,7 +54,7 @@ deploy:
   stage: deploy
   image: byrnedo/alpine-curl
   script:
-    curl -vvv -X POST -d " " "$DEPLOY_NOTIFICATION_URI"
+    - curl -vvv -X POST -d " " "$DEPLOY_NOTIFICATION_URI"
 
 # deploy:
 #   stage: deploy
