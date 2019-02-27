@@ -56,7 +56,7 @@ deploy:
     name: byrnedo/alpine-curl
     entrypoint: ["/bin/sh", "-c"]
   script:
-    - curl -vvv -X POST -d " " "$DEPLOY_NOTIFICATION_URI"
+    - curl -vvv -X POST -d " " $DEPLOY_NOTIFICATION_URI
 
 # deploy:
 #   stage: deploy
