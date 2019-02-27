@@ -61,20 +61,19 @@ if (RUN_WEB) {
   const matches = require("./matches");
   const pages = require("./pages");
   const search = require("./search");
+  const tracker = require("./tracker");
 
+  
   app.use("/", players.router);
   app.use("/", servers.router);
   app.use("/", ticker.router);
   app.use("/", matches.router);
   app.use("/", pages.router);
   app.use("/", search.router);
+  app.use("/", tracker.router);
 }
 
 if (RUN_SERVER_QUERY) {
-  const tracker = require("./tracker");
-
-  app.use("/", tracker.router);
-
   setInterval(queryLiveServers, 5 * 1000);
 }
 
