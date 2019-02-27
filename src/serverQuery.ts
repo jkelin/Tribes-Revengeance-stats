@@ -7,6 +7,7 @@ import axios from 'axios';
 import { ITribesServerQueryResponse } from "./types";
 import { Server } from "./db";
 import { handleTribesServerData } from "./tracker";
+import { isPrivate } from 'ip';
 
 const masterClient = axios.create({
   timeout: 5000,
@@ -15,9 +16,13 @@ const masterClient = axios.create({
   responseType: 'text'
 });
 
-const udpSocket = dgram.createSocket('udp4', function (message, remote) {
+const publicIpPromise = masterClient.get("http://ifconfig.me/ip").then(x => x.data);
+
+const udpSocket = dgram.createSocket('udp4', async function (message, remote) {
   try {
-    const data = parseTribesServerQueryReponse(remote.address, remote.port - 1, message.toString('utf-8'));
+    const remoteIp = isPrivate(remote.address) ? (await publicIpPromise) : remote.address; 
+
+    const data = parseTribesServerQueryReponse(remoteIp, remote.port - 1, message.toString('utf-8'));
     if (data && data.hostport) {
       handleTribesServerData(data).catch(er => winston.error("Could not handleTribesServerData for", data));
     }
