@@ -4,7 +4,6 @@ RUN apk add --no-cache curl
 WORKDIR /app
 ENV NODE_ENV=production
 EXPOSE 5000
-HEALTHCHECK --interval=5s --timeout=1s CMD curl -sSf "http://localhost:5000/status.json" || exit 1 
 
 COPY package.json yarn.lock /app/
 RUN yarn install --production --pure-lockfile
