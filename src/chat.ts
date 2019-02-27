@@ -10,8 +10,8 @@ import { Observable } from 'rxjs';
 
 import { Server, IServerModel, redisClient, redisSubClient } from './db';
 import * as QcMappings from './data/qcmappings.json';
-import Events, { EventSay, EventChatMessage, EventReceivedMessage } from "./events";
-import { IChatMessage } from './types';
+import Events, { EventSay, EventChatMessage, EventReceivedMessage, selfEventId, PlayerCountChange } from "./events";
+import { IChatMessage, IPlayerCountChangeMessage } from './types';
 import { promisify } from 'util';
 import * as moment from 'moment';
 import { v4 } from 'uuid';
@@ -26,8 +26,6 @@ const axiosInstance = axios.create({
 } as any);
 
 require("rxjs/operator/debounceTime");
-
-const selfId = v4();
 
 let chatCache: Record<string, IChatMessage[]> = {};
 let activeChatRequests = {};
@@ -165,7 +163,7 @@ function getServerChat(serverId: string, server: string, username: string, passw
           message: newMessages[i].message,
           messageFriendly: makeMessageFromRaw(newMessages[i].message),
           server: serverId,
-          origin: selfId
+          origin: selfEventId
         };
 
         cache.push(msg);
@@ -297,7 +295,7 @@ export function publishMessagesToRedis() {
   const publishAsync = promisify(redisClient!.publish).bind(redisClient);
 
   async function handleMsg(msg: EventChatMessage) {
-    if (msg.data.origin === selfId) {
+    if (msg.data.origin === selfEventId) {
       const now = moment();
       const bucket = createRedisBucket(now);
       const data = JSON.stringify(msg.data);
@@ -308,21 +306,36 @@ export function publishMessagesToRedis() {
     }
   }
 
-  return Events
+  const sub1 = Events
   .filter(x => x.type === "chat-message")
   .subscribe(handleMsg);
+
+  const sub2 = Events
+  .filter(x => x.type === "player-count-change")
+  .subscribe((msg: PlayerCountChange) => {
+    if (msg.data.origin === selfEventId) {
+      publishAsync("player-count-change", JSON.stringify(msg.data))
+    }
+  });
+
+  return [sub1, sub2];
 }
 
 export function subscribeToMessagesFromRedis() {
   redisSubClient!.subscribe("chat-message");
+  redisSubClient!.subscribe("player-count-change");
 
   redisSubClient!.on("message", (channel, data) => {
     if (channel === "chat-message") {
       const message: IChatMessage = JSON.parse(data);
 
-      if (message.id && message.origin !== selfId) {
+      if (message.id && message.origin !== selfEventId) {
         Events.next({ type: "received-message", data: { ...message, when: new Date(message.when) } });
       }
+    }
+
+    if (channel === "player-count-change") {
+      Events.next({ type: "player-count-change", data: JSON.parse(data) });
     }
   });
 }

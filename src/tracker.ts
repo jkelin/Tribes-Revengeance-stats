@@ -10,7 +10,7 @@ import { mean, min, max } from "lodash";
 import { IUploadedData, IUploadedPlayer, IFullReport, ITribesServerQueryResponse } from "./types";
 import { isValid } from "./anticheat";
 import { promisify } from "util";
-import Events from "./events";
+import Events, { selfEventId } from "./events";
 
 export const router = express.Router();
 
@@ -67,7 +67,14 @@ export async function handleTribesServerData(data: ITribesServerQueryResponse) {
   await server.save();
 
   if (data.players.length !== persistentPlayerCounts[`${server.ip}:${server.port}`]) {
-    Events.next({ type: "player-count-change", data: { server: `${server.ip}:${server.port}`, players: data.players.length } });
+    Events.next({
+      type: "player-count-change",
+      data: {
+        server: `${server.ip}:${server.port}`,
+        players: data.players.length,
+        origin: selfEventId
+      }
+    });
   }
 
   persistentPlayerCounts[`${server.ip}:${server.port}`] = data.players.length;

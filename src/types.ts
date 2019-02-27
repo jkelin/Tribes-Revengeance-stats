@@ -49,6 +49,12 @@ export interface IChatMessage {
     origin: string;
 }
 
+export interface IPlayerCountChangeMessage {
+  server: string;
+  players: number;
+  origin: string;
+}
+
 export interface INews {
     message: string;
     url: string;
