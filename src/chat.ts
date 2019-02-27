@@ -52,7 +52,7 @@ export async function loadChatCacheFromRedis() {
       const message: IChatMessage = JSON.parse(item);
 
       if (message.id && !messages.find(x => x.id === message.id)) {
-        Events.next({ type: "chat-message", data: message });
+        Events.next({ type: "chat-message", data: { ...message, when: new Date(message.when) } });
       }
     }
   }
@@ -218,6 +218,18 @@ function serverFromId(id: string) {
   return Observable.fromPromise<IServerModel | null>(Server.findById(id).exec());
 }
 
+const chatMessages$ = Events.filter(x => x.type === 'chat-message');
+
+chatMessages$.subscribe((m: EventChatMessage) => {
+  if(!chatCache[m.data.server]) {
+    chatCache[m.data.server] = [];
+  }
+
+  if (!chatCache[m.data.server].find(x => x.id === m.data.id)) {
+    chatCache[m.data.server].push(m.data);
+  }
+})
+
 let sayMessages$ = Events
   .filter(x => x.type === "say")
   .flatMap((m: EventSay) =>
@@ -292,7 +304,7 @@ export function subscribeToMessagesFromRedis() {
       const message: IChatMessage = JSON.parse(data);
 
       if (message.id && message.origin !== selfId) {
-        Events.next({ type: "chat-message", data: message });
+        Events.next({ type: "chat-message", data: { ...message, when: new Date(message.when) } });
       }
     }
   });
