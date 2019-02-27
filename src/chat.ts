@@ -320,16 +320,18 @@ export function subscribeToMessagesFromRedis() {
   redisSubClient!.subscribe("player-count-change");
 
   redisSubClient!.on("message", (channel, data) => {
-    if (channel === "chat-message") {
-      const message: IChatMessage = JSON.parse(data);
+    const message = JSON.parse(data);
 
-      if (message.id && message.origin !== selfEventId) {
-        Events.next({ type: "received-message", data: { ...message, when: new Date(message.when) } });
-      }
+    if (message.origin === selfEventId) {
+      return;
+    }
+
+    if (channel === "chat-message") {
+      Events.next({ type: "received-message", data: { ...message, when: new Date(message.when) } });
     }
 
     if (channel === "player-count-change") {
-      Events.next({ type: "player-count-change", data: JSON.parse(data) });
+      Events.next({ type: "player-count-change", data: message });
     }
   });
 }
