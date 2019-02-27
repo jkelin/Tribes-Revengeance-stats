@@ -7,6 +7,7 @@
   },
   "devDependencies": {
     "@types/atob": "^2.1.1",
+    "@types/uuid": "^3.4.4",
     "@types/axios": "^0.14.0",
     "@types/cheerio": "^0.22.8",
     "@types/compression": "^0.0.36",
@@ -26,14 +27,12 @@
     "@types/socket.io": "^1.4.37",
     "@types/winston": "^2.3.9",
     "cross-env": "^5.2.0",
-    "ip": "^1.1.5",
     "ts-node": "^7.0.1",
     "ts-node-dev": "^1.0.0-pre.31",
     "typescript": "^3.0.1"
   },
   "dependencies": {
     "@sentry/node": "4.4.1",
-    "@types/uuid": "^3.4.4",
     "atob": "^2.1.2",
     "axios": "^0.18.0",
     "body-parser": "^1.18.3",
@@ -53,6 +52,7 @@
     "mongoose": "5.3.14",
     "octonode": "^0.9.5",
     "qs": "^6.6.0",
+    "ip": "^1.1.5",
     "redis": "^2.8.0",
     "rxjs": "5",
     "sha1": "^1.1.1",
