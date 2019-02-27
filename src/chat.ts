@@ -10,11 +10,12 @@ import { Observable } from 'rxjs';
 
 import { Server, IServerModel, redisClient, redisSubClient } from './db';
 import * as QcMappings from './data/qcmappings.json';
-import Events, { EventSay, EventChatMessage } from "./events";
+import Events, { EventSay, EventChatMessage, EventReceivedMessage } from "./events";
 import { IChatMessage } from './types';
 import { promisify } from 'util';
 import * as moment from 'moment';
 import { v4 } from 'uuid';
+import { sortBy, uniq, range, values, sum } from 'lodash';
 
 const axiosInstance = axios.create({
   timeout: 1000,
@@ -38,27 +39,23 @@ function createRedisBucket(date: Date | moment.Moment) {
 export async function loadChatCacheFromRedis() {
   const lrangeAsync = promisify(redisClient!.LRANGE).bind(redisClient);
 
-  var buckets = [
-    createRedisBucket(moment()),
-    createRedisBucket(moment().subtract(1, 'hour'))
-  ];
+  var buckets = uniq(range(0, 180).map(m => createRedisBucket(moment().subtract(180 - m, 'minutes'))));
 
-  const messages: IChatMessage[] = [];
-
-  for (const bucket of buckets) {
+  for (const bucket of uniq(buckets)) {
+    winston.debug("Reading message cache from redis bucket", bucket);
     const data = await lrangeAsync(bucket, 0, 1000);
 
     for (const item of data) {
       const message: IChatMessage = JSON.parse(item);
 
-      if (message.id && !messages.find(x => x.id === message.id)) {
-        Events.next({ type: "chat-message", data: { ...message, when: new Date(message.when) } });
+      if (message.id && message.when) {
+        Events.next({ type: "received-message", data: { ...message, when: new Date(message.when) } });
       }
     }
   }
 
 
-  winston.info("Bootstrapped chat cache with", messages.length, "messages");
+  winston.info("Bootstrapped chat cache with", sum(values(chatCache).map(x => x.length)), "messages");
 }
 
 function arraysMatch<T>(a: T[], b: T[]) {
@@ -211,24 +208,44 @@ export function queryServersForChat() {
 }
 
 export function getChatFor(server: string) {
-  return (chatCache[server] || []).filter(x => x.when.getTime() > Date.now() - 3600 * 1000);
+  return (chatCache[server] || []).filter(x => x.when.getTime() > Date.now() - 2 * 60 * 60 * 1000);
 }
 
 function serverFromId(id: string) {
   return Observable.fromPromise<IServerModel | null>(Server.findById(id).exec());
 }
 
-const chatMessages$ = Events.filter(x => x.type === 'chat-message');
+Events.filter(x => x.type === 'received-message').subscribe((newMessage: EventReceivedMessage) => {
+  let oldCache = chatCache[newMessage.data.server];
 
-chatMessages$.subscribe((m: EventChatMessage) => {
-  if(!chatCache[m.data.server]) {
-    chatCache[m.data.server] = [];
+  if(!oldCache) {
+    oldCache = [];
   }
 
-  if (!chatCache[m.data.server].find(x => x.id === m.data.id)) {
-    chatCache[m.data.server].push(m.data);
+  if (!oldCache.find(x => x.id === newMessage.data.id)) {
+    oldCache = oldCache.concat([ newMessage.data ]);
   }
-})
+
+  oldCache = sortBy(oldCache, (x: IChatMessage) => x.when);
+  const newCache = [];
+
+  let lastUnique: IChatMessage | undefined;
+  for (const item of oldCache) {
+    if (lastUnique && lastUnique.message === item.message && lastUnique.when > new Date(item.when.getTime() - 1000 * 60 * 15)) {
+      continue;
+    }
+
+    lastUnique = item;
+    newCache.push(lastUnique);
+  }
+
+  // console.warn("old:", oldCache, "\nnew:", newCache);
+  chatCache[newMessage.data.server] = newCache;
+
+  if (newCache.find(x => x.id === newMessage.data.id)) {
+    Events.next({ type: "chat-message", data: newMessage.data });
+  }
+});
 
 let sayMessages$ = Events
   .filter(x => x.type === "say")
@@ -304,7 +321,7 @@ export function subscribeToMessagesFromRedis() {
       const message: IChatMessage = JSON.parse(data);
 
       if (message.id && message.origin !== selfId) {
-        Events.next({ type: "chat-message", data: { ...message, when: new Date(message.when) } });
+        Events.next({ type: "received-message", data: { ...message, when: new Date(message.when) } });
       }
     }
   });
