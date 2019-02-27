@@ -107,13 +107,10 @@ process.on('uncaughtException', (ex) => {
 
 if (RUN_CHAT_QUERY) {
   startQueryingServersForChat();
-
-  if (redisClient) {
-    publishMessagesToRedis();
-  }
 }
 
 if (redisClient) {
   loadChatCacheFromRedis();
   subscribeToMessagesFromRedis();
+  publishMessagesToRedis();
 }

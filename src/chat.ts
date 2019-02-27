@@ -295,28 +295,22 @@ export function publishMessagesToRedis() {
   const publishAsync = promisify(redisClient!.publish).bind(redisClient);
 
   async function handleMsg(msg: EventChatMessage) {
-    if (msg.data.origin === selfEventId) {
-      const now = moment();
-      const bucket = createRedisBucket(now);
-      const data = JSON.stringify(msg.data);
+    const now = moment();
+    const bucket = createRedisBucket(now);
+    const data = JSON.stringify(msg.data);
 
-      await lpushAsync(bucket, data);
-      await expireatAsync(bucket, moment(bucket).add(2, 'hours').unix());
-      await publishAsync("chat-message", data);
-    }
+    await lpushAsync(bucket, data);
+    await expireatAsync(bucket, moment(bucket).add(2, 'hours').unix());
+    await publishAsync("chat-message", data);
   }
 
   const sub1 = Events
-  .filter(x => x.type === "chat-message")
+  .filter(x => x.type === "chat-message" && x.data.origin === selfEventId)
   .subscribe(handleMsg);
 
   const sub2 = Events
-  .filter(x => x.type === "player-count-change")
-  .subscribe((msg: PlayerCountChange) => {
-    if (msg.data.origin === selfEventId) {
-      publishAsync("player-count-change", JSON.stringify(msg.data))
-    }
-  });
+  .filter(x => x.type === "player-count-change" && x.data.origin === selfEventId)
+  .subscribe((msg: PlayerCountChange) => publishAsync("player-count-change", JSON.stringify(msg.data)));
 
   return [sub1, sub2];
 }
