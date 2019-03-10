@@ -1,4 +1,4 @@
-import axios from 'axios';
+import axios, { AxiosRequestConfig } from 'axios';
 import * as cheerio from 'cheerio';
 import * as crypto from 'crypto';
 import * as http from 'http';
@@ -8,6 +8,7 @@ import { Observable } from 'rxjs';
 import * as url from 'url';
 import * as winston from 'winston';
 
+import * as iconv from 'iconv-lite';
 import { range, sortBy, sum, uniq, values } from 'lodash';
 import * as moment from 'moment';
 import { promisify } from 'util';
@@ -21,9 +22,9 @@ const axiosInstance = axios.create({
   timeout: 1000,
   httpAgent: new http.Agent({ keepAlive: true }),
   httpsAgent: new https.Agent({ keepAlive: true }),
-  responseEncoding: 'iso-8859-1',
-  responseType: 'text',
-} as any);
+  // responseEncoding: 'iso-8859-1',
+  responseType: 'arraybuffer',
+});
 
 import 'rxjs/operator/debounceTime';
 
@@ -117,17 +118,9 @@ function getServerChat(serverId: string, server: string, username: string, passw
   u.auth = username + ':' + password;
   u.pathname = '/ServerAdmin/current_console_log';
 
-  // let options = {
-  //     uri: u.format(),
-  //     encoding: "binary",
-  //     transform: function (body) {
-  //         return cheerio.load(encoding.convert(body, "utf-8", "iso-8859-1").toString());
-  //     }
-  // };
-
   return axiosInstance
     .get((u as any).format())
-    .then(resp => cheerio.load(resp.data))
+    .then(resp => cheerio.load(iconv.decode(resp.data, 'iso-8859-1')))
     .then($ => {
       const contents = $('table tr:nth-child(2) td:nth-child(2)').contents();
 
