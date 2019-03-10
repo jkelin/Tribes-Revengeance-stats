@@ -13,6 +13,7 @@ import * as http from 'http';
 import * as cors from 'cors';
 import * as bodyParser from 'body-parser';
 import * as Sentry from '@sentry/node';
+import * as morgan from 'morgan';
 
 import { queryLiveServers } from "./serverQuery";
 import { handlebars_helpers } from "./helpers";
@@ -29,6 +30,8 @@ const RUN_CHAT_QUERY = process.env.RUN_CHAT_QUERY === 'true';
 
 
 let app = express();
+
+app.use(morgan('tiny'));
 
 if (process.env.SENTRY_DSN) {
   app.use(Sentry.Handlers.requestHandler());
