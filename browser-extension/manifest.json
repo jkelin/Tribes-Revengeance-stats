@@ -1,29 +1,21 @@
 {
-    "manifest_version": 2,
-    "name": "Tribes Vengeance Ticker",
-    "short_name": "T:V Ticker",
-    "author": "Jan Kelin",
-    "homepage_url": "http://tribesrevengeance.net",
-    "version": "1.1",
-    "description": "Shows current player count in Tribes Vengeance",
-    "icons": {
-        "128": "favicon.png"
-    },
-    "browser_action": {
-        "default_icon": {
-            "128": "favicon.png"
-        }
-    },
-    "background": {
-        "scripts": [
-            "lodash.min.js",
-            "axios.min.js",
-            "socket.io.js",
-            "ticker.js"
-        ]
-    },
-    "web_accessible_resources": [
-        "axios.min.map",
-        "socket.io.js.map"
-    ]
+  "manifest_version": 2,
+  "name": "Tribes Vengeance Ticker",
+  "short_name": "T:V Ticker",
+  "author": "Jan Kelin",
+  "homepage_url": "http://tribesrevengeance.net",
+  "version": "1.2",
+  "description": "Shows current player count in Tribes Vengeance",
+  "icons": {
+    "128": "favicon.png"
+  },
+  "browser_action": {
+    "default_icon": {
+      "128": "favicon.png"
+    }
+  },
+  "background": {
+    "scripts": ["lodash.min.js", "axios.min.js", "socket.io.js", "ticker.js"]
+  },
+  "web_accessible_resources": ["axios.min.map", "socket.io.js.map"]
 }
