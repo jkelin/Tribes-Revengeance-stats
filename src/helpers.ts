@@ -261,6 +261,10 @@ export function getStatAggregateForPlayer(statName: string, players: IFullReport
 }
 
 export function prepareStats(players: IFullReportPlayer[]):  ReturnType<typeof getStatAggregateForPlayer>[] {
+  if (!players.length) {
+    return [];
+  }
+
   const keys = Object.keys(players[0]).filter(x => [
     'style',
     'defense',
