@@ -34,6 +34,7 @@
   "statDistanceSpinfusor": "Spinfusor maximal shot distance",
   "StatHeadShot": "Head shots",
   "StatTeamKill": "Team kills",
+  "TeammateKill": "Team kills",
   "suicideStatCTF": "Suicides",
   "killStatCTF": "Kills",
   "StatHighestSpeed": "Highest speed",
@@ -43,5 +44,15 @@
   "statOneEightSeven": "1-8-7",
   "statSweetShot": "Sweet shot",
   "statMASupreme": "MA supreme (mid-air supreme)",
+  "statLobotomy": "Lobotomy",
+  "statBackstabber": "Back stabber",
+  "statBucklerBackBreaker": "Bucker back breaker",
+  "KidneyThief": "Kidney thief",
+  "RabidRabbit": "Rabid rabbit",
+  "GrabSpeed": "TR Grab speed",
+  "GrabSequence": "TR Grab sequence",
+  "GrabHeight": "TR Grab height",
+  "GrabDistance": "TR Grab distance",
+  "GrabAngle": "TR Grab angle",
   "statMAPlus": "MA+ (mid-air plus)"
 }

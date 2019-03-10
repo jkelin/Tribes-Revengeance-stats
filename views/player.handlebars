@@ -28,10 +28,10 @@
 </table>
 <br>
 <table class="table table-striped">
-    {{#each data.stats}}
+    {{#each stats}}
         <tr>
-            <td>{{translateStatName @key}}</td>
-            <td>{{this}}</td>
+            <td>{{translateStatName key}}</td>
+            <td>{{sum}}</td>
         </tr>
     {{/each}}
 </table>

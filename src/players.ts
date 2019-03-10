@@ -110,8 +110,11 @@ router.get(
       .countDocuments()
       .exec();
 
+    const stats = data.stats && prepareStats([data.stats as any]);
+
     res.render('player', {
       data,
+      stats,
       persona: data && personaCount > 0 ? data.normalizedName : null,
       relatedNicknames: similar,
       relatedNicknamesString: similar && similar.join(', '),
