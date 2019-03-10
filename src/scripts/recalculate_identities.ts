@@ -1,5 +1,5 @@
-import { flatMap, groupBy, mapValues, Dictionary, pickBy, keys, values } from 'lodash';
 import * as fs from 'fs-extra';
+import { Dictionary, flatMap, groupBy, keys, mapValues, pickBy, values } from 'lodash';
 
 require('dotenv').config();
 
@@ -78,11 +78,15 @@ function expandIdentities(
   ipCounts: Dictionary<Dictionary<number>>
 ) {
   const singleIpUsers = pickBy(nameCounts, x => keys(x).length === 1);
+
+  // tslint:disable-next-line:forin
   for (const name in singleIpUsers) {
     keys(singleIpUsers[name]).forEach(ip => addNameIpToIdentities(identities, name, ip));
   }
 
   const ipsOfSingleUsers = pickBy(ipCounts, x => keys(x).length === 1);
+
+  // tslint:disable-next-line:forin
   for (const ip in singleIpUsers) {
     keys(ipsOfSingleUsers[ip]).forEach(name => addNameIpToIdentities(identities, name, ip));
   }
@@ -91,27 +95,32 @@ function expandIdentities(
     mapValues(nameCounts, x => pickBy(x, y => y > 10)),
     x => x && values(x).length > 0
   );
+
+  // tslint:disable-next-line:forin
   for (const name in namesMoreThanNMatches) {
     keys(namesMoreThanNMatches[name]).forEach(ip => addNameIpToIdentities(identities, name, ip));
   }
 
   const ipsMoreThanNMatches = pickBy(mapValues(ipCounts, x => pickBy(x, y => y > 10)), x => x && values(x).length > 0);
+
+  // tslint:disable-next-line:forin
   for (const ip in ipsMoreThanNMatches) {
     keys(ipsMoreThanNMatches[ip]).forEach(name => addNameIpToIdentities(identities, name, ip));
   }
 
   // This does not seem to work
-  // const uniqueNamesOfIps = pickBy(mapValues(ipCounts, (ncounts, ip) => pickBy(ncounts, (count, name) => values(nameCounts[name]).length === 1)), x => x && values(x).length > 0);
+  // const uniqueNamesOfIps = pickBy(mapValues(ipCounts, (ncounts, ip) 
+  // => pickBy(ncounts, (count, name) => values(nameCounts[name]).length === 1)), x => x && values(x).length > 0);
   // for (const ip in uniqueNamesOfIps) {
   //     keys(uniqueNamesOfIps[ip]).forEach(name => addNameIpToIdentities(identities, name, ip));
   // }
 
-  while (consolidateIdentities(identities));
+  while (consolidateIdentities(identities)) {; }
 }
 
 async function main() {
   console.info('Downloading data');
-  const data: { fullReport?: { players?: { name: string; ip: string }[] } }[] = await db.Match.find(
+  const data: Array<{ fullReport?: { players?: Array<{ name: string; ip: string }> } }> = await db.Match.find(
     {},
     { 'fullReport.players.name': true, 'fullReport.players.ip': true }
   );

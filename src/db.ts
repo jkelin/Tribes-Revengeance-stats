@@ -1,9 +1,9 @@
-import { InfluxDB, FieldType } from 'influx';
+import { FieldType, InfluxDB } from 'influx';
 import * as mongoose from 'mongoose';
 import { Document } from 'mongoose';
-import * as winston from 'winston';
-import { ITribesServerQueryResponse, IFullReport } from './types';
 import * as redis from 'redis';
+import * as winston from 'winston';
+import { IFullReport, ITribesServerQueryResponse } from './types';
 (mongoose as any).Promise = Promise;
 
 export interface IServerChat {
@@ -174,29 +174,29 @@ if (process.env.REDIS) {
   redisClient = redis.createClient(process.env.REDIS);
   redisSubClient = redis.createClient(process.env.REDIS);
 
-  redisClient.on('error', function(err) {
+  redisClient.on('error', (err) => {
     winston.error('Redis error', err);
   });
 
-  redisClient.on('connect', function() {
+  redisClient.on('connect', () => {
     winston.info('Redis connected');
   });
 
-  redisClient.on('end', function() {
+  redisClient.on('end', () => {
     winston.info('Redis disconnected');
   });
 
   redisSubClient.on('warning', winston.warn);
 
-  redisSubClient.on('error', function(err) {
+  redisSubClient.on('error', (err) => {
     winston.error('Redis error', err);
   });
 
-  redisSubClient.on('connect', function() {
+  redisSubClient.on('connect', () => {
     winston.info('Redis connected');
   });
 
-  redisSubClient.on('end', function() {
+  redisSubClient.on('end', () => {
     winston.info('Redis disconnected');
   });
 

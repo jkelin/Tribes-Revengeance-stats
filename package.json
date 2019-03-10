@@ -32,6 +32,7 @@
     "prettier": "1.16.4",
     "ts-node": "^7.0.1",
     "ts-node-dev": "^1.0.0-pre.31",
+    "tslint-config-prettier": "^1.18.0",
     "typescript": "^3.0.1"
   },
   "dependencies": {
@@ -66,6 +67,7 @@
     "shelljs": "^0.8.3",
     "socket.io": "2.2.0",
     "timespan": "^2.3.0",
+    "tslint": "^5.13.1",
     "uuid": "^3.3.2",
     "winston": "2"
   },
@@ -83,6 +85,8 @@
     "script:normalize_names": "ts-node --files src/scripts/normalize_names.ts",
     "script:prod:normalize_names": "node src/scripts/normalize_names.js",
     "typecheck": "tsc --noEmit",
+    "lint": "tslint -c tslint.json src/**/*.ts",
+    "lint:fix": "tslint --fix -c tslint.json src/**/*.ts",
     "build": "tsc"
   },
   "husky": {

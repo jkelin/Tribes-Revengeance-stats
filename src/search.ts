@@ -27,12 +27,12 @@ function searchPlayers(name: string) {
 
 router.get(
   '/search',
-  asyncHandler(async function(req, res) {
-    var name = req.query.name !== undefined ? decodeURIComponent(req.query.name) : '';
+  asyncHandler(async (req, res) => {
+    const name = req.query.name !== undefined ? decodeURIComponent(req.query.name) : '';
     const data = await searchPlayers(name);
 
     res.render('players', {
-      data: data,
+      data,
       alerts: [{ text: data.length + ' results' }],
     });
   })

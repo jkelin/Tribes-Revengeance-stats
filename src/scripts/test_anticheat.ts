@@ -1,4 +1,4 @@
-import { flatMap, groupBy, mapValues, Dictionary, pickBy, keys, values } from 'lodash';
+import { Dictionary, flatMap, groupBy, keys, mapValues, pickBy, values } from 'lodash';
 import { isValid } from '../anticheat';
 
 require('dotenv').config();

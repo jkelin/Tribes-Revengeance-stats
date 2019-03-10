@@ -1,12 +1,12 @@
-import * as express from 'express';
-import * as winston from 'winston';
-import * as _ from 'lodash';
 import * as crypto from 'crypto';
+import * as express from 'express';
+import * as _ from 'lodash';
+import * as winston from 'winston';
 
-import { Player, Server, Match, IMatchModel } from './db';
 import { getChatFor } from './chat';
-import { ITribesServerQueryResponse, IFullReportPlayer } from './types';
+import { IMatchModel, Match, Player, Server } from './db';
 import { prepareStats } from './helpers';
+import { IFullReportPlayer, ITribesServerQueryResponse } from './types';
 
 import * as asyncHandler from 'express-async-handler';
 
@@ -15,7 +15,7 @@ function sha1(input: string) {
   return shasum.update(input).digest('hex');
 }
 
-let router = express.Router();
+const router = express.Router();
 
 function getPlayersForTeam(data: IMatchModel, team: string) {
   return data.fullReport.players
@@ -36,9 +36,9 @@ function getPlayersForTeam(data: IMatchModel, team: string) {
 }
 
 function generateResultInfo(data: ITribesServerQueryResponse) {
-  if (parseInt(data.teamonescore) > parseInt(data.teamtwoscore)) {
+  if (parseInt(data.teamonescore, 10) > parseInt(data.teamtwoscore, 10)) {
     return { text: `${data.teamone} won the match!`, team: data.teamone };
-  } else if (parseInt(data.teamonescore) < parseInt(data.teamtwoscore)) {
+  } else if (parseInt(data.teamonescore, 10) < parseInt(data.teamtwoscore, 10)) {
     return { text: `${data.teamtwo} won the match!`, team: data.teamtwo };
   } else {
     return { text: 'Match ended in a tie!' };
@@ -63,7 +63,7 @@ function getMatchData(id: string) {
 
 router.get(
   '/matches/:id.json',
-  asyncHandler(async function(req, res, next) {
+  asyncHandler(async (req, res, next) => {
     const data = await getMatchData(req.params.id);
 
     res.json(data);
@@ -72,7 +72,7 @@ router.get(
 
 router.get(
   '/matches/:id',
-  asyncHandler(async function(req, res, next) {
+  asyncHandler(async (req, res, next) => {
     const data = await getMatchData(req.params.id);
 
     res.render('match', data);
@@ -115,7 +115,7 @@ async function getMatchesData(page: number, sort: string) {
     pagination: {
       page,
       perPage,
-      count: count,
+      count,
       first: 1,
       last: lastPage,
       prev: page - 1 >= 1 ? page - 1 : null,
@@ -135,7 +135,7 @@ function parseSort(sort: 'players' | 'time') {
 
 function parsePage(page: string) {
   try {
-    return parseInt((page || 1) + '');
+    return parseInt((page || 1) + '', 10);
   } catch (ex) {
     return 1;
   }
@@ -143,7 +143,7 @@ function parsePage(page: string) {
 
 router.get(
   '/matches.json',
-  asyncHandler(async function(req, res, next) {
+  asyncHandler(async (req, res, next) => {
     const data = await getMatchesData(parsePage(req.query.page), parseSort(req.query.sort));
 
     res.json({ ...data, sort: req.query.sort });
@@ -152,7 +152,7 @@ router.get(
 
 router.get(
   '/matches',
-  asyncHandler(async function(req, res, next) {
+  asyncHandler(async (req, res, next) => {
     const data = await getMatchesData(parsePage(req.query.page), parseSort(req.query.sort));
 
     res.render('matches', { ...data, sort: req.query.sort });

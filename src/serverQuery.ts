@@ -1,13 +1,13 @@
+import axios from 'axios';
+import * as dgram from 'dgram';
 import * as http from 'http';
 import * as https from 'https';
-import * as dgram from 'dgram';
+import { isPrivate } from 'ip';
 import * as net from 'net';
 import * as winston from 'winston';
-import axios from 'axios';
-import { ITribesServerQueryResponse } from './types';
 import { Server } from './db';
 import { handleTribesServerData } from './tracker';
-import { isPrivate } from 'ip';
+import { ITribesServerQueryResponse } from './types';
 
 const masterClient = axios.create({
   timeout: 5000,
@@ -18,7 +18,7 @@ const masterClient = axios.create({
 
 const publicIpPromise = masterClient.get('http://ifconfig.me/ip').then(x => x.data);
 
-const udpSocket = dgram.createSocket('udp4', async function(message, remote) {
+const udpSocket = dgram.createSocket('udp4', async (message, remote) => {
   try {
     const remoteIp = isPrivate(remote.address) ? await publicIpPromise : remote.address;
 
@@ -33,15 +33,15 @@ const udpSocket = dgram.createSocket('udp4', async function(message, remote) {
 
 udpSocket.bind();
 
-export async function getTribesServersFromMasterServer(): Promise<{ ip: string; port: number }[]> {
+export async function getTribesServersFromMasterServer(): Promise<Array<{ ip: string; port: number }>> {
   const resp = await masterClient.get<string>('https://qtracker.com/server_list_details.php?game=tribesvengeance');
-  var lines = resp.data.split('\r\n');
-  var servers = lines
-    .map(function(item) {
+  const lines = resp.data.split('\r\n');
+  const servers = lines
+    .map(item => {
       const splat = item.split(':');
       return {
         ip: splat[0],
-        port: parseInt(splat[1]),
+        port: parseInt(splat[1], 10),
       };
     })
     .filter(s => s.ip && s.port);
@@ -57,32 +57,39 @@ export async function getTribesServersFromDb() {
 }
 
 export function parseTribesServerQueryReponse(ip: string, port: number, message: string): ITribesServerQueryResponse {
-  var items = message.split('\\');
+  const items = message.split('\\');
   items.splice(0, 1);
-  var dict = {};
-  var name = true;
-  var lastName = '';
+  const dict = {};
+  let name = true;
+  let lastName = '';
 
-  items.forEach(function(item) {
-    if (name) lastName = item;
-    else dict[lastName] = item;
+  items.forEach(item => {
+    if (name) {
+      lastName = item;
+    } else {
+      dict[lastName] = item;
+    }
     name = !name;
   });
 
-  var data: Partial<ITribesServerQueryResponse> = {
+  const data: Partial<ITribesServerQueryResponse> = {
     ip,
     players: [],
   };
 
-  for (var n in dict) {
+  for (const n in dict) {
     if (n.indexOf('_') !== -1) {
-      var splat = n.split('_');
-      var itemName = splat[0];
-      var index = splat[1];
+      const splat = n.split('_');
+      const itemName = splat[0];
+      const index = splat[1];
 
-      if (data.players![index] === undefined) data.players![index] = {};
+      if (data.players![index] === undefined) {
+        data.players![index] = {};
+      }
       data.players![index][itemName] = dict[n];
-    } else data[n] = dict[n];
+    } else {
+      data[n] = dict[n];
+    }
   }
 
   data.ip = ip;
@@ -91,14 +98,14 @@ export function parseTribesServerQueryReponse(ip: string, port: number, message:
 }
 
 export function queryTribesServer(ip: string, port: number) {
-  var message = new Buffer('\\basic\\', 'ascii');
+  const message = new Buffer('\\basic\\', 'ascii');
 
   udpSocket.send(message, port, ip);
 }
 
 export async function queryLiveServers() {
   winston.debug('Query live servers');
-  let servers: { ip: string; port: number }[] | undefined;
+  let servers: Array<{ ip: string; port: number }> | undefined;
 
   try {
     servers = await getTribesServersFromMasterServer();
@@ -116,7 +123,10 @@ export async function queryLiveServers() {
     servers
       .filter(
         server =>
-          server.ip && server.port && parseInt(server.port.toString()) < 65536 && parseInt(server.port.toString()) > 0
+          server.ip &&
+          server.port &&
+          parseInt(server.port.toString(), 10) < 65536 &&
+          parseInt(server.port.toString(), 10) > 0
       )
       .forEach(server => queryTribesServer(server.ip, server.port));
   }

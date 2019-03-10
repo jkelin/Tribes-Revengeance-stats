@@ -1,5 +1,5 @@
 declare module 'octonode' {
-  interface Commit {
+  interface ICommit {
     html_url: string;
     commit: {
       message: string;
@@ -9,23 +9,23 @@ declare module 'octonode' {
     };
   }
 
-  interface Client {
-    repo(name: string): Repo;
+  interface IClient {
+    repo(name: string): IRepo;
   }
 
-  interface Repo {
-    commits(cb: (err: Error, commits: Commit[]) => void): void;
+  interface IRepo {
+    commits(cb: (err: Error, commits: ICommit[]) => void): void;
   }
 
-  function client(): Client;
+  function client(): IClient;
 }
 
 declare module 'timespan' {
   class TimeSpan {
-    addMinutes(min: number): void;
-    days: number;
-    hours: number;
-    minutes: number;
+    public days: number;
+    public hours: number;
+    public minutes: number;
+    public addMinutes(min: number): void;
   }
 }
 

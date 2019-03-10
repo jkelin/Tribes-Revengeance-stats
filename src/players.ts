@@ -1,14 +1,14 @@
 import * as express from 'express';
+import { includes, maxBy, sortBy, sumBy, toPairs, uniq } from 'lodash';
 import * as winston from 'winston';
-import { sortBy, toPairs, sumBy, maxBy, uniq, includes } from 'lodash';
 
-import { Player, Identity, IPlayerModel } from './db';
+import { Identity, IPlayerModel, Player } from './db';
 import { cleanPlayerName, prepareStats } from './helpers';
 import { IFullReportPlayer } from './types';
 
 import * as asyncHandler from 'express-async-handler';
 
-let router = express.Router();
+const router = express.Router();
 
 async function findRelatedNicknames(name: string) {
   const player = await Player.find({ _id: name }).findOne();
@@ -21,8 +21,8 @@ async function findRelatedNicknames(name: string) {
 
   const ip = (player.ip || '').split(':')[0];
 
-  var fromIdentities = await findRelatedNicknamesFromIdentities([name], [ip]);
-  var fromPlayers = await findRelatedNicknamesFromPlayers(name, ip);
+  const fromIdentities = await findRelatedNicknamesFromIdentities([name], [ip]);
+  const fromPlayers = await findRelatedNicknamesFromPlayers(name, ip);
 
   if (fromIdentities && fromIdentities.length > 0) {
     return uniq(fromIdentities.map(cleanPlayerName)).filter(x => x !== name);
@@ -82,8 +82,8 @@ function getFullReportForPlayer(player: IPlayerModel): IFullReportPlayer {
 
 router.get(
   '/player/:name.json',
-  asyncHandler(async function(req, res) {
-    var name = decodeURIComponent(req.params['name']);
+  asyncHandler(async (req, res) => {
+    const name = decodeURIComponent(req.params.name);
     const similar = await findRelatedNicknames(name);
     // const data = await Player.where({ _id: name }).findOne();
 
@@ -96,8 +96,8 @@ router.get(
 
 router.get(
   '/player/:name',
-  asyncHandler(async function(req, res) {
-    var name = decodeURIComponent(req.params['name']);
+  asyncHandler(async (req, res) => {
+    const name = decodeURIComponent(req.params.name);
     const similar = await findRelatedNicknames(name);
     const data: IPlayerModel = await Player.where('_id')
       .equals(name)
@@ -111,7 +111,7 @@ router.get(
       .exec();
 
     res.render('player', {
-      data: data,
+      data,
       persona: data && personaCount > 0 ? data.normalizedName : null,
       relatedNicknames: similar,
       relatedNicknamesString: similar && similar.join(', '),
@@ -121,7 +121,7 @@ router.get(
 
 router.get(
   '/players',
-  asyncHandler(async function(req, res) {
+  asyncHandler(async (req, res) => {
     const players = await Player.find()
       .sort({ lastseen: -1 })
       .exec();
@@ -137,8 +137,8 @@ router.get(
 
 router.get(
   '/persona/:name',
-  asyncHandler(async function(req, res) {
-    var name = decodeURIComponent(req.params['name']);
+  asyncHandler(async (req, res) => {
+    const name = decodeURIComponent(req.params.name);
     const names: IPlayerModel[] = await Player.where('normalizedName')
       .equals(cleanPlayerName(name))
       .find()
@@ -166,15 +166,15 @@ router.get(
       minutesonline: sumBy(names, 'minutesonline'),
       lastseen: sortBy(names, 'lastseen').reverse()[0],
       names: sortBy(names, 'minutesonline').reverse(),
-      stats: stats,
-      relatedNicknames: relatedNicknames,
+      stats,
+      relatedNicknames,
     });
   })
 );
 
 router.get(
   '/personas',
-  asyncHandler(async function(req, res) {
+  asyncHandler(async (req, res) => {
     const personas: IPlayerModel[] = await Player.aggregate([
       {
         $group: {

@@ -1,21 +1,21 @@
 import axios from 'axios';
+import * as cheerio from 'cheerio';
+import * as crypto from 'crypto';
 import * as http from 'http';
 import * as https from 'https';
-import * as cheerio from 'cheerio';
-import * as url from 'url';
-import * as crypto from 'crypto';
-import * as winston from 'winston';
 import * as qs from 'qs';
 import { Observable } from 'rxjs';
+import * as url from 'url';
+import * as winston from 'winston';
 
-import { Server, IServerModel, redisClient, redisSubClient } from './db';
-import * as QcMappings from './data/qcmappings.json';
-import Events, { EventSay, EventChatMessage, EventReceivedMessage, selfEventId, PlayerCountChange } from './events';
-import { IChatMessage, IPlayerCountChangeMessage } from './types';
-import { promisify } from 'util';
+import { range, sortBy, sum, uniq, values } from 'lodash';
 import * as moment from 'moment';
+import { promisify } from 'util';
 import { v4 } from 'uuid';
-import { sortBy, uniq, range, values, sum } from 'lodash';
+import * as QcMappings from './data/qcmappings.json';
+import { IServerModel, redisClient, redisSubClient, Server } from './db';
+import Events, { IEventChatMessage, IEventReceivedMessage, IEventSay, IPlayerCountChange, selfEventId } from './events';
+import { IChatMessage, IPlayerCountChangeMessage } from './types';
 
 const axiosInstance = axios.create({
   timeout: 1000,
@@ -25,10 +25,10 @@ const axiosInstance = axios.create({
   responseType: 'text',
 } as any);
 
-require('rxjs/operator/debounceTime');
+import 'rxjs/operator/debounceTime';
 
-let chatCache: Record<string, IChatMessage[]> = {};
-let activeChatRequests = {};
+const chatCache: Record<string, IChatMessage[]> = {};
+const activeChatRequests = {};
 
 function createRedisBucket(date: Date | moment.Moment) {
   return moment(date).format('YYYY-MM-DDTHH');
@@ -37,7 +37,7 @@ function createRedisBucket(date: Date | moment.Moment) {
 export async function loadChatCacheFromRedis() {
   const lrangeAsync = promisify(redisClient!.LRANGE).bind(redisClient);
 
-  var buckets = uniq(range(0, 180).map(m => createRedisBucket(moment().subtract(180 - m, 'minutes'))));
+  const buckets = uniq(range(0, 180).map(m => createRedisBucket(moment().subtract(180 - m, 'minutes'))));
 
   for (const bucket of uniq(buckets)) {
     winston.debug('Reading message cache from redis bucket', bucket);
@@ -56,10 +56,10 @@ export async function loadChatCacheFromRedis() {
 }
 
 function arraysMatch<T>(a: T[], b: T[]) {
-  if (a.length !== b.length) return false;
+  if (a.length !== b.length) { return false; }
 
-  for (let i in a) {
-    if (a[i] !== b[i]) return false;
+  for (const i in a) {
+    if (a[i] !== b[i]) { return false; }
   }
 
   return true;
@@ -69,9 +69,9 @@ function findMaxMachingArrLen<T>(a: T[], b: T[]) {
   let maxLen = 0;
 
   for (let i = 0; i < b.length; i++) {
-    let len = i + 1;
-    let sliceA = a.slice(-len);
-    let sliceB = b.slice(0, len);
+    const len = i + 1;
+    const sliceA = a.slice(-len);
+    const sliceB = b.slice(0, len);
 
     if (arraysMatch(sliceA, sliceB)) {
       maxLen = len;
@@ -82,24 +82,24 @@ function findMaxMachingArrLen<T>(a: T[], b: T[]) {
 }
 
 function newItems<T>(oldArr: T[], newArr: T[], hasherOld: (x: T) => string, hasherNew: (x: T) => string) {
-  let a = oldArr.map(hasherOld);
-  let b = newArr.map(hasherNew);
-  let len = findMaxMachingArrLen(a, b);
+  const a = oldArr.map(hasherOld);
+  const b = newArr.map(hasherNew);
+  const len = findMaxMachingArrLen(a, b);
   return newArr.slice(len);
 }
 
 function hashStringIntoNumber(str: string) {
-  let buf = crypto
+  const buf = crypto
     .createHash('md5')
     .update(str)
     .digest();
 
-  //return buf.readInt32LE(0);
+  // return buf.readInt32LE(0);
   return buf.toString('hex').slice(0, 6);
 }
 
 function makeMessageFromRaw(message: string) {
-  let matches = /\((QuickChat|TeamQuickChat)\) ([A-Za-z_0-9]+)\?/g.exec(message);
+  const matches = /\((QuickChat|TeamQuickChat)\) ([A-Za-z_0-9]+)\?/g.exec(message);
 
   if (matches && matches.length > 2) {
     if (matches[2] in QcMappings) {
@@ -113,7 +113,7 @@ function makeMessageFromRaw(message: string) {
 }
 
 function getServerChat(serverId: string, server: string, username: string, password: string) {
-  let u = url.parse(server, true);
+  const u = url.parse(server, true);
   u.auth = username + ':' + password;
   u.pathname = '/ServerAdmin/current_console_log';
 
@@ -129,18 +129,19 @@ function getServerChat(serverId: string, server: string, username: string, passw
     .get((u as any).format())
     .then(resp => cheerio.load(resp.data))
     .then($ => {
-      let contents = $('table tr:nth-child(2) td:nth-child(2)').contents();
+      const contents = $('table tr:nth-child(2) td:nth-child(2)').contents();
 
-      let messages: { user: string; message: string }[] = [];
+      const messages: Array<{ user: string; message: string }> = [];
 
+      // tslint:disable-next-line:prefer-for-of
       for (let i = 0; i < contents.length; i++) {
-        let x = contents[i];
+        const x = contents[i];
 
-        if (x.type !== 'text' || !x.data || !x.data.trim()) continue;
+        if (x.type !== 'text' || !x.data || !x.data.trim()) { continue; }
 
-        let groups = /^>( ([^:]{1,29}):)?(.*)$/.exec(x.data.trim());
+        const groups = /^>( ([^:]{1,29}):)?(.*)$/.exec(x.data.trim());
 
-        if (!groups || groups.length < 4) continue;
+        if (!groups || groups.length < 4) { continue; }
 
         messages.push({
           user: (groups[2] || '').trim() || 'WebAdmin',
@@ -152,19 +153,19 @@ function getServerChat(serverId: string, server: string, username: string, passw
     })
     .then(m => {
       let cache = chatCache[serverId];
-      if (!cache) cache = chatCache[serverId] = [];
+      if (!cache) { cache = chatCache[serverId] = []; }
 
       const hash = (x: { user: string; message: string }) => hashStringIntoNumber(x.user + x.message);
 
-      let newMessages = newItems(cache, m, hash, hash);
+      const newMessages = newItems(cache, m, hash, hash);
 
-      for (let i in newMessages) {
-        let msg: IChatMessage = {
+      for (const newMsg of newMessages) {
+        const msg: IChatMessage = {
           when: new Date(),
           id: v4(),
-          user: newMessages[i].user,
-          message: newMessages[i].message,
-          messageFriendly: makeMessageFromRaw(newMessages[i].message),
+          user: newMsg.user,
+          message: newMsg.message,
+          messageFriendly: makeMessageFromRaw(newMsg.message),
           server: serverId,
           origin: selfEventId,
         };
@@ -182,11 +183,11 @@ export function startQueryingServersForChat() {
     Server.where('chat', { $exists: true })
       .where('chat.enabled')
       .equals(true)
-      .find(function(err, servers: IServerModel[]) {
-        if (err) throw err;
+      .find((err, servers: IServerModel[]) => {
+        if (err) { throw err; }
 
         servers.forEach(server => {
-          if (activeChatRequests[server._id]) return;
+          if (activeChatRequests[server._id]) { return; }
 
           activeChatRequests[server._id] = getServerChat(
             server._id,
@@ -221,7 +222,7 @@ function serverFromId(id: string) {
   return Observable.fromPromise<IServerModel | null>(Server.findById(id).exec());
 }
 
-Events.filter(x => x.type === 'received-message').subscribe((newMessage: EventReceivedMessage) => {
+Events.filter(x => x.type === 'received-message').subscribe((newMessage: IEventReceivedMessage) => {
   let oldCache = chatCache[newMessage.data.server];
 
   if (!oldCache) {
@@ -257,8 +258,8 @@ Events.filter(x => x.type === 'received-message').subscribe((newMessage: EventRe
   }
 });
 
-let sayMessages$ = Events.filter(x => x.type === 'say')
-  .flatMap((m: EventSay) =>
+const sayMessages$ = Events.filter(x => x.type === 'say')
+  .flatMap((m: IEventSay) =>
     serverFromId(m.data.server)
       .filter(x => !!x)
       .map(s => ({
@@ -275,7 +276,7 @@ let sayMessages$ = Events.filter(x => x.type === 'say')
 sayMessages$
   .debounce(() => Observable.interval(500))
   .flatMap(({ user, message, server, username, password }) => {
-    let u = url.parse(server, true);
+    const u = url.parse(server, true);
     u.auth = username + ':' + password;
     u.pathname = '/ServerAdmin/current_console';
 
@@ -305,7 +306,7 @@ export function publishMessagesToRedis() {
   const expireatAsync = promisify(redisClient!.expireat).bind(redisClient);
   const publishAsync = promisify(redisClient!.publish).bind(redisClient);
 
-  async function handleMsg(msg: EventChatMessage) {
+  async function handleMsg(msg: IEventChatMessage) {
     const now = moment();
     const bucket = createRedisBucket(now);
     const data = JSON.stringify(msg.data);
@@ -323,7 +324,7 @@ export function publishMessagesToRedis() {
   const sub1 = Events.filter(x => x.type === 'chat-message' && x.data.origin === selfEventId).subscribe(handleMsg);
 
   const sub2 = Events.filter(x => x.type === 'player-count-change' && x.data.origin === selfEventId).subscribe(
-    (msg: PlayerCountChange) => publishAsync('player-count-change', JSON.stringify(msg.data))
+    (msg: IPlayerCountChange) => publishAsync('player-count-change', JSON.stringify(msg.data))
   );
 
   return [sub1, sub2];

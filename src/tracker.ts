@@ -1,16 +1,16 @@
-import * as winston from 'winston';
-import * as geoip from 'geoip-lite';
-import * as express from 'express';
 import * as atob from 'atob';
+import * as express from 'express';
+import * as geoip from 'geoip-lite';
+import * as winston from 'winston';
 
-import { Player, Server, Match, influx, IPlayerModel, IServerModel, IServer, IPlayer } from './db';
-import { emitter } from './ticker';
-import { getClientIp, getFullMapName, cleanPlayerName } from './helpers';
-import { mean, min, max } from 'lodash';
-import { IUploadedData, IUploadedPlayer, IFullReport, ITribesServerQueryResponse } from './types';
-import { isValid } from './anticheat';
+import { max, mean, min } from 'lodash';
 import { promisify } from 'util';
+import { isValid } from './anticheat';
+import { influx, IPlayer, IPlayerModel, IServer, IServerModel, Match, Player, Server } from './db';
 import Events, { selfEventId } from './events';
+import { cleanPlayerName, getClientIp, getFullMapName } from './helpers';
+import { emitter } from './ticker';
+import { IFullReport, ITribesServerQueryResponse, IUploadedData, IUploadedPlayer } from './types';
 
 import * as asyncHandler from 'express-async-handler';
 
@@ -19,12 +19,12 @@ export const router = express.Router();
 const persistentPlayerCounts: Record<string, number> = {};
 
 export async function handleTribesServerData(data: ITribesServerQueryResponse) {
-  //console.log(data);
+  // console.log(data);
   if (!data.ip && !data.hostport) {
     return winston.error('[handleTribesServerData] Server does not have an id', data);
   }
 
-  var id = data.ip + ':' + data.hostport;
+  const id = data.ip + ':' + data.hostport;
 
   winston.debug('Handling data from', id);
 
@@ -34,11 +34,11 @@ export async function handleTribesServerData(data: ITribesServerQueryResponse) {
     .exec();
 
   if (server === null) {
-    server = new Server(<IServer>{
+    server = new Server({
       _id: id,
       minutesonline: 0,
       lastTiming: new Date(),
-    });
+    } as IServer);
   }
 
   server.name = data.hostname;
@@ -99,9 +99,9 @@ export async function handleTribesServerData(data: ITribesServerQueryResponse) {
   winston.debug('Saved server', id);
 }
 
-var lastTrackings: Record<string, number> = {};
+const lastTrackings: Record<string, number> = {};
 export function pushPlayersTrackings(serverIdIn: string, data: ITribesServerQueryResponse) {
-  if (!lastTrackings[serverIdIn]) lastTrackings[serverIdIn] = 0;
+  if (!lastTrackings[serverIdIn]) { lastTrackings[serverIdIn] = 0; }
 
   influx.writePoints(
     [
@@ -120,19 +120,19 @@ export function pushPlayersTrackings(serverIdIn: string, data: ITribesServerQuer
     }
   );
 
-  if (lastTrackings[serverIdIn] + 60 * 1000 >= Date.now()) return;
+  if (lastTrackings[serverIdIn] + 60 * 1000 >= Date.now()) { return; }
   lastTrackings[serverIdIn] = Date.now();
 }
 
 export async function timePlayer(player: IUploadedPlayer) {
-  if (!player.player) return winston.error('[timePlayer] Player does not have a name', player);
+  if (!player.player) { return winston.error('[timePlayer] Player does not have a name', player); }
   let pl = await Player.where('_id')
     .equals(player.player)
     .findOne()
     .exec();
 
   if (pl === null) {
-    pl = new Player(<IPlayer>{
+    pl = new Player({
       _id: player.player,
       normalizedName: cleanPlayerName(player.player + ''),
       stats: {},
@@ -144,7 +144,7 @@ export async function timePlayer(player: IUploadedPlayer) {
       style: 0,
       minutesonline: 0,
       lastTiming: new Date(),
-    });
+    } as IPlayer);
   }
 
   if (Date.now() >= pl.lastTiming.getTime() + 60 * 1000) {
@@ -161,16 +161,16 @@ export async function timePlayer(player: IUploadedPlayer) {
 
 export async function handlePlayer(input: IUploadedPlayer, ip: string, port: number) {
   winston.debug('handling player', input);
-  if (!input.name) return winston.error('Player does not have a name');
+  if (!input.name) { return winston.error('Player does not have a name'); }
 
   let player = await Player.where('_id')
     .equals(input.name)
     .findOne()
     .exec();
 
-  let changeCountry = false;
+  const changeCountry = false;
   if (player === null) {
-    player = new Player(<IPlayer>{
+    player = new Player({
       _id: input.name,
       normalizedName: cleanPlayerName(input.name),
       stats: {},
@@ -182,10 +182,10 @@ export async function handlePlayer(input: IUploadedPlayer, ip: string, port: num
       style: 0,
       minutesonline: 20,
       lastTiming: new Date(),
-    });
+    } as IPlayer);
   }
 
-  if (player.offense == undefined) player.offense = 0;
+  if (player.offense === undefined) { player.offense = 0; }
 
   player.normalizedName = cleanPlayerName(input.name);
   player.ip = input.ip;
@@ -202,28 +202,29 @@ export async function handlePlayer(input: IUploadedPlayer, ip: string, port: num
     player.stats = {};
   }
 
-  if (player.stats.StatHighestSpeed == undefined) player.stats.StatHighestSpeed = 0;
+  if (player.stats.StatHighestSpeed === undefined) { player.stats.StatHighestSpeed = 0; }
 
-  var highestSpeed =
-    input['StatClasses.StatHighestSpeed'] == undefined ? 0 : parseInt(input['StatClasses.StatHighestSpeed'] + '');
+  const highestSpeed =
+    input['StatClasses.StatHighestSpeed'] === undefined ? 0 : parseInt(input['StatClasses.StatHighestSpeed'] + '', 10);
   if (highestSpeed > player.stats.StatHighestSpeed) {
     player.stats.StatHighestSpeed = highestSpeed;
     player.markModified('stats');
   }
 
-  for (var i in input) {
-    var value = input[i];
+  // tslint:disable-next-line:forin
+  for (const i in input) {
+    const value = input[i];
     if (typeof value !== 'number') {
       continue;
     }
 
-    winston.debug('handle player stat', { name: i, value: value });
+    winston.debug('handle player stat', { name: i, value });
     if (i === 'StatClasses.StatHighestSpeed') {
       continue;
     }
 
     if (i.indexOf('.') !== -1) {
-      var name = i.split('.')[1];
+      const name = i.split('.')[1];
 
       if (!player.stats) {
         player.stats = {};
@@ -234,7 +235,7 @@ export async function handlePlayer(input: IUploadedPlayer, ip: string, port: num
       }
 
       player.stats[name] += value;
-      //console.log("addded",name,value);
+      // console.log("addded",name,value);
       player.markModified('stats');
     }
   }
@@ -244,7 +245,7 @@ export async function handlePlayer(input: IUploadedPlayer, ip: string, port: num
 }
 
 export async function addServerLastFullReport(ip: string, port: number) {
-  var id = ip + ':' + port;
+  const id = ip + ':' + port;
   const server = await Server.where('_id')
     .equals(id)
     .findOne()
@@ -263,10 +264,11 @@ export function removeDotStatNamesFromFullReport(fullReport: IUploadedData) {
     ...fullReport,
     players: fullReport.players.map(p => {
       const player = { ...p };
-      for (var i in player) {
+      // tslint:disable-next-line:forin
+      for (const i in player) {
         const value = player[i];
         if (i.indexOf('.') !== -1) {
-          var name = i.split('.')[1];
+          const name = i.split('.')[1];
           delete player[i];
           player[name] = value;
         }
@@ -277,7 +279,7 @@ export function removeDotStatNamesFromFullReport(fullReport: IUploadedData) {
 }
 
 export async function saveMatchResult(ip: string, port: number, fullReport: IUploadedData) {
-  var id = ip + ':' + port;
+  const id = ip + ':' + port;
 
   // Server.where({ _id: '45.32.157.166:8777' })
   const server = await Server.where('_id')
@@ -289,7 +291,7 @@ export async function saveMatchResult(ip: string, port: number, fullReport: IUpl
     server: id,
     when: new Date(),
     fullReport: removeDotStatNamesFromFullReport(fullReport),
-    numplayers: parseInt(server.lastdata.numplayers + ''),
+    numplayers: parseInt(server.lastdata.numplayers + '', 10),
     basicReport: server.lastdata,
   });
 
@@ -297,14 +299,14 @@ export async function saveMatchResult(ip: string, port: number, fullReport: IUpl
 }
 
 // This is needed for /upload
-router.use('/upload', function(req, res, next) {
-  var data = '';
+router.use('/upload', (req, res, next) => {
+  let data = '';
   req.setEncoding('utf8');
-  req.on('data', function(chunk) {
+  req.on('data', (chunk) => {
     data += chunk;
   });
 
-  req.on('end', function() {
+  req.on('end', () => {
     req.body = data;
     next();
   });
@@ -312,8 +314,8 @@ router.use('/upload', function(req, res, next) {
 
 router.post(
   '/upload',
-  asyncHandler(async function(req, res) {
-    var ip = getClientIp(req);
+  asyncHandler(async (req, res) => {
+    const ip = getClientIp(req);
 
     if (!ip) {
       winston.info('Upload without an ip attempted?!');
@@ -322,15 +324,15 @@ router.post(
 
     res.send('Hello World!');
     winston.info('Received /upload request from', { ip });
-    winston.debug('received upload request', { ip: ip, data: req.body });
-    var decoded = (atob as any)(req.body);
-    var object: IUploadedData = JSON.parse(decoded); // TODO actually verify this
+    winston.debug('received upload request', { ip, data: req.body });
+    const decoded = (atob as any)(req.body);
+    const object: IUploadedData = JSON.parse(decoded); // TODO actually verify this
 
     object.players.forEach(p => (p.isUntracked = !isValid(p, object)));
 
     object.players
       .filter(p => !p.isUntracked)
-      .forEach(function(player) {
+      .forEach((player) => {
         handlePlayer(player, ip!, object.port);
       });
 

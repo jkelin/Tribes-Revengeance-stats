@@ -1,6 +1,6 @@
-import { IUploadedPlayer, IUploadedData } from './types';
-import { mean, min, max, mapValues, values, sum, mapKeys, Dictionary } from 'lodash';
+import { Dictionary, mapKeys, mapValues, max, mean, min, sum, values } from 'lodash';
 import * as _ from 'lodash';
+import { IUploadedData, IUploadedPlayer } from './types';
 
 import * as AnticheatStats from './data/anticheat-stats.json';
 
@@ -50,7 +50,7 @@ export function isValid(player: IUploadedPlayer, data: IUploadedData) {
   const absoluteTolerance = data.players.length * 5;
 
   const difference = _(preprocessed)
-    .mapValues((value, key) => Math.max(0, value - (AnticheatStats[key].p99 + absoluteTolerance))) // absolute differences
+    .mapValues((value, key) => Math.max(0, value - (AnticheatStats[key].p99 + absoluteTolerance))) // absolute diff
     .mapValues((diff, key) => diff / AnticheatStats[key].p99) // percentage differences
     .values() // percentages
     .sum();

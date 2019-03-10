@@ -26,6 +26,19 @@ build:
     paths:
       - dist
 
+lint:
+  stage: build
+  image: node:8-alpine
+  cache:
+    key: "$CI_PROJECT_ID-lint"
+    paths:
+      - node_modules/
+      - .yarn
+  before_script:
+    - yarn install --pure-lockfile --cache-folder .yarn
+  script:
+    - yarn lint
+
 docker-build:
   stage: release
   image: docker:stable

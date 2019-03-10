@@ -1,25 +1,25 @@
-import * as winston from 'winston';
+import { CronJob } from 'cron';
+import { maxBy, meanBy, minBy, sortBy, sumBy, values } from 'lodash';
 import * as moment from 'moment';
-import * as countryNames from './data/countrynames.json';
-import * as availableMapImages from './data/available-map-images.json';
-import * as timespan from 'timespan';
 import * as github from 'octonode';
 import * as path from 'path';
 import * as sha1File from 'sha1-file';
-import * as tags from './data/clan-tags.json';
-import * as StatNames from './data/statnames.json';
-import { removeDiacritics } from './removeAccents';
+import * as timespan from 'timespan';
+import * as winston from 'winston';
 import { Request } from '../node_modules/@types/express-serve-static-core';
-import { INews, IFullReportPlayer } from './types';
-import { CronJob } from 'cron';
+import * as availableMapImages from './data/available-map-images.json';
+import * as tags from './data/clan-tags.json';
+import * as countryNames from './data/countrynames.json';
+import * as StatNames from './data/statnames.json';
 import * as StatOrder from './data/statorder.json';
-import { maxBy, minBy, sumBy, meanBy, sortBy, values } from 'lodash';
+import { removeDiacritics } from './removeAccents';
+import { IFullReportPlayer, INews } from './types';
 
 export function tryConvertIpv6ToIpv4(ip: string) {
-  var regex = /^::ffff:([0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3})$/;
-  var matches = regex.exec(ip);
+  const regex = /^::ffff:([0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3})$/;
+  const matches = regex.exec(ip);
 
-  if (matches && matches.length == 2) {
+  if (matches && matches.length === 2) {
     return matches[1];
   } else {
     return ip;
@@ -29,29 +29,29 @@ export function tryConvertIpv6ToIpv4(ip: string) {
 export function getNews() {
   winston.info('Fetching news');
 
-  return new Promise<INews[]>(function(resolve, reject) {
-    var client = github.client();
-    var repo = client.repo('jkelin/Tribes-Revengeance-stats');
+  return new Promise<INews[]>((resolve, reject) => {
+    const client = github.client();
+    const repo = client.repo('jkelin/Tribes-Revengeance-stats');
 
-    repo.commits(function(error, commits) {
+    repo.commits((error, commits) => {
       if (error) {
         winston.error(error.message);
 
         // return reject(error);
         return resolve([]);
       } else {
-        var data: INews[] = [];
+        const data: INews[] = [];
 
-        for (var i in commits) {
-          var message = commits[i].commit.message;
-          var dateStr = commits[i].commit.author.date;
-          var url = commits[i].html_url;
-          var date = new Date(dateStr);
+        for (const commit of commits) {
+          const message = commit.commit.message;
+          const dateStr = commit.commit.author.date;
+          const url = commit.html_url;
+          const date = new Date(dateStr);
 
           data.push({
-            message: message,
-            date: date,
-            url: url,
+            message,
+            date,
+            url,
           });
         }
 
@@ -63,20 +63,20 @@ export function getNews() {
   });
 }
 
-export let tribes_news: Promise<INews[]>;
-new CronJob({
+export let tribesNews: Promise<INews[]>;
+const cronJob = new CronJob({
   cronTime: '0 0 * * * *',
-  onTick: () => (tribes_news = getNews()),
+  onTick: () => (tribesNews = getNews()),
   start: true,
   runOnInit: true,
 });
 
 export function getClientIp(req: Request) {
-  var ipAddress;
-  var forwardedIpsStr = req.header('x-forwarded-for');
+  let ipAddress;
+  const forwardedIpsStr = req.header('x-forwarded-for');
 
   if (forwardedIpsStr) {
-    var forwardedIps = forwardedIpsStr.split(',');
+    const forwardedIps = forwardedIpsStr.split(',');
     ipAddress = forwardedIps[0];
   }
 
@@ -88,8 +88,8 @@ export function getClientIp(req: Request) {
 }
 
 export function aIncludesB(a: string[], b: string[]) {
-  for (let i in b) {
-    if (a.filter(x => x.indexOf(b[i]) != -1).length == 0) return false;
+  for (const i in b) {
+    if (a.filter(x => x.indexOf(b[i]) !== -1).length === 0) { return false; }
   }
 
   return true;
@@ -98,66 +98,66 @@ export function aIncludesB(a: string[], b: string[]) {
 export function getFullMapName(map: string) {
   const mapImageComponentMap = availableMapImages.map(x => ({ map: x, components: x.split(/[- ]/g) }));
 
-  let searchComponents = map
+  const searchComponents = map
     .toLowerCase()
     .replace(/[\[\]\-\_\(\)\<\>]/g, ' ')
     .replace('.tvm', '')
     .split(' ')
     .filter(x => x);
 
-  let possibleMaps = mapImageComponentMap.filter(x => aIncludesB(x.components, searchComponents));
+  const possibleMaps = mapImageComponentMap.filter(x => aIncludesB(x.components, searchComponents));
 
-  if (!possibleMaps.length) return undefined;
-  else return possibleMaps.map(x => x.map).sort()[0];
+  if (!possibleMaps.length) { return undefined; }
+  else { return possibleMaps.map(x => x.map).sort()[0]; }
 }
 
-export const handlebars_helpers: Record<string, (...params: any[]) => string> = {
-  json: function(context) {
+export const handlebarsHelpers: Record<string, (...params: any[]) => string> = {
+  json(context) {
     return JSON.stringify(context);
   },
-  urlencode: function(context) {
+  urlencode(context) {
     return encodeURIComponent(context);
   },
-  showMinutes: function(context) {
-    var span = new timespan.TimeSpan();
-    span.addMinutes(parseInt(context));
-    var str = '';
-    if (span.days == 1) str += span.days + ' day ';
-    else if (span.days != 0) str += span.days + ' days ';
-    if (span.hours != 0) str += span.hours + ' hours ';
-    if (str != '') str += 'and ';
+  showMinutes(context) {
+    const span = new timespan.TimeSpan();
+    span.addMinutes(parseInt(context, 10));
+    let str = '';
+    if (span.days === 1) { str += span.days + ' day '; }
+    else if (span.days !== 0) { str += span.days + ' days '; }
+    if (span.hours !== 0) { str += span.hours + ' hours '; }
+    if (str !== '') { str += 'and '; }
     str += span.minutes + ' minutes';
     return str;
   },
-  showHours: function(context) {
-    return Math.round(parseInt(context) / 60) + ' hours';
+  showHours(context) {
+    return Math.round(parseInt(context, 10) / 60) + ' hours';
   },
-  showMoment: function(context) {
+  showMoment(context) {
     return moment(context).fromNow();
   },
-  translateStatName: function(context) {
-    for (var i in StatNames) {
-      if (context == i) return StatNames[i];
+  translateStatName(context) {
+    for (const i in StatNames) {
+      if (context === i) { return StatNames[i]; }
     }
     return context;
   },
-  killsperminute: function(context) {
+  killsperminute(context) {
     if (!context.kills && !context.deaths) {
       return '';
     }
 
     return ((context.kills || 0) / (context.minutesonline || 1)).toFixed(2);
   },
-  inc: function(num) {
+  inc(num) {
     return num + 1;
   },
-  countryname: function(country, options) {
+  countryname(country, options) {
     return country && countryNames[country.toUpperCase()];
   },
-  condPrint: function(v1, v2, v3) {
-    return v1 == v2 ? v3 : '';
+  condPrint(v1, v2, v3) {
+    return v1 === v2 ? v3 : '';
   },
-  emptyIfZero: function(context, num) {
+  emptyIfZero(context, num) {
     if (context.kills || context.deaths) {
       return num || 0;
     }
@@ -172,22 +172,22 @@ export const handlebars_helpers: Record<string, (...params: any[]) => string> = 
 
     return num;
   },
-  mapImage: function(map, kind = 'loadscreens-chopped', thumbnail = true) {
-    let baseUrl =
-      kind == 'loadscreens-chopped' && thumbnail == true
+  mapImage(map, kind = 'loadscreens-chopped', thumbnail = true) {
+    const baseUrl =
+      kind === 'loadscreens-chopped' && thumbnail === true
         ? '/static'
         : 'https://downloads.tribesrevengeance.net/map-images';
 
     return `${baseUrl}/${kind}${thumbnail ? '-thumbnails' : ''}/${map}.jpg`;
   },
-  mapName: function(map = '') {
-    let splat = map.split('-');
+  mapName(map = '') {
+    const splat = map.split('-');
     return splat[splat.length - 1].replace(/\(.*\)|\.tvm|BEML[0-9]/g, '').trim();
   },
-  humanDate: function(date) {
+  humanDate(date) {
     return moment(date).format('YYYY-MM-DD');
   },
-  humanTime: function(date) {
+  humanTime(date) {
     return moment(date).format('HH:mm');
   },
   csshash: () => (sha1File as any)(path.join(__dirname, '..', 'public', 'custom.css')),
@@ -195,6 +195,7 @@ export const handlebars_helpers: Record<string, (...params: any[]) => string> = 
 };
 
 export function matchClan(name: string) {
+  // tslint:disable-next-line:forin
   for (const i in tags) {
     const regex = new RegExp(tags[i], 'i');
 
@@ -275,7 +276,7 @@ export function getStatAggregateForPlayer(statName: string, players: IFullReport
   };
 }
 
-export function prepareStats(players: IFullReportPlayer[]): ReturnType<typeof getStatAggregateForPlayer>[] {
+export function prepareStats(players: IFullReportPlayer[]): Array<ReturnType<typeof getStatAggregateForPlayer>> {
   if (!players.length) {
     return [];
   }

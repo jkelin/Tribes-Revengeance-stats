@@ -1,12 +1,12 @@
 import * as Rx from 'rxjs/Rx';
-import { IChatMessage, IChatSay, IPlayerCountChangeMessage } from './types';
 import { v4 } from 'uuid';
+import { IChatMessage, IChatSay, IPlayerCountChangeMessage } from './types';
 
-export type EventSay = { type: 'say'; data: IChatSay };
-export type EventChatMessage = { type: 'chat-message'; data: IChatMessage };
-export type EventReceivedMessage = { type: 'received-message'; data: IChatMessage };
-export type PlayerCountChange = { type: 'player-count-change'; data: IPlayerCountChangeMessage };
-export type EventAggregate = EventChatMessage | EventReceivedMessage | EventSay | PlayerCountChange;
+export interface IEventSay { type: 'say'; data: IChatSay }
+export interface IEventChatMessage { type: 'chat-message'; data: IChatMessage }
+export interface IEventReceivedMessage { type: 'received-message'; data: IChatMessage }
+export interface IPlayerCountChange { type: 'player-count-change'; data: IPlayerCountChangeMessage }
+export type EventAggregate = IEventChatMessage | IEventReceivedMessage | IEventSay | IPlayerCountChange;
 export default new Rx.Subject<EventAggregate>();
 
 export const selfEventId = v4();

@@ -1,13 +1,13 @@
 import * as fs from 'fs-extra';
+import { flatMap, keys, max, mean, range, sortBy } from 'lodash';
 import { isValidPreprocess } from '../anticheat';
-import { flatMap, max, mean, keys, sortBy, range } from 'lodash';
 import { Match } from '../db';
 import { IUploadedPlayer } from '../types';
 
 require('dotenv').config();
 
 function median(values: number[]) {
-  values = values.slice(0).sort(function(a, b) {
+  values = values.slice(0).sort((a, b) => {
     return a - b;
   });
 
@@ -15,28 +15,29 @@ function median(values: number[]) {
 }
 
 function middle(values: number[]) {
-  var len = values.length;
-  var half = Math.floor(len / 2);
+  const len = values.length;
+  const half = Math.floor(len / 2);
 
-  if (len % 2) return (values[half - 1] + values[half]) / 2.0;
-  else return values[half];
+  if (len % 2) { return (values[half - 1] + values[half]) / 2.0; }
+  else { return values[half]; }
 }
 
 function percentile(arr: number[], p: number) {
-  if (arr.length === 0) return 0;
-  if (typeof p !== 'number') throw new TypeError('p must be a number');
-  if (p <= 0) return arr[0];
-  if (p >= 1) return arr[arr.length - 1];
+  if (arr.length === 0) { return 0; }
+  if (typeof p !== 'number') { throw new TypeError('p must be a number'); }
+  if (p <= 0) { return arr[0]; }
+  if (p >= 1) { return arr[arr.length - 1]; }
 
-  arr.sort(function(a, b) {
+  arr.sort((a, b) => {
     return a - b;
   });
-  var index = (arr.length - 1) * p,
-    lower = Math.floor(index),
-    upper = lower + 1,
-    weight = index % 1;
 
-  if (upper >= arr.length) return arr[lower];
+  const index = (arr.length - 1) * p;
+  const lower = Math.floor(index);
+  const upper = lower + 1;
+  const weight = index % 1;
+
+  if (upper >= arr.length) { return arr[lower]; }
   return arr[lower] * (1 - weight) + arr[upper] * weight;
 }
 
@@ -61,9 +62,9 @@ const percentileOfScore = (array: number[], value: number) => {
 
 function Quartile(data: number[], q: number) {
   data = sortBy(data, x => x);
-  var pos = (data.length - 1) * q;
-  var base = Math.floor(pos);
-  var rest = pos - base;
+  const pos = (data.length - 1) * q;
+  const base = Math.floor(pos);
+  const rest = pos - base;
   if (data[base + 1] !== undefined) {
     return data[base] + rest * (data[base + 1] - data[base]);
   } else {
@@ -78,6 +79,7 @@ async function exportToFile(data: any[], filename: string) {
 
   const summary: any = {};
 
+  // tslint:disable-next-line:forin
   for (const key in preprocessed[0]) {
     const values = sortBy(preprocessed.map(x => x[key]), x => x);
 
