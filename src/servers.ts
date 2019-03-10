@@ -118,7 +118,7 @@ router.get(
   asyncHandler(async (req, res) => {
     const data: IServerModel[] = await Server.find()
       .sort({ lastseen: -1 })
-      .select({ lastdata: 1 })
+      .select({ lastdata: 1, lastseen: 1, name: 1 })
       .lean()
       .exec();
 
