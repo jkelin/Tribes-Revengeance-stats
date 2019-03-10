@@ -1,18 +1,17 @@
-import { InfluxDB, FieldType } from "influx";
-import * as mongoose from "mongoose";
+import { InfluxDB, FieldType } from 'influx';
+import * as mongoose from 'mongoose';
 import { Document } from 'mongoose';
-import * as winston from "winston";
-import { ITribesServerQueryResponse, IFullReport } from "./types";
+import * as winston from 'winston';
+import { ITribesServerQueryResponse, IFullReport } from './types';
 import * as redis from 'redis';
-
 (mongoose as any).Promise = Promise;
 
 export interface IServerChat {
-  server: string,
-  username: string,
-  password: string,
-  ok: boolean,
-  enabled: boolean
+  server: string;
+  username: string;
+  password: string;
+  ok: boolean;
+  enabled: boolean;
 }
 
 export interface IServer {
@@ -54,26 +53,26 @@ export const Server = mongoose.model<IServerModel>('Server', {
     username: String,
     password: String,
     ok: Boolean,
-    enabled: Boolean
+    enabled: Boolean,
   },
-  lastdata: mongoose.Schema.Types.Mixed
+  lastdata: mongoose.Schema.Types.Mixed,
 } as any);
 
 export interface IPlayer {
-  _id: string,
-  normalizedName: string,
-  ip?: string,
-  lastserver: string,
-  score: number,
-  kills: number,
-  deaths: number,
-  offense: number,
-  defense: number,
-  style: number,
-  lastTiming: Date,
-  lastseen: Date,
-  minutesonline: number,
-  stats?: Record<string, number>
+  _id: string;
+  normalizedName: string;
+  ip?: string;
+  lastserver: string;
+  score: number;
+  kills: number;
+  deaths: number;
+  offense: number;
+  defense: number;
+  style: number;
+  lastTiming: Date;
+  lastseen: Date;
+  minutesonline: number;
+  stats?: Record<string, number>;
 }
 
 export interface IPlayerModel extends IPlayer, Document {
@@ -94,7 +93,7 @@ export const Player = mongoose.model<IPlayerModel>('Player', {
   lastTiming: Date,
   lastseen: Date,
   minutesonline: Number,
-  stats: mongoose.Schema.Types.Mixed
+  stats: mongoose.Schema.Types.Mixed,
 } as any);
 
 export interface IIdentity {
@@ -103,7 +102,7 @@ export interface IIdentity {
   namesAndIps: string[];
 }
 
-export interface IIdentityModel extends IIdentity, Document { }
+export interface IIdentityModel extends IIdentity, Document {}
 
 export const Identity = mongoose.model<IIdentityModel>('Identity', {
   ips: mongoose.Schema.Types.Mixed,
@@ -119,19 +118,19 @@ export interface IMatch {
   fullReport: IFullReport;
 }
 
-export interface IMatchModel extends IMatch, Document { }
+export interface IMatchModel extends IMatch, Document {}
 
 const MatchSchema = new mongoose.Schema({
   server: String,
   when: Date,
   numplayers: Number,
   basicReport: mongoose.Schema.Types.Mixed,
-  fullReport: mongoose.Schema.Types.Mixed
+  fullReport: mongoose.Schema.Types.Mixed,
 });
 
-MatchSchema.index({ "basicReport.numplayers": 1 });
-MatchSchema.index({ "numplayers": 1 });
-MatchSchema.index({ "when": 1 });
+MatchSchema.index({ 'basicReport.numplayers': 1 });
+MatchSchema.index({ numplayers: 1 });
+MatchSchema.index({ when: 1 });
 
 export const Match = mongoose.model<IMatchModel>('Match', MatchSchema);
 
@@ -141,20 +140,20 @@ export const influx = new InfluxDB({
   database: process.env.INFLUXDB_DATABASE,
   host: process.env.INFLUXDB_HOST,
   port: process.env.INFLUXDB_PORT,
-  schema: [{
-    measurement: 'population',
-    fields: {
-      players: FieldType.INTEGER,
+  schema: [
+    {
+      measurement: 'population',
+      fields: {
+        players: FieldType.INTEGER,
+      },
+      tags: ['server'],
     },
-    tags: [
-      'server'
-    ]
-  }]
+  ],
 } as any);
 
 async function connect() {
   const conn = mongoose.connect(
-    process.env.MONGODB || "mongodb://localhost:3000/tribes",
+    process.env.MONGODB || 'mongodb://localhost:3000/tribes'
     // { useNewUrlParser: true }
   );
 
@@ -162,47 +161,46 @@ async function connect() {
 }
 
 connect()
-  .then(() => winston.info("MongoDB connected"))
+  .then(() => winston.info('MongoDB connected'))
   .catch(err => {
-    winston.error("Error connecting to MongoDB", err);
+    winston.error('Error connecting to MongoDB', err);
     process.exit(1);
   });
 
 export let redisClient: redis.RedisClient | undefined;
 export let redisSubClient: redis.RedisClient | undefined;
 
-if(process.env.REDIS) {
+if (process.env.REDIS) {
   redisClient = redis.createClient(process.env.REDIS);
   redisSubClient = redis.createClient(process.env.REDIS);
 
-  redisClient.on("error", function (err) {
-    winston.error("Redis error", err);
+  redisClient.on('error', function(err) {
+    winston.error('Redis error', err);
   });
-  
-  redisClient.on("connect", function () {
-    winston.info("Redis connected");
-  });
-  
-  redisClient.on("end", function () {
-    winston.info("Redis disconnected");
-  });
-  
-  redisSubClient.on("warning", winston.warn);
 
-  redisSubClient.on("error", function (err) {
-    winston.error("Redis error", err);
+  redisClient.on('connect', function() {
+    winston.info('Redis connected');
   });
-  
-  redisSubClient.on("connect", function () {
-    winston.info("Redis connected");
+
+  redisClient.on('end', function() {
+    winston.info('Redis disconnected');
   });
-  
-  redisSubClient.on("end", function () {
-    winston.info("Redis disconnected");
+
+  redisSubClient.on('warning', winston.warn);
+
+  redisSubClient.on('error', function(err) {
+    winston.error('Redis error', err);
   });
-  
-  redisSubClient.on("warning", winston.warn);
+
+  redisSubClient.on('connect', function() {
+    winston.info('Redis connected');
+  });
+
+  redisSubClient.on('end', function() {
+    winston.info('Redis disconnected');
+  });
+
+  redisSubClient.on('warning', winston.warn);
 } else {
-  winston.info("REDIS env variable not specified");
+  winston.info('REDIS env variable not specified');
 }
-

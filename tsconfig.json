@@ -3,21 +3,15 @@
     "outDir": "dist",
     "target": "es5",
     "module": "commonjs",
-    "lib": [
-      "es2015",
-      "es2016",
-      "dom"
-    ],
+    "lib": ["es2015", "es2016", "dom"],
     "resolveJsonModule": true,
     "sourceMap": true,
+    "inlineSources": true,
     "strict": true,
     "moduleResolution": "node",
     "suppressImplicitAnyIndexErrors": true,
     "strictFunctionTypes": false,
     "sourceRoot": "./src",
-    "typeRoots": [
-      "./node_modules/@types",
-      "./typings"
-    ]
+    "typeRoots": ["./node_modules/@types", "./typings"]
   }
 }

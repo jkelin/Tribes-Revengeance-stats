@@ -1,6 +1,6 @@
-import { IUploadedPlayer, IUploadedData } from "./types";
-import { mean, min, max, mapValues, values, sum, mapKeys, Dictionary } from "lodash";
-import * as _ from "lodash";
+import { IUploadedPlayer, IUploadedData } from './types';
+import { mean, min, max, mapValues, values, sum, mapKeys, Dictionary } from 'lodash';
+import * as _ from 'lodash';
 
 import * as AnticheatStats from './data/anticheat-stats.json';
 
@@ -12,7 +12,7 @@ export function isValidPreprocess(player: IUploadedPlayer, data: IUploadedData) 
     offense: player.offense,
     defense: player.defense,
     style: player.style,
-  }
+  };
 
   // const averages = mapValues(trackedStats, (value, key) => mean(data.players.map(x => x[key])));
   // const averageDistances = mapValues(trackedStats, (value, key) => Math.abs(averages[key] - player[key]));
@@ -41,7 +41,7 @@ export function isValidPreprocess(player: IUploadedPlayer, data: IUploadedData) 
 
 /**
  * Basic anticheat
- * 
+ *
  * This could be improved by grouping the stats by player count and using current player count to judge
  */
 export function isValid(player: IUploadedPlayer, data: IUploadedData) {
@@ -55,7 +55,6 @@ export function isValid(player: IUploadedPlayer, data: IUploadedData) {
     .values() // percentages
     .sum();
 
-
   const tolerance = Math.max(0, data.players.length - 4) * 0.025; // 2.5% per player in games with more than 4 players
   // console.warn({ difference });
   // console.warn({ tolerance });
@@ -63,7 +62,7 @@ export function isValid(player: IUploadedPlayer, data: IUploadedData) {
   if (data.players.length >= 2 && difference <= tolerance) {
     return true;
   } else {
-    console.log("Player stats not tracked", player.name, data);
+    console.log('Player stats not tracked', player.name, data);
     return false;
   }
 }

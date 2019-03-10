@@ -1,12 +1,12 @@
-declare module "octonode" {
+declare module 'octonode' {
   interface Commit {
     html_url: string;
     commit: {
       message: string;
       author: {
         date: string;
-      }
-    }
+      };
+    };
   }
 
   interface Client {
@@ -20,7 +20,7 @@ declare module "octonode" {
   function client(): Client;
 }
 
-declare module "timespan" {
+declare module 'timespan' {
   class TimeSpan {
     addMinutes(min: number): void;
     days: number;
@@ -29,7 +29,7 @@ declare module "timespan" {
   }
 }
 
-declare module "sha1-file" {
+declare module 'sha1-file' {
   function sha1(path: string): string;
   export default sha1;
 }

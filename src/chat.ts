@@ -4,13 +4,13 @@ import * as https from 'https';
 import * as cheerio from 'cheerio';
 import * as url from 'url';
 import * as crypto from 'crypto';
-import * as winston from "winston";
+import * as winston from 'winston';
 import * as qs from 'qs';
 import { Observable } from 'rxjs';
 
 import { Server, IServerModel, redisClient, redisSubClient } from './db';
 import * as QcMappings from './data/qcmappings.json';
-import Events, { EventSay, EventChatMessage, EventReceivedMessage, selfEventId, PlayerCountChange } from "./events";
+import Events, { EventSay, EventChatMessage, EventReceivedMessage, selfEventId, PlayerCountChange } from './events';
 import { IChatMessage, IPlayerCountChangeMessage } from './types';
 import { promisify } from 'util';
 import * as moment from 'moment';
@@ -21,17 +21,17 @@ const axiosInstance = axios.create({
   timeout: 1000,
   httpAgent: new http.Agent({ keepAlive: true }),
   httpsAgent: new https.Agent({ keepAlive: true }),
-  responseEncoding: "iso-8859-1",
+  responseEncoding: 'iso-8859-1',
   responseType: 'text',
 } as any);
 
-require("rxjs/operator/debounceTime");
+require('rxjs/operator/debounceTime');
 
 let chatCache: Record<string, IChatMessage[]> = {};
 let activeChatRequests = {};
 
 function createRedisBucket(date: Date | moment.Moment) {
-  return moment(date).format("YYYY-MM-DDTHH");
+  return moment(date).format('YYYY-MM-DDTHH');
 }
 
 export async function loadChatCacheFromRedis() {
@@ -40,20 +40,19 @@ export async function loadChatCacheFromRedis() {
   var buckets = uniq(range(0, 180).map(m => createRedisBucket(moment().subtract(180 - m, 'minutes'))));
 
   for (const bucket of uniq(buckets)) {
-    winston.debug("Reading message cache from redis bucket", bucket);
+    winston.debug('Reading message cache from redis bucket', bucket);
     const data = await lrangeAsync(bucket, 0, 1000);
 
     for (const item of data) {
       const message: IChatMessage = JSON.parse(item);
 
       if (message.id && message.when) {
-        Events.next({ type: "received-message", data: { ...message, when: new Date(message.when) } });
+        Events.next({ type: 'received-message', data: { ...message, when: new Date(message.when) } });
       }
     }
   }
 
-
-  winston.info("Bootstrapped chat cache with", sum(values(chatCache).map(x => x.length)), "messages");
+  winston.info('Bootstrapped chat cache with', sum(values(chatCache).map(x => x.length)), 'messages');
 }
 
 function arraysMatch<T>(a: T[], b: T[]) {
@@ -90,7 +89,10 @@ function newItems<T>(oldArr: T[], newArr: T[], hasherOld: (x: T) => string, hash
 }
 
 function hashStringIntoNumber(str: string) {
-  let buf = crypto.createHash('md5').update(str).digest();
+  let buf = crypto
+    .createHash('md5')
+    .update(str)
+    .digest();
 
   //return buf.readInt32LE(0);
   return buf.toString('hex').slice(0, 6);
@@ -112,8 +114,8 @@ function makeMessageFromRaw(message: string) {
 
 function getServerChat(serverId: string, server: string, username: string, password: string) {
   let u = url.parse(server, true);
-  u.auth = username + ":" + password;
-  u.pathname = "/ServerAdmin/current_console_log";
+  u.auth = username + ':' + password;
+  u.pathname = '/ServerAdmin/current_console_log';
 
   // let options = {
   //     uri: u.format(),
@@ -123,25 +125,26 @@ function getServerChat(serverId: string, server: string, username: string, passw
   //     }
   // };
 
-  return axiosInstance.get((u as any).format())
+  return axiosInstance
+    .get((u as any).format())
     .then(resp => cheerio.load(resp.data))
     .then($ => {
-      let contents = $("table tr:nth-child(2) td:nth-child(2)").contents();
+      let contents = $('table tr:nth-child(2) td:nth-child(2)').contents();
 
-      let messages: { user: string, message: string }[] = [];
+      let messages: { user: string; message: string }[] = [];
 
       for (let i = 0; i < contents.length; i++) {
         let x = contents[i];
 
-        if (x.type !== "text" || !x.data || !x.data.trim()) continue;
+        if (x.type !== 'text' || !x.data || !x.data.trim()) continue;
 
         let groups = /^>( ([^:]{1,29}):)?(.*)$/.exec(x.data.trim());
 
         if (!groups || groups.length < 4) continue;
 
         messages.push({
-          user: (groups[2] || "").trim() || "WebAdmin",
-          message: (groups[3] || "").trim()
+          user: (groups[2] || '').trim() || 'WebAdmin',
+          message: (groups[3] || '').trim(),
         });
       }
 
@@ -151,7 +154,7 @@ function getServerChat(serverId: string, server: string, username: string, passw
       let cache = chatCache[serverId];
       if (!cache) cache = chatCache[serverId] = [];
 
-      const hash = (x: { user: string, message: string }) => hashStringIntoNumber(x.user + x.message);
+      const hash = (x: { user: string; message: string }) => hashStringIntoNumber(x.user + x.message);
 
       let newMessages = newItems(cache, m, hash, hash);
 
@@ -163,11 +166,11 @@ function getServerChat(serverId: string, server: string, username: string, passw
           message: newMessages[i].message,
           messageFriendly: makeMessageFromRaw(newMessages[i].message),
           server: serverId,
-          origin: selfEventId
+          origin: selfEventId,
         };
 
         cache.push(msg);
-        Events.next({ type: "chat-message", data: msg });
+        Events.next({ type: 'chat-message', data: msg });
       }
 
       return cache;
@@ -176,31 +179,36 @@ function getServerChat(serverId: string, server: string, username: string, passw
 
 export function startQueryingServersForChat() {
   return setInterval(() => {
-    Server
-      .where('chat', { $exists: true })
-      .where('chat.enabled').equals(true)
-      .find(function (err, servers: IServerModel[]) {
+    Server.where('chat', { $exists: true })
+      .where('chat.enabled')
+      .equals(true)
+      .find(function(err, servers: IServerModel[]) {
         if (err) throw err;
 
         servers.forEach(server => {
           if (activeChatRequests[server._id]) return;
 
-          activeChatRequests[server._id] = getServerChat(server._id, server.chat.server, server.chat.username, server.chat.password)
+          activeChatRequests[server._id] = getServerChat(
+            server._id,
+            server.chat.server,
+            server.chat.username,
+            server.chat.password
+          )
             .then(x => {
-              winston.debug("Got server chat from", { id: server._id });
+              winston.debug('Got server chat from', { id: server._id });
 
               server.chat.ok = true;
               server.save();
               delete activeChatRequests[server._id];
             })
             .catch(x => {
-              winston.info("Error getting chat from " + server._id, x.message);
+              winston.info('Error getting chat from ' + server._id, x.message);
 
               server.chat.ok = false;
               server.save();
               delete activeChatRequests[server._id];
             });
-        })
+        });
       });
   }, 1000);
 }
@@ -216,12 +224,12 @@ function serverFromId(id: string) {
 Events.filter(x => x.type === 'received-message').subscribe((newMessage: EventReceivedMessage) => {
   let oldCache = chatCache[newMessage.data.server];
 
-  if(!oldCache) {
+  if (!oldCache) {
     oldCache = [];
   }
 
   if (!oldCache.find(x => x.id === newMessage.data.id)) {
-    oldCache = oldCache.concat([ newMessage.data ]);
+    oldCache = oldCache.concat([newMessage.data]);
   }
 
   oldCache = sortBy(oldCache, (x: IChatMessage) => x.when);
@@ -229,7 +237,11 @@ Events.filter(x => x.type === 'received-message').subscribe((newMessage: EventRe
 
   let lastUnique: IChatMessage | undefined;
   for (const item of oldCache) {
-    if (lastUnique && lastUnique.message === item.message && lastUnique.when > new Date(item.when.getTime() - 1000 * 60 * 15)) {
+    if (
+      lastUnique &&
+      lastUnique.message === item.message &&
+      lastUnique.when > new Date(item.when.getTime() - 1000 * 60 * 15)
+    ) {
       continue;
     }
 
@@ -241,12 +253,11 @@ Events.filter(x => x.type === 'received-message').subscribe((newMessage: EventRe
   chatCache[newMessage.data.server] = newCache;
 
   if (newCache.find(x => x.id === newMessage.data.id)) {
-    Events.next({ type: "chat-message", data: newMessage.data });
+    Events.next({ type: 'chat-message', data: newMessage.data });
   }
 });
 
-let sayMessages$ = Events
-  .filter(x => x.type === "say")
+let sayMessages$ = Events.filter(x => x.type === 'say')
   .flatMap((m: EventSay) =>
     serverFromId(m.data.server)
       .filter(x => !!x)
@@ -255,7 +266,7 @@ let sayMessages$ = Events
         message: m.data.message,
         server: s!.chat.server,
         username: s!.chat.username,
-        password: s!.chat.password
+        password: s!.chat.password,
       }))
   )
   .publish()
@@ -265,8 +276,8 @@ sayMessages$
   .debounce(() => Observable.interval(500))
   .flatMap(({ user, message, server, username, password }) => {
     let u = url.parse(server, true);
-    u.auth = username + ":" + password;
-    u.pathname = "/ServerAdmin/current_console";
+    u.auth = username + ':' + password;
+    u.pathname = '/ServerAdmin/current_console';
 
     // let options = {
     //     uri: u.format(),
@@ -281,9 +292,9 @@ sayMessages$
       (u as any).format(),
       qs.stringify({
         SendText: `say ${user}: ${message}`,
-        Send: "Send"
+        Send: 'Send',
       })
-    )
+    );
 
     return Observable.fromPromise(post.then(x => x.data));
   })
@@ -300,38 +311,41 @@ export function publishMessagesToRedis() {
     const data = JSON.stringify(msg.data);
 
     await lpushAsync(bucket, data);
-    await expireatAsync(bucket, moment(bucket).add(2, 'hours').unix());
-    await publishAsync("chat-message", data);
+    await expireatAsync(
+      bucket,
+      moment(bucket)
+        .add(2, 'hours')
+        .unix()
+    );
+    await publishAsync('chat-message', data);
   }
 
-  const sub1 = Events
-  .filter(x => x.type === "chat-message" && x.data.origin === selfEventId)
-  .subscribe(handleMsg);
+  const sub1 = Events.filter(x => x.type === 'chat-message' && x.data.origin === selfEventId).subscribe(handleMsg);
 
-  const sub2 = Events
-  .filter(x => x.type === "player-count-change" && x.data.origin === selfEventId)
-  .subscribe((msg: PlayerCountChange) => publishAsync("player-count-change", JSON.stringify(msg.data)));
+  const sub2 = Events.filter(x => x.type === 'player-count-change' && x.data.origin === selfEventId).subscribe(
+    (msg: PlayerCountChange) => publishAsync('player-count-change', JSON.stringify(msg.data))
+  );
 
   return [sub1, sub2];
 }
 
 export function subscribeToMessagesFromRedis() {
-  redisSubClient!.subscribe("chat-message");
-  redisSubClient!.subscribe("player-count-change");
+  redisSubClient!.subscribe('chat-message');
+  redisSubClient!.subscribe('player-count-change');
 
-  redisSubClient!.on("message", (channel, data) => {
+  redisSubClient!.on('message', (channel, data) => {
     const message = JSON.parse(data);
 
     if (message.origin === selfEventId) {
       return;
     }
 
-    if (channel === "chat-message") {
-      Events.next({ type: "received-message", data: { ...message, when: new Date(message.when) } });
+    if (channel === 'chat-message') {
+      Events.next({ type: 'received-message', data: { ...message, when: new Date(message.when) } });
     }
 
-    if (channel === "player-count-change") {
-      Events.next({ type: "player-count-change", data: message });
+    if (channel === 'player-count-change') {
+      Events.next({ type: 'player-count-change', data: message });
     }
   });
 }

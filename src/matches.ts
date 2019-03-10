@@ -1,12 +1,12 @@
-import * as express from "express";
-import * as winston from "winston";
+import * as express from 'express';
+import * as winston from 'winston';
 import * as _ from 'lodash';
 import * as crypto from 'crypto';
 
-import { Player, Server, Match, IMatchModel } from "./db";
-import { getChatFor } from "./chat";
-import { ITribesServerQueryResponse, IFullReportPlayer } from "./types";
-import { prepareStats } from "./helpers";
+import { Player, Server, Match, IMatchModel } from './db';
+import { getChatFor } from './chat';
+import { ITribesServerQueryResponse, IFullReportPlayer } from './types';
+import { prepareStats } from './helpers';
 
 import * as asyncHandler from 'express-async-handler';
 
@@ -29,10 +29,10 @@ function getPlayersForTeam(data: IMatchModel, team: string) {
         ipHash: ip && sha1(ip),
         ipHashFirstTwo: ip && sha1(ip.split('.')[0] + ip.split('.')[1]),
         ipHashFirstThree: ip && sha1(ip.split('.')[0] + ip.split('.')[1] + ip.split('.')[2]),
-        url: '/player/' + encodeURIComponent(x.name)
-      }
+        url: '/player/' + encodeURIComponent(x.name),
+      };
     })
-    .sort((a, b) => b.score - a.score)
+    .sort((a, b) => b.score - a.score);
 }
 
 function generateResultInfo(data: ITribesServerQueryResponse) {
@@ -41,13 +41,13 @@ function generateResultInfo(data: ITribesServerQueryResponse) {
   } else if (parseInt(data.teamonescore) < parseInt(data.teamtwoscore)) {
     return { text: `${data.teamtwo} won the match!`, team: data.teamtwo };
   } else {
-    return { text: 'Match ended in a tie!' }
+    return { text: 'Match ended in a tie!' };
   }
 }
 
 function getMatchData(id: string) {
-  return Match
-    .where('_id').equals(id)
+  return Match.where('_id')
+    .equals(id)
     .findOne()
     .exec()
     .then((data: IMatchModel) => ({
@@ -61,36 +61,40 @@ function getMatchData(id: string) {
     }));
 }
 
-router.get('/matches/:id.json', asyncHandler(async function (req, res, next) {
-  const data = await getMatchData(req.params.id)
+router.get(
+  '/matches/:id.json',
+  asyncHandler(async function(req, res, next) {
+    const data = await getMatchData(req.params.id);
 
-  res.json(data);
-}));
+    res.json(data);
+  })
+);
 
-router.get('/matches/:id', asyncHandler(async function (req, res, next) {
-  const data = await getMatchData(req.params.id)
-  
-  res.render('match', data);
-}));
+router.get(
+  '/matches/:id',
+  asyncHandler(async function(req, res, next) {
+    const data = await getMatchData(req.params.id);
+
+    res.render('match', data);
+  })
+);
 
 async function getMatchesData(page: number, sort: string) {
   const perPage = 50;
 
   const [data, count] = await Promise.all([
-    Match
-      .find({ 'numplayers': { $gt: 0 } })
+    Match.find({ numplayers: { $gt: 0 } })
       .sort(sort)
       .select({
         basicReport: true,
-        when: true
+        when: true,
       })
       .skip((page - 1) * perPage)
       .limit(perPage)
       .exec(),
-    Match
-      .find({ 'numplayers': { $gt: 0 } })
+    Match.find({ numplayers: { $gt: 0 } })
       .countDocuments()
-      .exec()
+      .exec(),
   ]);
 
   const lastPage = Math.floor(count / perPage) + 1;
@@ -116,12 +120,12 @@ async function getMatchesData(page: number, sort: string) {
       last: lastPage,
       prev: page - 1 >= 1 ? page - 1 : null,
       next: page + 1 <= lastPage ? page + 1 : null,
-    }
+    },
   };
 }
 
 function parseSort(sort: 'players' | 'time') {
-  switch(sort) {
+  switch (sort) {
     case 'players':
       return '-numplayers';
     default:
@@ -137,18 +141,24 @@ function parsePage(page: string) {
   }
 }
 
-router.get('/matches.json', asyncHandler(async function (req, res, next) {
-  const data = await getMatchesData(parsePage(req.query.page), parseSort(req.query.sort));
+router.get(
+  '/matches.json',
+  asyncHandler(async function(req, res, next) {
+    const data = await getMatchesData(parsePage(req.query.page), parseSort(req.query.sort));
 
-  res.json({ ...data, sort: req.query.sort });
-}));
+    res.json({ ...data, sort: req.query.sort });
+  })
+);
 
-router.get('/matches', asyncHandler(async function (req, res, next) {
-  const data = await getMatchesData(parsePage(req.query.page), parseSort(req.query.sort));
+router.get(
+  '/matches',
+  asyncHandler(async function(req, res, next) {
+    const data = await getMatchesData(parsePage(req.query.page), parseSort(req.query.sort));
 
-  res.render('matches', { ...data, sort: req.query.sort });
-}));
+    res.render('matches', { ...data, sort: req.query.sort });
+  })
+);
 
 module.exports = {
-  router
-}
+  router,
+};

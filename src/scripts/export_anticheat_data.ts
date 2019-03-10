@@ -4,10 +4,12 @@ import { flatMap, max, mean, keys, sortBy, range } from 'lodash';
 import { Match } from '../db';
 import { IUploadedPlayer } from '../types';
 
-require('dotenv').config()
+require('dotenv').config();
 
 function median(values: number[]) {
-  values = values.slice(0).sort(function (a, b) { return a - b; });
+  values = values.slice(0).sort(function(a, b) {
+    return a - b;
+  });
 
   return middle(values);
 }
@@ -16,10 +18,8 @@ function middle(values: number[]) {
   var len = values.length;
   var half = Math.floor(len / 2);
 
-  if (len % 2)
-    return (values[half - 1] + values[half]) / 2.0;
-  else
-    return values[half];
+  if (len % 2) return (values[half - 1] + values[half]) / 2.0;
+  else return values[half];
 }
 
 function percentile(arr: number[], p: number) {
@@ -28,7 +28,9 @@ function percentile(arr: number[], p: number) {
   if (p <= 0) return arr[0];
   if (p >= 1) return arr[arr.length - 1];
 
-  arr.sort(function (a, b) { return a - b; });
+  arr.sort(function(a, b) {
+    return a - b;
+  });
   var index = (arr.length - 1) * p,
     lower = Math.floor(index),
     upper = lower + 1,
@@ -46,12 +48,12 @@ const percentileOfScore = (array: number[], value: number) => {
 
   if (!array.some(equalsValue)) {
     a.push(value);
-    alen = range(a.length)
+    alen = range(a.length);
   } else {
-    alen = range(a.length + 1)
+    alen = range(a.length + 1);
   }
   const idx = array.map(equalsValue);
-  const alenTrue = alen.filter((v) => idx[alen.indexOf(v)]);
+  const alenTrue = alen.filter(v => idx[alen.indexOf(v)]);
   const meanVal = mean(alenTrue);
   const percent = meanVal / originalLength;
   return Math.round(percent * 100) / 100;
@@ -59,10 +61,10 @@ const percentileOfScore = (array: number[], value: number) => {
 
 function Quartile(data: number[], q: number) {
   data = sortBy(data, x => x);
-  var pos = ((data.length) - 1) * q;
+  var pos = (data.length - 1) * q;
   var base = Math.floor(pos);
   var rest = pos - base;
-  if ((data[base + 1] !== undefined)) {
+  if (data[base + 1] !== undefined) {
     return data[base] + rest * (data[base + 1] - data[base]);
   } else {
     return data[base];
@@ -70,9 +72,7 @@ function Quartile(data: number[], q: number) {
 }
 
 async function exportToFile(data: any[], filename: string) {
-  const preprocessed = flatMap(
-    data.map(x => x.players.map((p: IUploadedPlayer) => isValidPreprocess(p, x)))
-  );
+  const preprocessed = flatMap(data.map(x => x.players.map((p: IUploadedPlayer) => isValidPreprocess(p, x))));
 
   // await fs.writeFile(filename, JSON.stringify(preprocessed, null, 2));
 
@@ -100,8 +100,7 @@ async function exportToFile(data: any[], filename: string) {
 
 async function main() {
   console.info('Downloading data');
-  const data = (await Match
-    .find({}, { 'fullReport': true }))
+  const data = (await Match.find({}, { fullReport: true }))
     .filter(x => x.fullReport && Array.isArray(x.fullReport.players) && x.fullReport.players.length > 0)
     .map(x => x.fullReport);
 
@@ -114,7 +113,7 @@ main()
     process.exit(0);
   })
   .catch(ex => {
-    console.error("Fatal in main");
+    console.error('Fatal in main');
     console.error(ex);
     process.exit(1);
   });
