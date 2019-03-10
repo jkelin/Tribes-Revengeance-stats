@@ -6,6 +6,8 @@ import { Player, Identity, IPlayerModel } from "./db";
 import { cleanPlayerName, prepareStats } from "./helpers";
 import { IFullReportPlayer } from "./types";
 
+import * as  asyncHandler from 'express-async-handler';
+
 let router = express.Router();
 
 async function findRelatedNicknames(name: string) {
@@ -84,7 +86,7 @@ function getFullReportForPlayer(player: IPlayerModel): IFullReportPlayer {
   } as any;
 }
 
-router.get("/player/:name.json", async function(req, res) {
+router.get("/player/:name.json", asyncHandler(async function(req, res) {
   var name = decodeURIComponent(req.params["name"]);
   const similar = await findRelatedNicknames(name);
   // const data = await Player.where({ _id: name }).findOne();
@@ -93,19 +95,20 @@ router.get("/player/:name.json", async function(req, res) {
     relatedNicknames: similar,
     relatedNicknamesString: similar && similar.join(", ")
   });
-});
+}));
 
-router.get("/player/:name", async function(req, res) {
+router.get("/player/:name", asyncHandler(async function(req, res) {
   var name = decodeURIComponent(req.params["name"]);
   const similar = await findRelatedNicknames(name);
   const data: IPlayerModel = await Player.where("_id")
     .equals(name)
     .findOne()
     .exec();
+
   const personaCount = await Player.where("normalizedName")
     .equals(cleanPlayerName(name))
     .find()
-    .count()
+    .countDocuments()
     .exec();
 
   res.render("player", {
@@ -114,24 +117,22 @@ router.get("/player/:name", async function(req, res) {
     relatedNicknames: similar,
     relatedNicknamesString: similar && similar.join(", ")
   });
-});
+}));
 
-router.get("/players", function(req, res) {
-  Player.find()
+router.get("/players", asyncHandler(async function(req, res) {
+  const players = await Player.find()
     .sort({ lastseen: -1 })
-    .exec(function(err, data) {
-      Player.count({}, function(e, c) {
-        if (err) throw err;
-        if (e) throw e;
-        res.render("players", {
-          data: data,
-          alerts: [{ text: c + " aliases total" }]
-        });
-      });
-    });
-});
+    .exec();
 
-router.get("/persona/:name", async function(req, res) {
+  const playerCount = await Player.countDocuments().exec();
+  
+  res.render("players", {
+    data: players,
+    alerts: [{ text: playerCount + " aliases total" }]
+  });
+}));
+
+router.get("/persona/:name", asyncHandler(async function(req, res) {
   var name = decodeURIComponent(req.params["name"]);
   const names: IPlayerModel[] = await Player.where("normalizedName")
     .equals(cleanPlayerName(name))
@@ -160,9 +161,9 @@ router.get("/persona/:name", async function(req, res) {
     stats: stats,
     relatedNicknames: relatedNicknames
   });
-});
+}));
 
-router.get("/personas", async function(req, res) {
+router.get("/personas", asyncHandler(async function(req, res) {
   const personas: IPlayerModel[] = await Player.aggregate([
     {
       $group: {
@@ -198,7 +199,7 @@ router.get("/personas", async function(req, res) {
     alerts: [{ text: personas.length + " tribals total. Only tribals with aggregate play time of 60 minutes and 100 score are shown." }],
     linkPrefix: 'persona'
   });
-});
+}));
 
 module.exports = {
   router

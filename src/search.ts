@@ -1,6 +1,8 @@
 import * as express from "express";
 import { Player } from "./db";
 
+import * as asyncHandler from 'express-async-handler';
+
 export const router = express.Router();
 
 function searchPlayers(name: string) {
@@ -12,11 +14,12 @@ function searchPlayers(name: string) {
     .exec();
 }
 
-router.get('/search', async function (req, res) {
+router.get('/search', asyncHandler(async function (req, res) {
   var name = req.query.name !== undefined ? decodeURIComponent(req.query.name) : "";
   const data = await searchPlayers(name);
+
   res.render('players', {
     data: data,
     alerts: [{ text: data.length + " results" }]
   });
-});
+}));

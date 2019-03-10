@@ -8,6 +8,8 @@ import { getChatFor } from "./chat";
 import { ITribesServerQueryResponse, IFullReportPlayer } from "./types";
 import { prepareStats } from "./helpers";
 
+import * as asyncHandler from 'express-async-handler';
+
 function sha1(input: string) {
   const shasum = crypto.createHash('sha1');
   return shasum.update(input).digest('hex');
@@ -59,13 +61,17 @@ function getMatchData(id: string) {
     }));
 }
 
-router.get('/matches/:id.json', function (req, res, next) {
-  return getMatchData(req.params.id).then(data => res.json(data))
-});
+router.get('/matches/:id.json', asyncHandler(async function (req, res, next) {
+  const data = await getMatchData(req.params.id)
 
-router.get('/matches/:id', function (req, res, next) {
-  return getMatchData(req.params.id).then(data => res.render('match', data))
-});
+  res.json(data);
+}));
+
+router.get('/matches/:id', asyncHandler(async function (req, res, next) {
+  const data = await getMatchData(req.params.id)
+  
+  res.render('match', data);
+}));
 
 async function getMatchesData(page: number, sort: string) {
   const perPage = 50;
@@ -83,7 +89,7 @@ async function getMatchesData(page: number, sort: string) {
       .exec(),
     Match
       .find({ 'numplayers': { $gt: 0 } })
-      .count()
+      .countDocuments()
       .exec()
   ]);
 
@@ -131,15 +137,17 @@ function parsePage(page: string) {
   }
 }
 
-router.get('/matches.json', function (req, res, next) {
-  return getMatchesData(parsePage(req.query.page), parseSort(req.query.sort))
-    .then(data => res.json({ ...data, sort: req.query.sort }))
-});
+router.get('/matches.json', asyncHandler(async function (req, res, next) {
+  const data = await getMatchesData(parsePage(req.query.page), parseSort(req.query.sort));
 
-router.get('/matches', function (req, res, next) {
-  return getMatchesData(parsePage(req.query.page), parseSort(req.query.sort))
-    .then(data => res.render('matches', { ...data, sort: req.query.sort }))
-});
+  res.json({ ...data, sort: req.query.sort });
+}));
+
+router.get('/matches', asyncHandler(async function (req, res, next) {
+  const data = await getMatchesData(parsePage(req.query.page), parseSort(req.query.sort));
+
+  res.render('matches', { ...data, sort: req.query.sort });
+}));
 
 module.exports = {
   router

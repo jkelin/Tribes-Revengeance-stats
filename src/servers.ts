@@ -5,6 +5,8 @@ import { escape } from "influx";
 import { Player, Server, influx, IPlayerModel, IServerModel } from "./db";
 import { getChatFor } from "./chat";
 
+import * as asyncHandler from 'express-async-handler';
+
 let router = express.Router();
 
 function getServerChartData(id: string, days: number) {
@@ -24,7 +26,7 @@ function getServerChartData(id: string, days: number) {
     });
 }
 
-router.get('/server/:id', async function (req, res, next) {
+router.get('/server/:id', asyncHandler(async function (req, res, next) {
   var id: string = req.params["id"];
   var numDays = req.query.days !== undefined ? parseInt(req.query.days) : 2;
   if (numDays > 30) numDays = 30;
@@ -52,8 +54,9 @@ router.get('/server/:id', async function (req, res, next) {
   } catch (error) {
     next(error);
   }
-});
+}));
 
+// TODO rewrite this so it goes straight to redis
 router.get('/server/:id/chat/:from', function (req, res, next) {
   var id = req.params["id"];
   var frm = req.params["from"];
@@ -79,29 +82,27 @@ router.get('/server/:id/chat/:from', function (req, res, next) {
   res.json(resp);
 });
 
-router.get('/servers', function (req, res) {
-  Server.find().sort({ lastseen: -1 }).exec(function (err, data) {
-    if (err) throw err;
-    res.render('servers', {
-      data: data,
-      alerts: [{ text: data.length + " servers total" }]
-    });
-  });
-});
+router.get('/servers', asyncHandler(async function (req, res) {
+  const data = await Server.find().sort({ lastseen: -1 }).exec()
 
-router.get('/servers.json', function (req, res) {
-  Server.find().sort({ lastseen: -1 }).exec(function (err, data) {
-    if (err) throw err;
-    res.json(data);
+  res.render('servers', {
+    data: data,
+    alerts: [{ text: data.length + " servers total" }]
   });
-});
+}));
 
-router.get('/servers.players.json', function (req, res) {
-  Server.find().sort({ lastseen: -1 }).exec(function (err, data) {
-    if (err) throw err;
-    res.json(data.filter(x => x.lastdata).filter(x => (Date.now() - 60 * 1000) < x.lastseen.getTime()).map(x => ({ id: x._id, name: x.name, players: x.lastdata.players })));
-  });
-});
+router.get('/servers.json', asyncHandler(async function (req, res) {
+  const data = await Server.find().sort({ lastseen: -1 }).exec();
+
+  res.json(data);
+}));
+
+router.get('/servers.players.json', asyncHandler(async function (req, res) {
+  const data = await Server.find().sort({ lastseen: -1 }).exec();
+  const players = data.filter(x => x.lastdata).filter(x => (Date.now() - 60 * 1000) < x.lastseen.getTime()).map(x => ({ id: x._id, name: x.name, players: x.lastdata.players }));
+  
+  res.json(players);
+}));
 
 module.exports = {
   router

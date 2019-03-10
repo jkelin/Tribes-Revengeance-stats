@@ -12,6 +12,8 @@ import { isValid } from "./anticheat";
 import { promisify } from "util";
 import Events, { selfEventId } from "./events";
 
+import * as asyncHandler from 'express-async-handler';
+
 export const router = express.Router();
 
 const persistentPlayerCounts: Record<string, number> = {};
@@ -122,139 +124,141 @@ export function pushPlayersTrackings(serverIdIn: string, data: ITribesServerQuer
   lastTrackings[serverIdIn] = Date.now();
 }
 
-export function timePlayer(player: IUploadedPlayer) {
+export async function timePlayer(player: IUploadedPlayer) {
   if (!player.player) return winston.error('[timePlayer] Player does not have a name', player);
-  Player
+  let pl = await Player
     .where('_id')
     .equals(player.player)
-    .findOne(function (err, pl: IPlayerModel) {
-      if (err) throw err;
-      if (pl === null) {
-        pl = new Player(<IPlayer>{
-          _id: player.player,
-          normalizedName: cleanPlayerName(player.player + ''),
-          stats: {},
-          score: 0,
-          kills: 0,
-          deaths: 0,
-          offense: 0,
-          defense: 0,
-          style: 0,
-          minutesonline: 0,
-          lastTiming: new Date()
-        });
-      };
+    .findOne()
+    .exec();
 
-      if (Date.now() >= pl.lastTiming.getTime() + 60 * 1000) {
-        pl.minutesonline++;
-        pl.lastTiming = new Date();
-        winston.debug("Timing player", player.player);
-      }
-
-      pl.normalizedName = cleanPlayerName(player.player + '');
-      pl.lastseen = new Date();
-      pl.save(function (err) { if (err) throw err; });
+  if (pl === null) {
+    pl = new Player(<IPlayer>{
+      _id: player.player,
+      normalizedName: cleanPlayerName(player.player + ''),
+      stats: {},
+      score: 0,
+      kills: 0,
+      deaths: 0,
+      offense: 0,
+      defense: 0,
+      style: 0,
+      minutesonline: 0,
+      lastTiming: new Date()
     });
+  };
+
+  if (Date.now() >= pl.lastTiming.getTime() + 60 * 1000) {
+    pl.minutesonline++;
+    pl.lastTiming = new Date();
+    winston.debug("Timing player", player.player);
+  }
+
+  pl.normalizedName = cleanPlayerName(player.player + '');
+  pl.lastseen = new Date();
+
+  await pl.save();
 }
 
-export function handlePlayer(input: IUploadedPlayer, ip: string, port: number) {
+export async function handlePlayer(input: IUploadedPlayer, ip: string, port: number) {
   winston.debug("handling player", input);
   if (!input.name) return winston.error('Player does not have a name');
 
-  Player
+  let player = await Player
     .where('_id').equals(input.name)
-    .findOne(function (err, player: IPlayerModel) {
-      if (err) throw err;
-      var changeCountry = false;
-      if (player === null) {
-        player = new Player(<IPlayer>{
-          _id: input.name,
-          normalizedName: cleanPlayerName(input.name),
-          stats: {},
-          score: 0,
-          kills: 0,
-          deaths: 0,
-          offense: 0,
-          defense: 0,
-          style: 0,
-          minutesonline: 20,
-          lastTiming: new Date()
-        });
-      }
+    .findOne()
+    .exec();
 
-      if (player.offense == undefined) player.offense = 0;
+  let changeCountry = false;
+  if (player === null) {
+    player = new Player(<IPlayer>{
+      _id: input.name,
+      normalizedName: cleanPlayerName(input.name),
+      stats: {},
+      score: 0,
+      kills: 0,
+      deaths: 0,
+      offense: 0,
+      defense: 0,
+      style: 0,
+      minutesonline: 20,
+      lastTiming: new Date()
+    });
+  }
 
-      player.normalizedName = cleanPlayerName(input.name);
-      player.ip = input.ip;
-      player.lastserver = ip + ":" + port;
-      player.score += input.score;
-      player.kills += input.kills;
-      player.deaths += input.deaths;
-      player.offense += input.offense;
-      player.defense += input.defense;
-      player.style += input.style;
-      player.lastseen = new Date();
+  if (player.offense == undefined) player.offense = 0;
+
+  player.normalizedName = cleanPlayerName(input.name);
+  player.ip = input.ip;
+  player.lastserver = ip + ":" + port;
+  player.score += input.score;
+  player.kills += input.kills;
+  player.deaths += input.deaths;
+  player.offense += input.offense;
+  player.defense += input.defense;
+  player.style += input.style;
+  player.lastseen = new Date();
+
+  if (!player.stats) {
+    player.stats = {};
+  }
+
+  if (player.stats.StatHighestSpeed == undefined) player.stats.StatHighestSpeed = 0;
+
+  var highestSpeed = input["StatClasses.StatHighestSpeed"] == undefined ? 0 : parseInt(input["StatClasses.StatHighestSpeed"] + '');
+  if (highestSpeed > player.stats.StatHighestSpeed) {
+    player.stats.StatHighestSpeed = highestSpeed;
+    player.markModified('stats');
+  }
+
+  for (var i in input) {
+    var value = input[i];
+    if (typeof value !== 'number') {
+      continue;
+    }
+
+    winston.debug("handle player stat", { name: i, value: value });
+    if (i === "StatClasses.StatHighestSpeed") {
+      continue;
+    }
+
+    if (i.indexOf('.') !== -1) {
+      var name = i.split('.')[1];
 
       if (!player.stats) {
         player.stats = {};
       }
 
-      if (player.stats.StatHighestSpeed == undefined) player.stats.StatHighestSpeed = 0;
-
-      var highestSpeed = input["StatClasses.StatHighestSpeed"] == undefined ? 0 : parseInt(input["StatClasses.StatHighestSpeed"] + '');
-      if (highestSpeed > player.stats.StatHighestSpeed) {
-        player.stats.StatHighestSpeed = highestSpeed;
-        player.markModified('stats');
+      if (!player.stats[name]) {
+        player.stats[name] = 0;
       }
 
-      for (var i in input) {
-        var value = input[i];
-        if (typeof value !== 'number') {
-          continue;
-        }
-
-        winston.debug("handle player stat", { name: i, value: value });
-        if (i === "StatClasses.StatHighestSpeed") {
-          continue;
-        }
-
-        if (i.indexOf('.') !== -1) {
-          var name = i.split('.')[1];
-
-          if (!player.stats) {
-            player.stats = {};
-          }
-
-          if (!player.stats[name]) {
-            player.stats[name] = 0;
-          }
-
-          player.stats[name] += value;
-          //console.log("addded",name,value);
-          player.markModified('stats');
-        }
-      }
-      winston.debug("statted", input.name);
+      player.stats[name] += value;
+      //console.log("addded",name,value);
+      player.markModified('stats');
+    }
+  }
+  winston.debug("statted", input.name);
 
 
-      player.save(function (err) { if (err) throw err; });
-    });
+  await player.save();
 };
 
-export function addServerLastFullReport(ip: string, port: number) {
+export async function addServerLastFullReport(ip: string, port: number) {
   var id = ip + ":" + port;
-  Server
+  const server = await Server
     .where('_id')
     .equals(id)
-    .findOne(function (err, server: IServerModel) {
-      if (err) throw err;
-      if (server == null) {
-        winston.warn("server null, _id:", id);
-        return;
-      }
-      server.lastfullreport = new Date();
-      server.save(function (err) { if (err) throw err; });
-    });
+    .findOne()
+    .exec();
+
+
+  if (server == null) {
+    winston.warn("server null, _id:", id);
+    return;
+  }
+  server.lastfullreport = new Date();
+  await server.save();
 }
 
 export function removeDotStatNamesFromFullReport(fullReport: IUploadedData) {
@@ -275,31 +279,24 @@ export function removeDotStatNamesFromFullReport(fullReport: IUploadedData) {
   };
 }
 
-export function saveMatchResult(ip: string, port: number, fullReport: IUploadedData) {
+export async function saveMatchResult(ip: string, port: number, fullReport: IUploadedData) {
   var id = ip + ":" + port;
 
   // Server.where({ _id: '45.32.157.166:8777' })
-  Server
+  const server = await Server
     .where('_id').equals(id)
-    .findOne(function (err, server: IServerModel) {
-      if (err) {
-        console.error('Could not find saveMatchResult')
-      }
+    .findOne()
+    .exec();
 
-      var match = new Match({
-        server: id,
-        when: new Date(),
-        fullReport: removeDotStatNamesFromFullReport(fullReport),
-        numplayers: parseInt(server.lastdata.numplayers + ''),
-        basicReport: server.lastdata
-      });
+  const match = new Match({
+    server: id,
+    when: new Date(),
+    fullReport: removeDotStatNamesFromFullReport(fullReport),
+    numplayers: parseInt(server.lastdata.numplayers + ''),
+    basicReport: server.lastdata
+  });
 
-      match.save(function (err) {
-        if (err) {
-          console.error('Could not save saveMatchResult', err)
-        }
-      });
-    });
+  await match.save();
 }
 
 // This is needed for /upload
@@ -316,7 +313,7 @@ router.use('/upload', function (req, res, next) {
   });
 });
 
-router.post('/upload', function (req, res) {
+router.post('/upload', asyncHandler(async function (req, res) {
   var ip = getClientIp(req);
 
   if (!ip) {
@@ -338,7 +335,7 @@ router.post('/upload', function (req, res) {
       handlePlayer(player, ip!, object.port);
     });
 
-  addServerLastFullReport(ip, object.port);
+  await addServerLastFullReport(ip, object.port);
 
-  saveMatchResult(ip, object.port, object)
-});
+  await saveMatchResult(ip, object.port, object)
+}));

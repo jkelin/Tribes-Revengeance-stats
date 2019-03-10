@@ -86,7 +86,8 @@ if (process.env.SENTRY_DSN) {
 
 app.use(function (err: Error, req: Request, res: Response, next: () => void) {
   winston.error("App error:", err);
-  res.send(err);
+  res.statusCode = 500;
+  res.end(err);
 });
 
 if (RUN_WEB || RUN_SERVER_QUERY) {
