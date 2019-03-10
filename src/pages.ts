@@ -15,14 +15,48 @@ router.get(
     const data = await Promise.all([
       Player.find()
         .sort({ kills: -1 })
+        .select({
+          _id: 1,
+          kills: 1,
+          deaths: 1,
+          style: 1,
+          score: 1,
+          minutesonline: 1,
+          lastseen: 1,
+          captures: 1,
+          'stats.flagCaptureStat': 1,
+        })
+        .lean()
         .limit(20)
         .exec(),
       Player.find()
         .sort({ minutesonline: -1 })
+        .select({
+          _id: 1,
+          kills: 1,
+          deaths: 1,
+          style: 1,
+          score: 1,
+          minutesonline: 1,
+          lastseen: 1,
+          captures: 1,
+          'stats.flagCaptureStat': 1,
+        })
         .limit(20)
+        .lean()
         .exec(),
       Server.find()
         .where({ lastseen: { $gte: compDate } })
+        .select({
+          _id: 1,
+          country: 1,
+          name: 1,
+          'lastdata.mapname': 1,
+          'lastdata.gametype': 1,
+          'lastdata.mapnamefull': 1,
+          'lastdata.numplayers': 1,
+        })
+        .lean()
         .limit(20)
         .exec(),
       tribesNews,

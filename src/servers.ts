@@ -116,8 +116,10 @@ router.get(
 router.get(
   '/servers.players.json',
   asyncHandler(async (req, res) => {
-    const data = await Server.find()
+    const data: IServerModel[] = await Server.find()
       .sort({ lastseen: -1 })
+      .select({ lastdata: 1 })
+      .lean()
       .exec();
 
     const players = data

@@ -127,6 +127,18 @@ router.get(
   asyncHandler(async (req, res) => {
     const players = await Player.find()
       .sort({ lastseen: -1 })
+      .select({
+        _id: 1,
+        kills: 1,
+        deaths: 1,
+        style: 1,
+        score: 1,
+        minutesonline: 1,
+        lastseen: 1,
+        captures: 1,
+        'stats.flagCaptureStat': 1,
+      })
+      .lean()
       .exec();
 
     const playerCount = await Player.countDocuments().exec();
@@ -145,6 +157,18 @@ router.get(
     const names: IPlayerModel[] = await Player.where('normalizedName')
       .equals(cleanPlayerName(name))
       .find()
+      .select({
+        _id: 1,
+        kills: 1,
+        deaths: 1,
+        style: 1,
+        score: 1,
+        minutesonline: 1,
+        lastseen: 1,
+        captures: 1,
+        'stats.flagCaptureStat': 1,
+      })
+      .lean()
       .exec();
 
     if (names.length < 1) {
@@ -206,7 +230,8 @@ router.get(
           score: -1,
         },
       },
-    ]).exec();
+    ])
+    .exec();
 
     res.render('personas', {
       data: personas,
