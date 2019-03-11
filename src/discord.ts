@@ -27,6 +27,7 @@ if (RUN_DISCORD && webhookId && webhookToken) {
 
 if (RUN_DISCORD && token) {
   const client = new Discord.Client();
+  client.listenerCount = () => 0;
   client.login(token);
 
   client.on('message', message => {
