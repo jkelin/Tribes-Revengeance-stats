@@ -221,11 +221,12 @@
     "@types/events" "*"
     "@types/node" "*"
 
-"@types/mongoose@^5.3.21":
-  version "5.3.21"
-  resolved "https://registry.yarnpkg.com/@types/mongoose/-/mongoose-5.3.21.tgz#67d9cdb89bc5ac9bc8b4d62540db692b92117f58"
-  integrity sha512-Cfx8f9TW+tkxVIkZXsDTWrbsECxrIItlbykNDXNsrNhee85v79YRFkCf1wvn+vlcHL/eEO8gjSRSZ+9Hf9jMnw==
+"@types/mongoose@5.2.6":
+  version "5.2.6"
+  resolved "https://registry.yarnpkg.com/@types/mongoose/-/mongoose-5.2.6.tgz#96b89f8a35b37b3beb5bf50572ac6cf7f7d52453"
+  integrity sha512-4TDDqyUBW/K8blTp9PF5OEpEJ73rn7pZRUE0yKbjiV8wUjydiJWO+BuJDzjoMznjsa5PY/yTQO2RXAtIrCGU3w==
   dependencies:
+    "@types/events" "*"
     "@types/mongodb" "*"
     "@types/node" "*"
 

@@ -1,4 +1,5 @@
 import * as Discord from 'discord.js';
+import * as winston from 'winston';
 import Events, { IEventChatMessage } from './events';
 
 const webhookId = process.env.DISCORD_WEBHOOK_ID;
@@ -17,7 +18,7 @@ if (RUN_DISCORD && webhookId && webhookToken) {
   // Send a message using the webhook
   setTimeout(() => {
     Events.filter(x => x.type === 'chat-message').subscribe((e: IEventChatMessage) => {
-      console.log(e);
+      winston.debug('chat-message', e);
       if (e.data && e.data.user && e.data.messageFriendly) {
         hook.send(e.data.messageFriendly, { username: e.data.user });
       }
