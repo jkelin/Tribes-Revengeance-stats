@@ -1,6 +1,8 @@
+import Axios from 'axios';
 import * as Discord from 'discord.js';
+import * as https from 'https';
 import * as winston from 'winston';
-import Events, { IEventChatMessage } from './events';
+import Events, { IEventChatMessage, selfEventId } from './events';
 
 const webhookId = process.env.DISCORD_WEBHOOK_ID;
 const webhookToken = process.env.DISCORD_WEBHOOK_TOKEN;
@@ -13,17 +15,19 @@ const serverId = process.env.DISCORD_SERVER_ID || '45.32.157.166:8777';
 const RUN_DISCORD = process.env.RUN_DISCORD === 'true';
 
 if (RUN_DISCORD && webhookId && webhookToken) {
-  const hook = new Discord.WebhookClient(webhookId, webhookToken);
+  const client = Axios.create({
+    httpsAgent: new https.Agent({ keepAlive: true }),
+  });
 
-  // Send a message using the webhook
-  setTimeout(() => {
-    Events.filter(x => x.type === 'chat-message').subscribe((e: IEventChatMessage) => {
-      winston.debug('chat-message', e);
-      if (e.data && e.data.user && e.data.messageFriendly) {
-        hook.send(e.data.messageFriendly, { username: e.data.user });
-      }
-    });
-  }, 10 * 1000);
+  Events.filter(x => x.type === 'chat-message' && x.data.origin === selfEventId).subscribe((e: IEventChatMessage) => {
+    winston.debug('Posting chat-message to discord', e);
+    if (e.data && e.data.user && e.data.messageFriendly) {
+      client.post(`https://discordapp.com/api/webhooks/${webhookId}/${webhookToken}`, {
+        content: e.data.messageFriendly,
+        username: e.data.user,
+      });
+    }
+  });
 }
 
 if (RUN_DISCORD && token) {
