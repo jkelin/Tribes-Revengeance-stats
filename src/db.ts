@@ -149,6 +149,10 @@ export const influx = new InfluxDB({
       tags: ['server'],
     },
   ],
+  pool: { 
+    maxRetries: Number.MAX_VALUE,
+    requestTimeout: 5000,
+  }
 } as any);
 
 async function connect() {
