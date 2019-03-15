@@ -152,7 +152,7 @@ export const influx = new InfluxDB({
 } as any);
 
 async function connect() {
-  const conn = mongoose.connect(process.env.MONGODB || 'mongodb://localhost:3000/tribes', {
+  const conn = await mongoose.connect(process.env.MONGODB || 'mongodb://localhost:3000/tribes', {
     useNewUrlParser: true,
     server: {
       socketOptions: {
@@ -170,6 +170,14 @@ async function connect() {
         reconnectInterval: 1000,
       },
     },
+  });
+
+  conn.connection.on('error', (err) => {
+    winston.error('MongoDB error', err);
+  });
+
+  conn.connection.on('disconnected', () => {
+    winston.error('MongoDB disconnected');
   });
 
   return conn;
