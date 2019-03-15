@@ -152,10 +152,25 @@ export const influx = new InfluxDB({
 } as any);
 
 async function connect() {
-  const conn = mongoose.connect(
-    process.env.MONGODB || 'mongodb://localhost:3000/tribes',
-    { useNewUrlParser: true }
-  );
+  const conn = mongoose.connect(process.env.MONGODB || 'mongodb://localhost:3000/tribes', {
+    useNewUrlParser: true,
+    server: {
+      socketOptions: {
+        keepAlive: 1,
+        connectTimeoutMS: 5000,
+        reconnectTries: Number.MAX_VALUE,
+        reconnectInterval: 1000,
+      },
+    },
+    replset: {
+      socketOptions: {
+        keepAlive: 1,
+        connectTimeoutMS: 5000,
+        reconnectTries: Number.MAX_VALUE,
+        reconnectInterval: 1000,
+      },
+    },
+  });
 
   return conn;
 }
@@ -174,7 +189,7 @@ if (process.env.REDIS) {
   redisClient = redis.createClient(process.env.REDIS);
   redisSubClient = redis.createClient(process.env.REDIS);
 
-  redisClient.on('error', (err) => {
+  redisClient.on('error', err => {
     winston.error('Redis error', err);
   });
 
@@ -188,7 +203,7 @@ if (process.env.REDIS) {
 
   redisSubClient.on('warning', winston.warn);
 
-  redisSubClient.on('error', (err) => {
+  redisSubClient.on('error', err => {
     winston.error('Redis error', err);
   });
 
