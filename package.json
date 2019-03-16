@@ -84,7 +84,7 @@
     "script:normalize_names": "ts-node --files src/scripts/normalize_names.ts",
     "script:prod:normalize_names": "node src/scripts/normalize_names.js",
     "typecheck": "tsc --noEmit",
-    "lint": "tslint -c tslint.json src/**/*.ts",
+    "lint": "tslint --project ./ -c tslint.json src/**/*.ts",
     "lint:fix": "tslint --fix -c tslint.json src/**/*.ts",
     "build": "tsc"
   },

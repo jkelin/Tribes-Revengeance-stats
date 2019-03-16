@@ -29,10 +29,10 @@ if (RUN_DISCORD && webhookId && webhookToken) {
   });
 }
 
-if (RUN_DISCORD && token) {
+export async function readDiscord(discordToken: string) {
   const client = new Discord.Client();
   client.listenerCount = () => 0;
-  client.login(token);
+  await client.login(discordToken);
 
   client.on('message', message => {
     if (message.channel.id === channelId && !message.author.bot) {

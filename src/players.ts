@@ -10,7 +10,9 @@ import * as asyncHandler from 'express-async-handler';
 const router = express.Router();
 
 async function findRelatedNicknames(name: string) {
-  const player = await Player.find({ _id: name }).findOne();
+  const player = await Player.find({ _id: name })
+    .findOne()
+    .exec();
 
   if (!player) {
     return null;
@@ -36,7 +38,9 @@ async function findRelatedNicknames(name: string) {
 
 async function findRelatedNicknamesFromIdentities(names: string[], ips: string[]) {
   names = names.map(cleanPlayerName);
-  const identities = await Identity.find({ namesAndIps: { $in: [...names, ...ips] } }, { names: true }).findOne();
+  const identities = await Identity.find({ namesAndIps: { $in: [...names, ...ips] } }, { names: true })
+    .findOne()
+    .exec();
 
   if (identities) {
     return sortBy(toPairs(identities.names), x => -x[1])
@@ -52,7 +56,9 @@ async function findRelatedNicknamesFromPlayers(name: string, ip?: string) {
     return null;
   }
 
-  const players = await Player.find({ ip: { $regex: new RegExp(ip) } }, { _id: true, minutesonline: true }).find();
+  const players = await Player.find({ ip: { $regex: new RegExp(ip) } }, { _id: true, minutesonline: true })
+    .find()
+    .exec();
 
   if (players) {
     return sortBy(players, x => -x.minutesonline)
@@ -229,8 +235,7 @@ router.get(
           score: -1,
         },
       },
-    ])
-    .exec();
+    ]).exec();
 
     res.render('personas', {
       data: personas,

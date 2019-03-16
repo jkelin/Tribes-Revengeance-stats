@@ -102,7 +102,7 @@ async function exportToFile(data: any[], filename: string) {
 
 async function main() {
   console.info('Downloading data');
-  const data = (await Match.find({}, { fullReport: true }))
+  const data = (await Match.find({}, { fullReport: true }).exec())
     .filter(x => x.fullReport && Array.isArray(x.fullReport.players) && x.fullReport.players.length > 0)
     .map(x => x.fullReport);
 

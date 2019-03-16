@@ -85,9 +85,9 @@ export async function handleTribesServerData(data: ITribesServerQueryResponse) {
     server.lastdata.mapnamefull = getFullMapName(server.lastdata.mapname);
   }
 
-  pushPlayersTrackings(id, data);
+  const promises = [pushPlayersTrackings(id, data), ...data.players.map(timePlayer)];
 
-  data.players.forEach(timePlayer);
+  await Promise.all(promises);
 
   if (!server.country) {
     const location = geoip.lookup(server.ip);
@@ -99,10 +99,12 @@ export async function handleTribesServerData(data: ITribesServerQueryResponse) {
 }
 
 const lastTrackings: Record<string, number> = {};
-export function pushPlayersTrackings(serverIdIn: string, data: ITribesServerQueryResponse) {
-  if (!lastTrackings[serverIdIn]) { lastTrackings[serverIdIn] = 0; }
+export async function pushPlayersTrackings(serverIdIn: string, data: ITribesServerQueryResponse) {
+  if (!lastTrackings[serverIdIn]) {
+    lastTrackings[serverIdIn] = 0;
+  }
 
-  influx.writePoints(
+  await influx.writePoints(
     [
       {
         measurement: 'population',
@@ -119,12 +121,16 @@ export function pushPlayersTrackings(serverIdIn: string, data: ITribesServerQuer
     }
   );
 
-  if (lastTrackings[serverIdIn] + 60 * 1000 >= Date.now()) { return; }
+  if (lastTrackings[serverIdIn] + 60 * 1000 >= Date.now()) {
+    return;
+  }
   lastTrackings[serverIdIn] = Date.now();
 }
 
 export async function timePlayer(player: IUploadedPlayer) {
-  if (!player.player) { return console.error('[timePlayer] Player does not have a name', player); }
+  if (!player.player) {
+    return console.error('[timePlayer] Player does not have a name', player);
+  }
   let pl = await Player.where('_id')
     .equals(player.player)
     .findOne()
@@ -160,7 +166,9 @@ export async function timePlayer(player: IUploadedPlayer) {
 
 export async function handlePlayer(input: IUploadedPlayer, ip: string, port: number) {
   console.debug('handling player', input);
-  if (!input.name) { return console.error('Player does not have a name'); }
+  if (!input.name) {
+    return console.error('Player does not have a name');
+  }
 
   let player = await Player.where('_id')
     .equals(input.name)
@@ -184,7 +192,9 @@ export async function handlePlayer(input: IUploadedPlayer, ip: string, port: num
     } as IPlayer);
   }
 
-  if (player.offense === undefined) { player.offense = 0; }
+  if (player.offense === undefined) {
+    player.offense = 0;
+  }
 
   player.normalizedName = cleanPlayerName(input.name);
   player.ip = input.ip;
@@ -201,7 +211,9 @@ export async function handlePlayer(input: IUploadedPlayer, ip: string, port: num
     player.stats = {};
   }
 
-  if (player.stats.StatHighestSpeed === undefined) { player.stats.StatHighestSpeed = 0; }
+  if (player.stats.StatHighestSpeed === undefined) {
+    player.stats.StatHighestSpeed = 0;
+  }
 
   const highestSpeed =
     input['StatClasses.StatHighestSpeed'] === undefined ? 0 : parseInt(input['StatClasses.StatHighestSpeed'] + '', 10);
@@ -301,7 +313,7 @@ export async function saveMatchResult(ip: string, port: number, fullReport: IUpl
 router.use('/upload', (req, res, next) => {
   let data = '';
   req.setEncoding('utf8');
-  req.on('data', (chunk) => {
+  req.on('data', chunk => {
     data += chunk;
   });
 
@@ -329,11 +341,7 @@ router.post(
 
     object.players.forEach(p => (p.isUntracked = !isValid(p, object)));
 
-    object.players
-      .filter(p => !p.isUntracked)
-      .forEach((player) => {
-        handlePlayer(player, ip!, object.port);
-      });
+    await Promise.all(object.players.filter(p => !p.isUntracked).map(player => handlePlayer(player, ip!, object.port)));
 
     await addServerLastFullReport(ip, object.port);
 

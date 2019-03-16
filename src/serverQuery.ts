@@ -23,7 +23,7 @@ const udpSocket = dgram.createSocket('udp4', async (message, remote) => {
 
     const data = parseTribesServerQueryReponse(remoteIp, remote.port - 1, message.toString('utf-8'));
     if (data && data.hostport) {
-      handleTribesServerData(data).catch(er => console.error('Could not handleTribesServerData for', data));
+      await handleTribesServerData(data).catch(er => console.error('Could not handleTribesServerData for', data));
     }
   } catch (er) {
     console.warn('Error in UDP server response', er);

@@ -6,7 +6,9 @@ import * as Helpers from '../helpers';
 async function main() {
   console.info('Normalizing names');
 
-  const players = await Player.find().select({ _id: true });
+  const players = await Player.find()
+    .select({ _id: true })
+    .exec();
 
   for (const player of players) {
     console.debug('Normalizing', player._id, 'into', Helpers.cleanPlayerName(player._id));

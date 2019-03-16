@@ -28,7 +28,7 @@ const axiosInstance = axios.create({
 import 'rxjs/operator/debounceTime';
 
 const chatCache: Record<string, IChatMessage[]> = {};
-const activeChatRequests = {};
+const activeChatRequests: Record<string, Promise<IChatMessage[]>> = {};
 
 function createRedisBucket(date: Date | moment.Moment) {
   return moment(date).format('YYYY-MM-DDTHH');
@@ -56,10 +56,14 @@ export async function loadChatCacheFromRedis() {
 }
 
 function arraysMatch<T>(a: T[], b: T[]) {
-  if (a.length !== b.length) { return false; }
+  if (a.length !== b.length) {
+    return false;
+  }
 
   for (const i in a) {
-    if (a[i] !== b[i]) { return false; }
+    if (a[i] !== b[i]) {
+      return false;
+    }
   }
 
   return true;
@@ -129,11 +133,15 @@ function getServerChat(serverId: string, server: string, username: string, passw
       for (let i = 0; i < contents.length; i++) {
         const x = contents[i];
 
-        if (x.type !== 'text' || !x.data || !x.data.trim()) { continue; }
+        if (x.type !== 'text' || !x.data || !x.data.trim()) {
+          continue;
+        }
 
         const groups = /^>( ([^:]{1,29}):)?(.*)$/.exec(x.data.trim());
 
-        if (!groups || groups.length < 4) { continue; }
+        if (!groups || groups.length < 4) {
+          continue;
+        }
 
         messages.push({
           user: (groups[2] || '').trim() || 'WebAdmin',
@@ -145,7 +153,9 @@ function getServerChat(serverId: string, server: string, username: string, passw
     })
     .then(m => {
       let cache = chatCache[serverId];
-      if (!cache) { cache = chatCache[serverId] = []; }
+      if (!cache) {
+        cache = chatCache[serverId] = [];
+      }
 
       const hash = (x: { user: string; message: string }) => hashStringIntoNumber(x.user + x.message);
 
@@ -170,42 +180,48 @@ function getServerChat(serverId: string, server: string, username: string, passw
     });
 }
 
-export function startQueryingServersForChat() {
-  return setInterval(() => {
-    Server.where('chat', { $exists: true })
-      .where('chat.enabled')
-      .equals(true)
-      .find((err, servers: IServerModel[]) => {
-        if (err) { throw err; }
+async function queryServersForChat() {
+  const servers: IServerModel[] = await Server.where('chat', { $exists: true })
+    .where('chat.enabled')
+    .equals(true)
+    .find()
+    .exec();
 
-        servers.forEach(server => {
-          if (activeChatRequests[server._id]) { return; }
+  async function serverChatPromise(server: IServerModel) {
+    try {
+      const chat = await getServerChat(server._id, server.chat.server, server.chat.username, server.chat.password);
 
-          activeChatRequests[server._id] = getServerChat(
-            server._id,
-            server.chat.server,
-            server.chat.username,
-            server.chat.password
-          )
-            .then(x => {
-              console.debug('Got server chat from', { id: server._id });
+      console.debug('Got server chat from', { id: server._id });
 
-              server.chat.ok = true;
-              server.save();
-              delete activeChatRequests[server._id];
-            })
-            .catch(x => {
-              console.info('Error getting chat from ' + server._id, x.message);
+      server.chat.ok = true;
+      await server.save();
+      delete activeChatRequests[server._id];
 
-              server.chat.ok = false;
-              server.save();
-              delete activeChatRequests[server._id];
-            });
-        });
-      });
-  }, 1000);
+      return chat;
+    } catch (ex) {
+      console.info('Error getting chat from ' + server._id, ex.message);
+
+      server.chat.ok = false;
+      await server.save();
+      delete activeChatRequests[server._id];
+
+      return [];
+    }
+  }
+
+  const promises: Array<Promise<unknown>> = servers
+    .filter(server => !activeChatRequests[server._id])
+    .map(server => (activeChatRequests[server._id] = serverChatPromise(server)));
+
+  return Promise.all(promises);
 }
 
+export async function startQueryingServersForChat() {
+  while (true) {
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    await queryServersForChat();
+  }
+}
 export function getChatFor(server: string) {
   return (chatCache[server] || []).filter(x => x.when.getTime() > Date.now() - 2 * 60 * 60 * 1000);
 }

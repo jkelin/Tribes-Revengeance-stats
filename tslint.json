@@ -11,6 +11,8 @@
     "no-consecutive-blank-lines": false,
     "object-literal-sort-keys": false,
     "no-console": false,
-    "no-var-requires": false
+    "no-var-requires": false,
+    "await-promise": true,
+    "no-floating-promises": true
   }
 }
