@@ -105,16 +105,6 @@ if (RUN_WEB || RUN_SERVER_QUERY) {
   });
 }
 
-process.on('unhandledRejection', (reason, p) => {
-  console.error('Unhandled Rejection at: Promise', p, 'reason:', reason);
-  setTimeout(() => process.exit(1), 1000);
-});
-
-process.on('uncaughtException', ex => {
-  console.error('uncaughtException', ex.message, ex);
-  setTimeout(() => process.exit(1), 1000);
-});
-
 if (RUN_CHAT_QUERY) {
   startQueryingServersForChat();
 }
