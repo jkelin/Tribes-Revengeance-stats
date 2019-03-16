@@ -1,7 +1,4 @@
 require('dotenv').config();
-import { initLogger } from './logger';
-
-initLogger();
 
 import * as Sentry from '@sentry/node';
 import * as bodyParser from 'body-parser';
@@ -13,7 +10,6 @@ import * as exphbs from 'express-handlebars';
 import * as http from 'http';
 import * as morgan from 'morgan';
 import * as path from 'path';
-import * as winston from 'winston';
 
 import { handlebarsHelpers } from './helpers';
 import { queryLiveServers } from './serverQuery';
@@ -38,6 +34,11 @@ const app = express();
 app.use(morgan('tiny'));
 
 if (process.env.SENTRY_DSN) {
+  Sentry.init({
+    dsn: process.env.SENTRY_DSN,
+    release: process.env.SENTRY_RELEASE,
+  });
+
   app.use(Sentry.Handlers.requestHandler());
 }
 
@@ -90,7 +91,7 @@ if (process.env.SENTRY_DSN) {
 }
 
 app.use((err: Error, req: Request, res: Response, next: () => void) => {
-  winston.error('App error:', err);
+  console.error('App error:', err);
   res.statusCode = 500;
   res.end(err);
 });
@@ -100,17 +101,17 @@ if (RUN_WEB || RUN_SERVER_QUERY) {
     const host = server.address().address;
     const port = server.address().port;
 
-    winston.info('App listening', { host, port });
+    console.info('App listening', { host, port });
   });
 }
 
 process.on('unhandledRejection', (reason, p) => {
-  winston.error('Unhandled Rejection at: Promise', p, 'reason:', reason);
+  console.error('Unhandled Rejection at: Promise', p, 'reason:', reason);
   setTimeout(() => process.exit(1), 1000);
 });
 
 process.on('uncaughtException', ex => {
-  winston.error('uncaughtException', ex.message, ex);
+  console.error('uncaughtException', ex.message, ex);
   setTimeout(() => process.exit(1), 1000);
 });
 

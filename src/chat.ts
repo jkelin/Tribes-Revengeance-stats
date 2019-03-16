@@ -6,7 +6,6 @@ import * as https from 'https';
 import * as qs from 'qs';
 import { Observable } from 'rxjs';
 import * as url from 'url';
-import * as winston from 'winston';
 
 import * as iconv from 'iconv-lite';
 import { range, sortBy, sum, uniq, values } from 'lodash';
@@ -41,7 +40,7 @@ export async function loadChatCacheFromRedis() {
   const buckets = uniq(range(0, 180).map(m => createRedisBucket(moment().subtract(180 - m, 'minutes'))));
 
   for (const bucket of uniq(buckets)) {
-    winston.debug('Reading message cache from redis bucket', bucket);
+    console.debug('Reading message cache from redis bucket', bucket);
     const data = await lrangeAsync(bucket, 0, 1000);
 
     for (const item of data) {
@@ -53,7 +52,7 @@ export async function loadChatCacheFromRedis() {
     }
   }
 
-  winston.info('Bootstrapped chat cache with', sum(values(chatCache).map(x => x.length)), 'messages');
+  console.info('Bootstrapped chat cache with', sum(values(chatCache).map(x => x.length)), 'messages');
 }
 
 function arraysMatch<T>(a: T[], b: T[]) {
@@ -189,14 +188,14 @@ export function startQueryingServersForChat() {
             server.chat.password
           )
             .then(x => {
-              winston.debug('Got server chat from', { id: server._id });
+              console.debug('Got server chat from', { id: server._id });
 
               server.chat.ok = true;
               server.save();
               delete activeChatRequests[server._id];
             })
             .catch(x => {
-              winston.info('Error getting chat from ' + server._id, x.message);
+              console.info('Error getting chat from ' + server._id, x.message);
 
               server.chat.ok = false;
               server.save();

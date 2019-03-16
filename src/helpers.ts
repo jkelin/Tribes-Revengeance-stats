@@ -5,7 +5,6 @@ import * as github from 'octonode';
 import * as path from 'path';
 import * as sha1File from 'sha1-file';
 import * as timespan from 'timespan';
-import * as winston from 'winston';
 import { Request } from '../node_modules/@types/express-serve-static-core';
 import * as availableMapImages from './data/available-map-images.json';
 import * as tags from './data/clan-tags.json';
@@ -27,7 +26,7 @@ export function tryConvertIpv6ToIpv4(ip: string) {
 }
 
 export function getNews() {
-  winston.info('Fetching news');
+  console.info('Fetching news');
 
   return new Promise<INews[]>((resolve, reject) => {
     const client = github.client();
@@ -35,7 +34,7 @@ export function getNews() {
 
     repo.commits((error, commits) => {
       if (error) {
-        winston.error(error.message);
+        console.error(error.message);
 
         // return reject(error);
         return resolve([]);
@@ -55,7 +54,7 @@ export function getNews() {
           });
         }
 
-        winston.info('News resolved');
+        console.info('News resolved');
 
         return resolve(data);
       }

@@ -2,7 +2,6 @@ import { FieldType, InfluxDB } from 'influx';
 import * as mongoose from 'mongoose';
 import { Document } from 'mongoose';
 import * as redis from 'redis';
-import * as winston from 'winston';
 import { IFullReport, ITribesServerQueryResponse } from './types';
 (mongoose as any).Promise = Promise;
 
@@ -177,20 +176,20 @@ async function connect() {
   });
 
   conn.connection.on('error', (err) => {
-    winston.error('MongoDB error', err);
+    console.error('MongoDB error', err);
   });
 
   conn.connection.on('disconnected', () => {
-    winston.error('MongoDB disconnected');
+    console.error('MongoDB disconnected');
   });
 
   return conn;
 }
 
 connect()
-  .then(() => winston.info('MongoDB connected'))
+  .then(() => console.info('MongoDB connected'))
   .catch(err => {
-    winston.error('Error connecting to MongoDB', err);
+    console.error('Error connecting to MongoDB', err);
     process.exit(1);
   });
 
@@ -202,32 +201,32 @@ if (process.env.REDIS) {
   redisSubClient = redis.createClient(process.env.REDIS);
 
   redisClient.on('error', err => {
-    winston.error('Redis error', err);
+    console.error('Redis error', err);
   });
 
   redisClient.on('connect', () => {
-    winston.info('Redis connected');
+    console.info('Redis connected');
   });
 
   redisClient.on('end', () => {
-    winston.info('Redis disconnected');
+    console.info('Redis disconnected');
   });
 
-  redisSubClient.on('warning', winston.warn);
+  redisSubClient.on('warning', console.warn);
 
   redisSubClient.on('error', err => {
-    winston.error('Redis error', err);
+    console.error('Redis error', err);
   });
 
   redisSubClient.on('connect', () => {
-    winston.info('Redis connected');
+    console.info('Redis connected');
   });
 
   redisSubClient.on('end', () => {
-    winston.info('Redis disconnected');
+    console.info('Redis disconnected');
   });
 
-  redisSubClient.on('warning', winston.warn);
+  redisSubClient.on('warning', console.warn);
 } else {
-  winston.info('REDIS env variable not specified');
+  console.info('REDIS env variable not specified');
 }

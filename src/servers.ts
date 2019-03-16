@@ -1,5 +1,4 @@
 import * as express from 'express';
-import * as winston from 'winston';
 
 import { escape } from 'influx';
 import { getChatFor } from './chat';

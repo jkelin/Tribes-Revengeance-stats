@@ -4,7 +4,6 @@ import * as http from 'http';
 import * as https from 'https';
 import { isPrivate } from 'ip';
 import * as net from 'net';
-import * as winston from 'winston';
 import { Server } from './db';
 import { handleTribesServerData } from './tracker';
 import { ITribesServerQueryResponse } from './types';
@@ -24,10 +23,10 @@ const udpSocket = dgram.createSocket('udp4', async (message, remote) => {
 
     const data = parseTribesServerQueryReponse(remoteIp, remote.port - 1, message.toString('utf-8'));
     if (data && data.hostport) {
-      handleTribesServerData(data).catch(er => winston.error('Could not handleTribesServerData for', data));
+      handleTribesServerData(data).catch(er => console.error('Could not handleTribesServerData for', data));
     }
   } catch (er) {
-    winston.warn('Error in UDP server response', er);
+    console.warn('Error in UDP server response', er);
   }
 });
 
@@ -104,7 +103,7 @@ export function queryTribesServer(ip: string, port: number) {
 }
 
 export async function queryLiveServers() {
-  winston.debug('Query live servers');
+  console.debug('Query live servers');
   let servers: Array<{ ip: string; port: number }> | undefined;
 
   try {
@@ -118,7 +117,7 @@ export async function queryLiveServers() {
   }
 
   if (servers) {
-    winston.debug('Query live servers, servers:', servers);
+    console.debug('Query live servers, servers:', servers);
 
     servers
       .filter(

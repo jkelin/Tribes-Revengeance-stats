@@ -1,6 +1,5 @@
 import { Server } from 'http';
 import * as SocketIO from 'socket.io';
-import winston = require('winston');
 import Events from './events';
 
 export function initSocketIO(server: Server) {
@@ -19,5 +18,5 @@ export function initSocketIO(server: Server) {
   Events.filter(x => x.type === 'chat-message').subscribe(e => io.emit(e.type, e.data));
   Events.filter(x => x.type === 'player-count-change').subscribe(e => io.emit(e.type, e.data));
 
-  Events.subscribe(e => winston.info('EVENT:', e));
+  Events.subscribe(e => console.info('EVENT:', e));
 }

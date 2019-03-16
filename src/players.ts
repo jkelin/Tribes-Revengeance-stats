@@ -1,6 +1,5 @@
 import * as express from 'express';
 import { includes, maxBy, sortBy, sumBy, toPairs, uniq } from 'lodash';
-import * as winston from 'winston';
 
 import { Identity, IPlayerModel, Player } from './db';
 import { cleanPlayerName, prepareStats } from './helpers';

@@ -1,7 +1,6 @@
 import * as atob from 'atob';
 import * as express from 'express';
 import * as geoip from 'geoip-lite';
-import * as winston from 'winston';
 
 import { max, mean, min } from 'lodash';
 import { promisify } from 'util';
@@ -21,12 +20,12 @@ const persistentPlayerCounts: Record<string, number> = {};
 export async function handleTribesServerData(data: ITribesServerQueryResponse) {
   // console.log(data);
   if (!data.ip && !data.hostport) {
-    return winston.error('[handleTribesServerData] Server does not have an id', data);
+    return console.error('[handleTribesServerData] Server does not have an id', data);
   }
 
   const id = data.ip + ':' + data.hostport;
 
-  winston.debug('Handling data from', id);
+  console.debug('Handling data from', id);
 
   let server: IServerModel = await Server.where('_id')
     .equals(id)
@@ -52,9 +51,9 @@ export async function handleTribesServerData(data: ITribesServerQueryResponse) {
   if (Date.now() >= server.lastTiming.getTime() + 60 * 1000) {
     server.minutesonline++;
     server.lastTiming = new Date();
-    winston.debug('Timing server', id);
+    console.debug('Timing server', id);
   } else {
-    winston.debug(
+    console.debug(
       'Could not time server because lastTiming is',
       server.lastTiming,
       'and now is',
@@ -96,7 +95,7 @@ export async function handleTribesServerData(data: ITribesServerQueryResponse) {
   }
 
   await server.save();
-  winston.debug('Saved server', id);
+  console.debug('Saved server', id);
 }
 
 const lastTrackings: Record<string, number> = {};
@@ -125,7 +124,7 @@ export function pushPlayersTrackings(serverIdIn: string, data: ITribesServerQuer
 }
 
 export async function timePlayer(player: IUploadedPlayer) {
-  if (!player.player) { return winston.error('[timePlayer] Player does not have a name', player); }
+  if (!player.player) { return console.error('[timePlayer] Player does not have a name', player); }
   let pl = await Player.where('_id')
     .equals(player.player)
     .findOne()
@@ -150,7 +149,7 @@ export async function timePlayer(player: IUploadedPlayer) {
   if (Date.now() >= pl.lastTiming.getTime() + 60 * 1000) {
     pl.minutesonline++;
     pl.lastTiming = new Date();
-    winston.debug('Timing player', player.player);
+    console.debug('Timing player', player.player);
   }
 
   pl.normalizedName = cleanPlayerName(player.player + '');
@@ -160,8 +159,8 @@ export async function timePlayer(player: IUploadedPlayer) {
 }
 
 export async function handlePlayer(input: IUploadedPlayer, ip: string, port: number) {
-  winston.debug('handling player', input);
-  if (!input.name) { return winston.error('Player does not have a name'); }
+  console.debug('handling player', input);
+  if (!input.name) { return console.error('Player does not have a name'); }
 
   let player = await Player.where('_id')
     .equals(input.name)
@@ -218,7 +217,7 @@ export async function handlePlayer(input: IUploadedPlayer, ip: string, port: num
       continue;
     }
 
-    winston.debug('handle player stat', { name: i, value });
+    console.debug('handle player stat', { name: i, value });
     if (i === 'StatClasses.StatHighestSpeed') {
       continue;
     }
@@ -239,7 +238,7 @@ export async function handlePlayer(input: IUploadedPlayer, ip: string, port: num
       player.markModified('stats');
     }
   }
-  winston.debug('statted', input.name);
+  console.debug('statted', input.name);
 
   await player.save();
 }
@@ -252,7 +251,7 @@ export async function addServerLastFullReport(ip: string, port: number) {
     .exec();
 
   if (server == null) {
-    winston.warn('server null, _id:', id);
+    console.warn('server null, _id:', id);
     return;
   }
   server.lastfullreport = new Date();
@@ -318,13 +317,13 @@ router.post(
     const ip = getClientIp(req);
 
     if (!ip) {
-      winston.info('Upload without an ip attempted?!');
+      console.info('Upload without an ip attempted?!');
       return;
     }
 
     res.send('Hello World!');
-    winston.info('Received /upload request from', { ip });
-    winston.debug('received upload request', { ip, data: req.body });
+    console.info('Received /upload request from', { ip });
+    console.debug('received upload request', { ip, data: req.body });
     const decoded = (atob as any)(req.body);
     const object: IUploadedData = JSON.parse(decoded); // TODO actually verify this
 

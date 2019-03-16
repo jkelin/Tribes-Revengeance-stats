@@ -1,7 +1,6 @@
 import Axios from 'axios';
 import * as Discord from 'discord.js';
 import * as https from 'https';
-import * as winston from 'winston';
 import Events, { IEventChatMessage, selfEventId } from './events';
 
 const webhookId = process.env.DISCORD_WEBHOOK_ID;
@@ -20,7 +19,7 @@ if (RUN_DISCORD && webhookId && webhookToken) {
   });
 
   Events.filter(x => x.type === 'chat-message' && x.data.origin === selfEventId).subscribe((e: IEventChatMessage) => {
-    winston.debug('Posting chat-message to discord', e);
+    console.debug('Posting chat-message to discord', e);
     if (e.data && e.data.user && e.data.messageFriendly) {
       client.post(`https://discordapp.com/api/webhooks/${webhookId}/${webhookToken}`, {
         content: e.data.messageFriendly,

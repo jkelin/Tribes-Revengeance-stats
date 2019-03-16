@@ -1,7 +1,6 @@
 import * as crypto from 'crypto';
 import * as express from 'express';
 import * as _ from 'lodash';
-import * as winston from 'winston';
 
 import { getChatFor } from './chat';
 import { IMatchModel, Match, Player, Server } from './db';
