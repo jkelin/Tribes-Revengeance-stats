@@ -175,7 +175,7 @@ export const handlebarsHelpers: Record<string, (...params: any[]) => string> = {
     const baseUrl =
       kind === 'loadscreens-chopped' && thumbnail === true
         ? '/static'
-        : 'https://downloads.tribesrevengeance.net/map-images';
+        : 'https://map-images.tribesrevengeance.net';
 
     return `${baseUrl}/${kind}${thumbnail ? '-thumbnails' : ''}/${map}.jpg`;
   },
