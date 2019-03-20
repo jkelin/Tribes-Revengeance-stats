@@ -99,6 +99,16 @@
   {{> chatitem}}
   {{/each}}
 </div>
+
+<script>
+  (function scrollChat(){
+    var chat = document.getElementById('chat-container');
+    if(chat) {
+      chat.scrollTop = chat.scrollHeight;
+    }
+  })();
+</script>
+
 <br>
 <form action="#" id="chat-form" class="form">
   <div class="row">

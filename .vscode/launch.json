@@ -7,38 +7,9 @@
     {
       "type": "node",
       "request": "launch",
-      "name": "start",
-      "args": [
-        "${workspaceRoot}/src/index.ts"
-      ],
-      "runtimeArgs": [
-        "--nolazy",
-        "-r",
-        "ts-node/register"
-      ],
-      "sourceMaps": true,
-      "cwd": "${workspaceRoot}",
-      "protocol": "inspector",
-      "env": {
-        "TS_NODE_TRANSPILE_ONLY": "true",
-        "RUN_WEB": "true",
-        "RUN_SERVER_QUERY": "true",
-        "RUN_CHAT_QUERY": "true",
-      },
-      "outputCapture": "std"
-    },
-    {
-      "type": "node",
-      "request": "launch",
       "name": "start:web",
-      "args": [
-        "${workspaceRoot}/src/index.ts"
-      ],
-      "runtimeArgs": [
-        "--nolazy",
-        "-r",
-        "ts-node/register"
-      ],
+      "args": ["${workspaceRoot}/src/index.ts"],
+      "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
       "sourceMaps": true,
       "cwd": "${workspaceRoot}",
       "protocol": "inspector",
@@ -46,6 +17,23 @@
       "env": {
         "RUN_WEB": "true",
         "TS_NODE_TRANSPILE_ONLY": "true"
+      },
+      "outputCapture": "std"
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "start",
+      "args": ["${workspaceRoot}/src/index.ts"],
+      "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
+      "sourceMaps": true,
+      "cwd": "${workspaceRoot}",
+      "protocol": "inspector",
+      "env": {
+        "TS_NODE_TRANSPILE_ONLY": "true",
+        "RUN_WEB": "true",
+        "RUN_SERVER_QUERY": "true",
+        "RUN_CHAT_QUERY": "true"
       },
       "outputCapture": "std"
     }
