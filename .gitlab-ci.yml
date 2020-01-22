@@ -42,6 +42,8 @@ lint:
 docker-build:
   stage: release
   image: docker:stable
+  only:
+    - master
   dependencies:
     - build
   before_script:
@@ -65,6 +67,8 @@ sentry:
 
 deploy:
   stage: deploy
+  only:
+    - master
   image:
     name: byrnedo/alpine-curl
     entrypoint: ['/bin/sh', '-c']
