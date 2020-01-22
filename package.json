@@ -38,7 +38,7 @@
     "@sentry/node": "4.6.4",
     "@types/morgan": "^1.7.35",
     "atob": "^2.1.2",
-    "axios": "^0.18.0",
+    "axios": "^0.18.1",
     "body-parser": "^1.18.3",
     "cheerio": "^1.0.0-rc.2",
     "compression": "^1.7.3",
