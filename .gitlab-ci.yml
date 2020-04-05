@@ -26,6 +26,19 @@ build:
     paths:
       - dist
 
+# typecheck:
+#   stage: build
+#   image: node:8-alpine
+#   cache:
+#     key: '$CI_PROJECT_ID-lint'
+#     paths:
+#       - node_modules/
+#       - .yarn
+#   before_script:
+#     - yarn install --pure-lockfile --cache-folder .yarn
+#   script:
+#     - yarn typecheck
+
 lint:
   stage: build
   image: node:8-alpine
@@ -39,20 +52,20 @@ lint:
   script:
     - yarn lint
 
-docker-build:
-  stage: release
-  image: docker:stable
-  only:
-    - master
-  dependencies:
-    - build
-  before_script:
-    - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN registry.gitlab.com
-  script:
-    # - docker pull $CONTAINER_IMAGE:latest || exit 0
-    - docker build -t $CONTAINER_IMAGE:$CI_COMMIT_SHA -t $CONTAINER_IMAGE:latest .
-    - docker push $CONTAINER_IMAGE:$CI_COMMIT_SHA
-    - docker push $CONTAINER_IMAGE:latest
+# docker-build:
+#   stage: release
+#   image: docker:stable
+#   only:
+#     - master
+#   dependencies:
+#     - build
+#   before_script:
+#     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN registry.gitlab.com
+#   script:
+#     # - docker pull $CONTAINER_IMAGE:latest || exit 0
+#     - docker build -t $CONTAINER_IMAGE:$CI_COMMIT_SHA -t $CONTAINER_IMAGE:latest .
+#     - docker push $CONTAINER_IMAGE:$CI_COMMIT_SHA
+#     - docker push $CONTAINER_IMAGE:latest
 
 sentry:
   stage: release
@@ -64,16 +77,15 @@ sentry:
     - sentry-cli releases set-commits $CI_COMMIT_SHA --commit $SENTRY_REPOSITORY@$CI_COMMIT_SHA
     - sentry-cli releases files $CI_COMMIT_SHA upload-sourcemaps ./dist
     - sentry-cli releases finalize $CI_COMMIT_SHA
-
-deploy:
-  stage: deploy
-  only:
-    - master
-  image:
-    name: byrnedo/alpine-curl
-    entrypoint: ['/bin/sh', '-c']
-  script:
-    - curl -vvv -X POST -d " " $DEPLOY_NOTIFICATION_URI
+# deploy:
+#   stage: deploy
+#   only:
+#     - master
+#   image:
+#     name: byrnedo/alpine-curl
+#     entrypoint: ['/bin/sh', '-c']
+#   script:
+#     - curl -vvv -X POST -d " " $DEPLOY_NOTIFICATION_URI
 # deploy:
 #   stage: deploy
 #   image: docker:git
