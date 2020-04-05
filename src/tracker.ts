@@ -1,6 +1,6 @@
-import * as atob from 'atob';
-import * as express from 'express';
-import * as geoip from 'geoip-lite';
+import atob from 'atob';
+import express from 'express';
+import geoip from 'geoip-lite';
 
 import { max, mean, min } from 'lodash';
 import { promisify } from 'util';
@@ -11,7 +11,7 @@ import { cleanPlayerName, getClientIp, getFullMapName } from './helpers';
 import { emitter } from './ticker';
 import { IFullReport, ITribesServerQueryResponse, IUploadedData, IUploadedPlayer } from './types';
 
-import * as asyncHandler from 'express-async-handler';
+import asyncHandler from 'express-async-handler';
 
 export const router = express.Router();
 
@@ -27,10 +27,7 @@ export async function handleTribesServerData(data: ITribesServerQueryResponse) {
 
   console.debug('Handling data from', id);
 
-  let server: IServerModel = await Server.where('_id')
-    .equals(id)
-    .findOne()
-    .exec();
+  let server: IServerModel = await Server.where('_id').equals(id).findOne().exec();
 
   if (server === null) {
     server = new Server({
@@ -91,7 +88,7 @@ export async function handleTribesServerData(data: ITribesServerQueryResponse) {
 
   if (!server.country) {
     const location = geoip.lookup(server.ip);
-    server.country = location.country.toLowerCase();
+    server.country = location!.country.toLowerCase();
   }
 
   await server.save();
@@ -131,10 +128,7 @@ export async function timePlayer(player: IUploadedPlayer) {
   if (!player.player) {
     return console.error('[timePlayer] Player does not have a name', player);
   }
-  let pl = await Player.where('_id')
-    .equals(player.player)
-    .findOne()
-    .exec();
+  let pl = await Player.where('_id').equals(player.player).findOne().exec();
 
   if (pl === null) {
     pl = new Player({
@@ -170,10 +164,7 @@ export async function handlePlayer(input: IUploadedPlayer, ip: string, port: num
     return console.error('Player does not have a name');
   }
 
-  let player = await Player.where('_id')
-    .equals(input.name)
-    .findOne()
-    .exec();
+  let player = await Player.where('_id').equals(input.name).findOne().exec();
 
   const changeCountry = false;
   if (player === null) {
@@ -257,10 +248,7 @@ export async function handlePlayer(input: IUploadedPlayer, ip: string, port: num
 
 export async function addServerLastFullReport(ip: string, port: number) {
   const id = ip + ':' + port;
-  const server = await Server.where('_id')
-    .equals(id)
-    .findOne()
-    .exec();
+  const server = await Server.where('_id').equals(id).findOne().exec();
 
   if (server == null) {
     console.warn('server null, _id:', id);
@@ -273,7 +261,7 @@ export async function addServerLastFullReport(ip: string, port: number) {
 export function removeDotStatNamesFromFullReport(fullReport: IUploadedData) {
   return {
     ...fullReport,
-    players: fullReport.players.map(p => {
+    players: fullReport.players.map((p) => {
       const player = { ...p };
       // tslint:disable-next-line:forin
       for (const i in player) {
@@ -293,10 +281,7 @@ export async function saveMatchResult(ip: string, port: number, fullReport: IUpl
   const id = ip + ':' + port;
 
   // Server.where({ _id: '45.32.157.166:8777' })
-  const server = await Server.where('_id')
-    .equals(id)
-    .findOne()
-    .exec();
+  const server = await Server.where('_id').equals(id).findOne().exec();
 
   const match = new Match({
     server: id,
@@ -313,7 +298,7 @@ export async function saveMatchResult(ip: string, port: number, fullReport: IUpl
 router.use('/upload', (req, res, next) => {
   let data = '';
   req.setEncoding('utf8');
-  req.on('data', chunk => {
+  req.on('data', (chunk) => {
     data += chunk;
   });
 
@@ -339,9 +324,11 @@ router.post(
     const decoded = (atob as any)(req.body);
     const object: IUploadedData = JSON.parse(decoded); // TODO actually verify this
 
-    object.players.forEach(p => (p.isUntracked = !isValid(p, object)));
+    object.players.forEach((p) => (p.isUntracked = !isValid(p, object)));
 
-    await Promise.all(object.players.filter(p => !p.isUntracked).map(player => handlePlayer(player, ip!, object.port)));
+    await Promise.all(
+      object.players.filter((p) => !p.isUntracked).map((player) => handlePlayer(player, ip!, object.port))
+    );
 
     await addServerLastFullReport(ip, object.port);
 

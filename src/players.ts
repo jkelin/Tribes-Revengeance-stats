@@ -1,18 +1,16 @@
-import * as express from 'express';
+import express from 'express';
 import { includes, maxBy, sortBy, sumBy, toPairs, uniq } from 'lodash';
 
 import { Identity, IPlayerModel, Player } from './db';
 import { cleanPlayerName, prepareStats } from './helpers';
 import { IFullReportPlayer } from './types';
 
-import * as asyncHandler from 'express-async-handler';
+import asyncHandler from 'express-async-handler';
 
 const router = express.Router();
 
 async function findRelatedNicknames(name: string) {
-  const player = await Player.find({ _id: name })
-    .findOne()
-    .exec();
+  const player = await Player.find({ _id: name }).findOne().exec();
 
   if (!player) {
     return null;
@@ -26,11 +24,11 @@ async function findRelatedNicknames(name: string) {
   const fromPlayers = await findRelatedNicknamesFromPlayers(name, ip);
 
   if (fromIdentities && fromIdentities.length > 0) {
-    return uniq(fromIdentities.map(cleanPlayerName)).filter(x => x !== name);
+    return uniq(fromIdentities.map(cleanPlayerName)).filter((x) => x !== name);
   }
 
   if (fromPlayers && fromPlayers.length > 0) {
-    return uniq(fromPlayers.map(cleanPlayerName)).filter(x => x !== name);
+    return uniq(fromPlayers.map(cleanPlayerName)).filter((x) => x !== name);
   }
 
   return null;
@@ -43,9 +41,9 @@ async function findRelatedNicknamesFromIdentities(names: string[], ips: string[]
     .exec();
 
   if (identities) {
-    return sortBy(toPairs(identities.names), x => -x[1])
-      .filter(x => x[1] > 10 && !includes(names, x[0]))
-      .map(x => x[0]);
+    return sortBy(toPairs(identities.names), (x) => -x[1])
+      .filter((x) => x[1] > 10 && !includes(names, x[0]))
+      .map((x) => x[0]);
   } else {
     return null;
   }
@@ -61,10 +59,10 @@ async function findRelatedNicknamesFromPlayers(name: string, ip?: string) {
     .exec();
 
   if (players) {
-    return sortBy(players, x => -x.minutesonline)
-      .filter(x => x.minutesonline > 60)
-      .filter(x => cleanPlayerName(x._id) !== name)
-      .map(x => x._id);
+    return sortBy(players, (x) => -x.minutesonline)
+      .filter((x) => x.minutesonline > 60)
+      .filter((x) => cleanPlayerName(x._id) !== name)
+      .map((x) => x._id);
   } else {
     return null;
   }
@@ -104,10 +102,7 @@ router.get(
   asyncHandler(async (req, res) => {
     const name = decodeURIComponent(req.params.name);
     const similar = await findRelatedNicknames(name);
-    const data: IPlayerModel = await Player.where('_id')
-      .equals(name)
-      .findOne()
-      .exec();
+    const data: IPlayerModel = await Player.where('_id').equals(name).findOne().exec();
 
     const personaCount = await Player.where('normalizedName')
       .equals(cleanPlayerName(name))
@@ -159,7 +154,7 @@ router.get(
   '/persona/:name',
   asyncHandler(async (req, res) => {
     const name = decodeURIComponent(req.params.name);
-    const names: IPlayerModel[] = await Player.where('normalizedName')
+    const names: IPlayerModel[] = (await Player.where('normalizedName')
       .equals(cleanPlayerName(name))
       .find()
       .select({
@@ -174,7 +169,7 @@ router.get(
         'stats.flagCaptureStat': 1,
       })
       .lean()
-      .exec();
+      .exec()) as any;
 
     if (names.length < 1) {
       return res.render('persona');
@@ -183,8 +178,8 @@ router.get(
     const fullReports = names.map(getFullReportForPlayer);
     const stats = prepareStats(fullReports);
     const relatedNicknames = await findRelatedNicknamesFromIdentities(
-      names.map(x => x._id),
-      names.map(x => (x.ip || '').split(':')[0])
+      names.map((x) => x._id),
+      names.map((x) => (x.ip || '').split(':')[0])
     );
 
     res.render('persona', {

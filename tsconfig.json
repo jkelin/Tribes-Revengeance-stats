@@ -8,8 +8,10 @@
     "sourceMap": true,
     "inlineSources": true,
     "strict": true,
+    "noImplicitAny": false,
     "moduleResolution": "node",
     "suppressImplicitAnyIndexErrors": true,
+    "esModuleInterop": true,
     "strictFunctionTypes": false,
     "sourceRoot": "./src",
     "typeRoots": ["./node_modules/@types", "./typings"]

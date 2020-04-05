@@ -1,7 +1,7 @@
-import * as express from 'express';
+import express from 'express';
 import { Player } from './db';
 
-import * as asyncHandler from 'express-async-handler';
+import asyncHandler from 'express-async-handler';
 
 export const router = express.Router();
 

@@ -1,13 +1,13 @@
-import * as crypto from 'crypto';
-import * as express from 'express';
-import * as _ from 'lodash';
+import crypto from 'crypto';
+import express from 'express';
+import _ from 'lodash';
 
 import { getChatFor } from './chat';
 import { IMatchModel, Match, Player, Server } from './db';
 import { prepareStats } from './helpers';
 import { IFullReportPlayer, ITribesServerQueryResponse } from './types';
 
-import * as asyncHandler from 'express-async-handler';
+import asyncHandler from 'express-async-handler';
 
 function sha1(input: string) {
   const shasum = crypto.createHash('sha1');
@@ -18,8 +18,8 @@ const router = express.Router();
 
 function getPlayersForTeam(data: IMatchModel, team: string) {
   return data.fullReport.players
-    .filter(p => p.team === team)
-    .map(x => {
+    .filter((p) => p.team === team)
+    .map((x) => {
       const ip = x.ip.split(':')[0];
 
       return {
@@ -99,7 +99,7 @@ async function getMatchesData(page: number, sort: string) {
   const lastPage = Math.floor(count / perPage) + 1;
 
   return {
-    matches: data.map(m => ({
+    matches: data.map((m) => ({
       id: m._id,
       when: m.when,
       map: m.basicReport.mapname,

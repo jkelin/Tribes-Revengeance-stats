@@ -1,9 +1,9 @@
 import axios from 'axios';
-import * as dgram from 'dgram';
-import * as http from 'http';
-import * as https from 'https';
+import dgram from 'dgram';
+import http from 'http';
+import https from 'https';
 import { isPrivate } from 'ip';
-import * as net from 'net';
+import net from 'net';
 import { Server } from './db';
 import { handleTribesServerData } from './tracker';
 import { ITribesServerQueryResponse } from './types';
@@ -15,7 +15,7 @@ const masterClient = axios.create({
   responseType: 'text',
 });
 
-const publicIpPromise = masterClient.get('http://ifconfig.me/ip').then(x => x.data);
+const publicIpPromise = masterClient.get('http://ifconfig.me/ip').then((x) => x.data);
 
 const udpSocket = dgram.createSocket('udp4', async (message, remote) => {
   try {
@@ -23,7 +23,7 @@ const udpSocket = dgram.createSocket('udp4', async (message, remote) => {
 
     const data = parseTribesServerQueryReponse(remoteIp, remote.port - 1, message.toString('utf-8'));
     if (data && data.hostport) {
-      await handleTribesServerData(data).catch(er => console.error('Could not handleTribesServerData for', data));
+      await handleTribesServerData(data).catch((er) => console.error('Could not handleTribesServerData for', data));
     }
   } catch (er) {
     console.warn('Error in UDP server response', er);
@@ -32,27 +32,25 @@ const udpSocket = dgram.createSocket('udp4', async (message, remote) => {
 
 udpSocket.bind();
 
-export async function getTribesServersFromMasterServer(): Promise<Array<{ ip: string; port: number }>> {
+export async function getTribesServersFromMasterServer(): Promise<{ ip: string; port: number }[]> {
   const resp = await masterClient.get<string>('https://qtracker.com/server_list_details.php?game=tribesvengeance');
   const lines = resp.data.split('\r\n');
   const servers = lines
-    .map(item => {
+    .map((item) => {
       const splat = item.split(':');
       return {
         ip: splat[0],
         port: parseInt(splat[1], 10),
       };
     })
-    .filter(s => s.ip && s.port);
+    .filter((s) => s.ip && s.port);
 
   return servers;
 }
 
 export async function getTribesServersFromDb() {
-  const servers = await Server.find()
-    .select({ ip: 1, port: 1 })
-    .exec();
-  return servers.filter(x => x.ip && x.port).map(x => ({ ip: x.ip, port: x.port }));
+  const servers = await Server.find().select({ ip: 1, port: 1 }).exec();
+  return servers.filter((x) => x.ip && x.port).map((x) => ({ ip: x.ip, port: x.port }));
 }
 
 export function parseTribesServerQueryReponse(ip: string, port: number, message: string): ITribesServerQueryResponse {
@@ -62,7 +60,7 @@ export function parseTribesServerQueryReponse(ip: string, port: number, message:
   let name = true;
   let lastName = '';
 
-  items.forEach(item => {
+  items.forEach((item) => {
     if (name) {
       lastName = item;
     } else {
@@ -104,7 +102,7 @@ export function queryTribesServer(ip: string, port: number) {
 
 export async function queryLiveServers() {
   console.debug('Query live servers');
-  let servers: Array<{ ip: string; port: number }> | undefined;
+  let servers: { ip: string; port: number }[] | undefined;
 
   try {
     servers = await getTribesServersFromMasterServer();
@@ -121,12 +119,12 @@ export async function queryLiveServers() {
 
     servers
       .filter(
-        server =>
+        (server) =>
           server.ip &&
           server.port &&
           parseInt(server.port.toString(), 10) < 65536 &&
           parseInt(server.port.toString(), 10) > 0
       )
-      .forEach(server => queryTribesServer(server.ip, server.port));
+      .forEach((server) => queryTribesServer(server.ip, server.port));
   }
 }

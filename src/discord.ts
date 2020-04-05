@@ -18,7 +18,7 @@ if (RUN_DISCORD && webhookId && webhookToken) {
     httpsAgent: new https.Agent({ keepAlive: true }),
   });
 
-  Events.filter(x => x.type === 'chat-message' && x.data.origin === selfEventId).subscribe((e: IEventChatMessage) => {
+  Events.filter((x) => x.type === 'chat-message' && x.data.origin === selfEventId).subscribe((e: IEventChatMessage) => {
     console.debug('Posting chat-message to discord', e);
     if (e.data && e.data.user && e.data.messageFriendly) {
       client.post(`https://discordapp.com/api/webhooks/${webhookId}/${webhookToken}`, {
@@ -34,7 +34,7 @@ export async function readDiscord(discordToken: string) {
   client.listenerCount = () => 0;
   await client.login(discordToken);
 
-  client.on('message', message => {
+  client.on('message', (message) => {
     if (message.channel.id === channelId && !message.author.bot) {
       Events.next({
         type: 'say',

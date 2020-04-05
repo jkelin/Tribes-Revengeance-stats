@@ -1,4 +1,4 @@
-FROM node:8-alpine AS runtime
+FROM node:12-alpine AS runtime
 RUN apk add --no-cache curl
 
 WORKDIR /app

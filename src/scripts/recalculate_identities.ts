@@ -49,9 +49,9 @@ function addNameIpToIdentities(identities: Identity[], name: string, ip: string)
 function consolidateIdentities(identities: Identity[]) {
   for (const identity of identities) {
     const match = identities.find(
-      x =>
+      (x) =>
         x !== identity &&
-        (!!x.ips.find(y => identity.ips.includes(y)) || !!x.names.find(y => identity.names.includes(y)))
+        (!!x.ips.find((y) => identity.ips.includes(y)) || !!x.names.find((y) => identity.names.includes(y)))
     );
 
     if (!match) {
@@ -60,8 +60,8 @@ function consolidateIdentities(identities: Identity[]) {
 
     // console.debug('consolidateIdentities found match', identity, match);
 
-    match.names.filter(x => !identity.names.includes(x)).forEach(x => identity.names.push(x));
-    match.ips.filter(x => !identity.ips.includes(x)).forEach(x => identity.ips.push(x));
+    match.names.filter((x) => !identity.names.includes(x)).forEach((x) => identity.names.push(x));
+    match.ips.filter((x) => !identity.ips.includes(x)).forEach((x) => identity.ips.push(x));
 
     const matchIndex = identities.indexOf(match);
     identities.splice(matchIndex, 1);
@@ -77,50 +77,53 @@ function expandIdentities(
   nameCounts: Dictionary<Dictionary<number>>,
   ipCounts: Dictionary<Dictionary<number>>
 ) {
-  const singleIpUsers = pickBy(nameCounts, x => keys(x).length === 1);
+  const singleIpUsers = pickBy(nameCounts, (x) => keys(x).length === 1);
 
   // tslint:disable-next-line:forin
   for (const name in singleIpUsers) {
-    keys(singleIpUsers[name]).forEach(ip => addNameIpToIdentities(identities, name, ip));
+    keys(singleIpUsers[name]).forEach((ip) => addNameIpToIdentities(identities, name, ip));
   }
 
-  const ipsOfSingleUsers = pickBy(ipCounts, x => keys(x).length === 1);
+  const ipsOfSingleUsers = pickBy(ipCounts, (x) => keys(x).length === 1);
 
   // tslint:disable-next-line:forin
   for (const ip in singleIpUsers) {
-    keys(ipsOfSingleUsers[ip]).forEach(name => addNameIpToIdentities(identities, name, ip));
+    keys(ipsOfSingleUsers[ip]).forEach((name) => addNameIpToIdentities(identities, name, ip));
   }
 
   const namesMoreThanNMatches = pickBy(
-    mapValues(nameCounts, x => pickBy(x, y => y > 10)),
-    x => x && values(x).length > 0
+    mapValues(nameCounts, (x) => pickBy(x, (y) => y > 10)),
+    (x) => x && values(x).length > 0
   );
 
   // tslint:disable-next-line:forin
   for (const name in namesMoreThanNMatches) {
-    keys(namesMoreThanNMatches[name]).forEach(ip => addNameIpToIdentities(identities, name, ip));
+    keys(namesMoreThanNMatches[name]).forEach((ip) => addNameIpToIdentities(identities, name, ip));
   }
 
-  const ipsMoreThanNMatches = pickBy(mapValues(ipCounts, x => pickBy(x, y => y > 10)), x => x && values(x).length > 0);
+  const ipsMoreThanNMatches = pickBy(
+    mapValues(ipCounts, (x) => pickBy(x, (y) => y > 10)),
+    (x) => x && values(x).length > 0
+  );
 
   // tslint:disable-next-line:forin
   for (const ip in ipsMoreThanNMatches) {
-    keys(ipsMoreThanNMatches[ip]).forEach(name => addNameIpToIdentities(identities, name, ip));
+    keys(ipsMoreThanNMatches[ip]).forEach((name) => addNameIpToIdentities(identities, name, ip));
   }
 
   // This does not seem to work
-  // const uniqueNamesOfIps = pickBy(mapValues(ipCounts, (ncounts, ip) 
+  // const uniqueNamesOfIps = pickBy(mapValues(ipCounts, (ncounts, ip)
   // => pickBy(ncounts, (count, name) => values(nameCounts[name]).length === 1)), x => x && values(x).length > 0);
   // for (const ip in uniqueNamesOfIps) {
   //     keys(uniqueNamesOfIps[ip]).forEach(name => addNameIpToIdentities(identities, name, ip));
   // }
 
-  while (consolidateIdentities(identities)) {; }
+  while (consolidateIdentities(identities));
 }
 
 async function main() {
   console.info('Downloading data');
-  const data: Array<{ fullReport?: { players?: Array<{ name: string; ip: string }> } }> = await db.Match.find(
+  const data: { fullReport?: { players?: { name: string; ip: string }[] } }[] = await db.Match.find(
     {},
     { 'fullReport.players.name': true, 'fullReport.players.ip': true }
   );
@@ -129,25 +132,29 @@ async function main() {
 
   const matchPlayers = flatMap(
     data
-      .filter(x => x.fullReport && x.fullReport.players && x.fullReport.players.length)
-      .map(x => x.fullReport!.players)
+      .filter((x) => x.fullReport && x.fullReport.players && x.fullReport.players.length)
+      .map((x) => x.fullReport!.players)
   )
-    .map(x => ({
-      ip: x.ip.split(':')[0],
-      name: helpers.cleanPlayerName(x.name),
+    .map((x) => ({
+      ip: x!.ip.split(':')[0],
+      name: helpers.cleanPlayerName(x!.name),
     }))
-    .filter(x => !nicknameBlacklist.includes(x.name));
+    .filter((x) => !nicknameBlacklist.includes(x.name));
 
   const groupByName = groupBy(matchPlayers, (x: { ip: string; name: string }) => x.name);
 
   const groupByIp = groupBy(matchPlayers, (x: { ip: string; name: string }) => x.ip);
 
-  const groupByNameThenIp = mapValues(groupByName, group => groupBy(group, (x: { ip: string; name: string }) => x.ip));
+  const groupByNameThenIp = mapValues(groupByName, (group) =>
+    groupBy(group, (x: { ip: string; name: string }) => x.ip)
+  );
 
-  const groupByIpThenName = mapValues(groupByIp, group => groupBy(group, (x: { ip: string; name: string }) => x.name));
+  const groupByIpThenName = mapValues(groupByIp, (group) =>
+    groupBy(group, (x: { ip: string; name: string }) => x.name)
+  );
 
-  const nameCounts = mapValues(groupByNameThenIp, x => mapValues(x, y => y.length));
-  const ipCounts = mapValues(groupByIpThenName, x => mapValues(x, y => y.length));
+  const nameCounts = mapValues(groupByNameThenIp, (x) => mapValues(x, (y) => y.length));
+  const ipCounts = mapValues(groupByIpThenName, (x) => mapValues(x, (y) => y.length));
 
   await fs.writeJSON('ipcounts.json', ipCounts, { spaces: 2 });
 
@@ -157,12 +164,12 @@ async function main() {
     expandIdentities(identities, nameCounts, ipCounts);
   }
 
-  const frequencies: IdentityFrequency[] = identities.map(identity => {
+  const frequencies: IdentityFrequency[] = identities.map((identity) => {
     const ips: Dictionary<number> = {};
     const names: Dictionary<number> = {};
 
-    identity.ips.forEach(ip => (ips[ip] = matchPlayers.filter(x => x.ip === ip).length));
-    identity.names.forEach(name => (names[name] = matchPlayers.filter(x => x.name === name).length));
+    identity.ips.forEach((ip) => (ips[ip] = matchPlayers.filter((x) => x.ip === ip).length));
+    identity.names.forEach((name) => (names[name] = matchPlayers.filter((x) => x.name === name).length));
 
     return {
       ips,
@@ -171,7 +178,7 @@ async function main() {
   });
 
   const docs = frequencies.map(
-    f =>
+    (f) =>
       new db.Identity({
         ips: f.ips,
         names: f.names,
@@ -190,7 +197,7 @@ main()
     console.info('All done');
     process.exit(0);
   })
-  .catch(ex => {
+  .catch((ex) => {
     console.error('Fatal in main');
     console.error(ex);
     process.exit(1);

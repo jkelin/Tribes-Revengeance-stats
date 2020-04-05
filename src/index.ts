@@ -1,15 +1,17 @@
 require('dotenv').config();
 
-import * as Sentry from '@sentry/node';
-import * as bodyParser from 'body-parser';
-import * as compression from 'compression';
-import * as cors from 'cors';
-import * as express from 'express';
+import Sentry from '@sentry/node';
+import compression from 'compression';
+import cors from 'cors';
+import express from 'express';
 import { Request, Response } from 'express';
-import * as exphbs from 'express-handlebars';
-import * as http from 'http';
-import * as morgan from 'morgan';
-import * as path from 'path';
+import Handlebars from 'handlebars';
+import exphbs from 'express-handlebars';
+import { allowInsecurePrototypeAccess } from '@handlebars/allow-prototype-access';
+
+import http from 'http';
+import morgan from 'morgan';
+import path from 'path';
 
 import { handlebarsHelpers } from './helpers';
 import { queryLiveServers } from './serverQuery';
@@ -30,7 +32,7 @@ const RUN_SERVER_QUERY = process.env.RUN_SERVER_QUERY === 'true';
 const RUN_CHAT_QUERY = process.env.RUN_CHAT_QUERY === 'true';
 
 async function main() {
-  const promises: Array<Promise<unknown>> = [];
+  const promises: Promise<unknown>[] = [];
 
   const app = express();
 
@@ -59,7 +61,14 @@ async function main() {
     initSocketIO(server);
 
     app.set('views', path.join(__dirname, '../views'));
-    app.engine('handlebars', exphbs({ defaultLayout: 'main', helpers: handlebarsHelpers }));
+    app.engine(
+      'handlebars',
+      exphbs({
+        defaultLayout: 'main',
+        helpers: handlebarsHelpers,
+        handlebars: allowInsecurePrototypeAccess(Handlebars),
+      })
+    );
     app.set('view engine', 'handlebars');
 
     // app.use(bodyParser.json());
@@ -102,17 +111,14 @@ async function main() {
 
   if (RUN_WEB || RUN_SERVER_QUERY) {
     server.listen(process.env.PORT || 5000, () => {
-      const host = server.address().address;
-      const port = server.address().port;
-
-      console.info('App listening', { host, port });
+      console.info('App listening', { port: process.env.PORT || 5000 });
     });
   }
 
   if (RUN_CHAT_QUERY) {
     promises.push(startQueryingServersForChat());
   }
-  
+
   if (redisClient) {
     promises.push(loadChatCacheFromRedis());
     subscribeToMessagesFromRedis();
@@ -123,18 +129,18 @@ async function main() {
 }
 
 const mainPromise: any = main()
-.catch(async error => {
-  if (process.env.SENTRY_DSN) {
-    const id = Sentry.captureException(error);
-    console.info("Sentry error captured as", id);
-    console.info(error);
+  .catch(async (error) => {
+    if (process.env.SENTRY_DSN) {
+      const id = Sentry.captureException(error);
+      console.info('Sentry error captured as', id);
+      console.info(error);
 
-    await new Promise(resolve => setTimeout(resolve, 1000));
-  } else {
-    console.info("An error has occured but sentry is not connected");
-    console.error(error);
-  }
-})
-.then(() => {
-  console.info("All done");
-});
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+    } else {
+      console.info('An error has occured but sentry is not connected');
+      console.error(error);
+    }
+  })
+  .then(() => {
+    console.info('All done');
+  });

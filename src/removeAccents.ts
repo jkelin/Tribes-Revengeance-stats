@@ -193,5 +193,5 @@ for (const diacritic of defaultDiacriticsRemovalMap) {
 }
 
 export function removeDiacritics(str: string) {
-  return str.replace(/[^\u0000-\u007E]/g, a => diacriticsMap[a] || a);
+  return str.replace(/[^\u0000-\u007E]/g, (a) => diacriticsMap[a] || a);
 }

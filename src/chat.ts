@@ -1,18 +1,18 @@
 import axios, { AxiosRequestConfig } from 'axios';
-import * as cheerio from 'cheerio';
-import * as crypto from 'crypto';
-import * as http from 'http';
-import * as https from 'https';
-import * as qs from 'qs';
+import cheerio from 'cheerio';
+import crypto from 'crypto';
+import http from 'http';
+import https from 'https';
+import qs from 'qs';
 import { Observable } from 'rxjs';
-import * as url from 'url';
+import url from 'url';
 
-import * as iconv from 'iconv-lite';
+import iconv from 'iconv-lite';
 import { range, sortBy, sum, uniq, values } from 'lodash';
-import * as moment from 'moment';
+import moment from 'moment';
 import { promisify } from 'util';
 import { v4 } from 'uuid';
-import * as QcMappings from './data/qcmappings.json';
+import QcMappings from './data/qcmappings.json';
 import { IServerModel, redisClient, redisSubClient, Server } from './db';
 import Events, { IEventChatMessage, IEventReceivedMessage, IEventSay, IPlayerCountChange, selfEventId } from './events';
 import { IChatMessage, IPlayerCountChangeMessage } from './types';
@@ -37,7 +37,7 @@ function createRedisBucket(date: Date | moment.Moment) {
 export async function loadChatCacheFromRedis() {
   const lrangeAsync = promisify(redisClient!.LRANGE).bind(redisClient);
 
-  const buckets = uniq(range(0, 180).map(m => createRedisBucket(moment().subtract(180 - m, 'minutes'))));
+  const buckets = uniq(range(0, 180).map((m) => createRedisBucket(moment().subtract(180 - m, 'minutes'))));
 
   for (const bucket of uniq(buckets)) {
     console.debug('Reading message cache from redis bucket', bucket);
@@ -52,7 +52,7 @@ export async function loadChatCacheFromRedis() {
     }
   }
 
-  console.info('Bootstrapped chat cache with', sum(values(chatCache).map(x => x.length)), 'messages');
+  console.info('Bootstrapped chat cache with', sum(values(chatCache).map((x) => x.length)), 'messages');
 }
 
 function arraysMatch<T>(a: T[], b: T[]) {
@@ -93,10 +93,7 @@ function newItems<T>(oldArr: T[], newArr: T[], hasherOld: (x: T) => string, hash
 }
 
 function hashStringIntoNumber(str: string) {
-  const buf = crypto
-    .createHash('md5')
-    .update(str)
-    .digest();
+  const buf = crypto.createHash('md5').update(str).digest();
 
   // return buf.readInt32LE(0);
   return buf.toString('hex').slice(0, 6);
@@ -123,11 +120,11 @@ function getServerChat(serverId: string, server: string, username: string, passw
 
   return axiosInstance
     .get((u as any).format())
-    .then(resp => cheerio.load(iconv.decode(resp.data, 'iso-8859-1')))
-    .then($ => {
+    .then((resp) => cheerio.load(iconv.decode(resp.data, 'iso-8859-1')))
+    .then(($) => {
       const contents = $('table tr:nth-child(2) td:nth-child(2)').contents();
 
-      const messages: Array<{ user: string; message: string }> = [];
+      const messages: { user: string; message: string }[] = [];
 
       // tslint:disable-next-line:prefer-for-of
       for (let i = 0; i < contents.length; i++) {
@@ -151,7 +148,7 @@ function getServerChat(serverId: string, server: string, username: string, passw
 
       return messages;
     })
-    .then(m => {
+    .then((m) => {
       let cache = chatCache[serverId];
       if (!cache) {
         cache = chatCache[serverId] = [];
@@ -209,40 +206,40 @@ async function queryServersForChat() {
     }
   }
 
-  const promises: Array<Promise<unknown>> = servers
-    .filter(server => !activeChatRequests[server._id])
-    .map(server => (activeChatRequests[server._id] = serverChatPromise(server)));
+  const promises: Promise<unknown>[] = servers
+    .filter((server) => !activeChatRequests[server._id])
+    .map((server) => (activeChatRequests[server._id] = serverChatPromise(server)));
 
   return Promise.all(promises);
 }
 
 export async function startQueryingServersForChat() {
   while (true) {
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    await new Promise((resolve) => setTimeout(resolve, 1000));
     await queryServersForChat();
   }
 }
 export function getChatFor(server: string) {
-  return (chatCache[server] || []).filter(x => x.when.getTime() > Date.now() - 2 * 60 * 60 * 1000);
+  return (chatCache[server] || []).filter((x) => x.when.getTime() > Date.now() - 2 * 60 * 60 * 1000);
 }
 
 function serverFromId(id: string) {
   return Observable.fromPromise<IServerModel | null>(Server.findById(id).exec());
 }
 
-Events.filter(x => x.type === 'received-message').subscribe((newMessage: IEventReceivedMessage) => {
+Events.filter((x) => x.type === 'received-message').subscribe((newMessage: IEventReceivedMessage) => {
   let oldCache = chatCache[newMessage.data.server];
 
   if (!oldCache) {
     oldCache = [];
   }
 
-  if (!oldCache.find(x => x.id === newMessage.data.id)) {
+  if (!oldCache.find((x) => x.id === newMessage.data.id)) {
     oldCache = oldCache.concat([newMessage.data]);
   }
 
   oldCache = sortBy(oldCache, (x: IChatMessage) => x.when);
-  const newCache = [];
+  const newCache: IChatMessage[] = [];
 
   let lastUnique: IChatMessage | undefined;
   for (const item of oldCache) {
@@ -261,16 +258,16 @@ Events.filter(x => x.type === 'received-message').subscribe((newMessage: IEventR
   // console.warn("old:", oldCache, "\nnew:", newCache);
   chatCache[newMessage.data.server] = newCache;
 
-  if (newCache.find(x => x.id === newMessage.data.id)) {
+  if (newCache.find((x) => x.id === newMessage.data.id)) {
     Events.next({ type: 'chat-message', data: newMessage.data });
   }
 });
 
-const sayMessages$ = Events.filter(x => x.type === 'say')
+const sayMessages$ = Events.filter((x) => x.type === 'say')
   .flatMap((m: IEventSay) =>
     serverFromId(m.data.server)
-      .filter(x => !!x)
-      .map(s => ({
+      .filter((x) => !!x)
+      .map((s) => ({
         user: m.data.usr,
         message: m.data.message,
         server: s!.chat.server,
@@ -305,7 +302,7 @@ sayMessages$
       })
     );
 
-    return Observable.fromPromise(post.then(x => x.data));
+    return Observable.fromPromise(post.then((x) => x.data));
   })
   .subscribe();
 
@@ -320,20 +317,15 @@ export function publishMessagesToRedis() {
     const data = JSON.stringify(msg.data);
 
     await lpushAsync(bucket, data);
-    await expireatAsync(
-      bucket,
-      moment(bucket)
-        .add(2, 'hours')
-        .unix()
-    );
+    await expireatAsync(bucket, moment(bucket).add(2, 'hours').unix());
     await publishAsync('chat-message', data);
   }
 
-  const sub1 = Events.filter(x => x.type === 'chat-message' && x.data.origin === selfEventId).subscribe(handleMsg);
+  const sub1 = Events.filter((x) => x.type === 'chat-message' && x.data.origin === selfEventId).subscribe(handleMsg);
 
-  const sub2 = Events.filter(x => x.type === 'player-count-change' && x.data.origin === selfEventId).subscribe(
-    (msg: IPlayerCountChange) => publishAsync('player-count-change', JSON.stringify(msg.data))
-  );
+  const sub2 = Events.filter(
+    (x) => x.type === 'player-count-change' && x.data.origin === selfEventId
+  ).subscribe((msg: IPlayerCountChange) => publishAsync('player-count-change', JSON.stringify(msg.data)));
 
   return [sub1, sub2];
 }

@@ -1,16 +1,16 @@
 import { CronJob } from 'cron';
 import { maxBy, meanBy, minBy, sortBy, sumBy, values } from 'lodash';
-import * as moment from 'moment';
-import * as github from 'octonode';
-import * as path from 'path';
-import * as sha1File from 'sha1-file';
-import * as timespan from 'timespan';
+import moment from 'moment';
+import github from 'octonode';
+import path from 'path';
+import sha1File from 'sha1-file';
+import timespan from 'timespan';
 import { Request } from '../node_modules/@types/express-serve-static-core';
-import * as availableMapImages from './data/available-map-images.json';
-import * as tags from './data/clan-tags.json';
-import * as countryNames from './data/countrynames.json';
-import * as StatNames from './data/statnames.json';
-import * as StatOrder from './data/statorder.json';
+import availableMapImages from './data/available-map-images.json';
+import tags from './data/clan-tags.json';
+import countryNames from './data/countrynames.json';
+import StatNames from './data/statnames.json';
+import StatOrder from './data/statorder.json';
 import { removeDiacritics } from './removeAccents';
 import { IFullReportPlayer, INews } from './types';
 
@@ -88,26 +88,31 @@ export function getClientIp(req: Request) {
 
 export function aIncludesB(a: string[], b: string[]) {
   for (const i in b) {
-    if (a.filter(x => x.indexOf(b[i]) !== -1).length === 0) { return false; }
+    if (a.filter((x) => x.indexOf(b[i]) !== -1).length === 0) {
+      return false;
+    }
   }
 
   return true;
 }
 
 export function getFullMapName(map: string) {
-  const mapImageComponentMap = availableMapImages.map(x => ({ map: x, components: x.split(/[- ]/g) }));
+  const mapImageComponentMap = availableMapImages.map((x) => ({ map: x, components: x.split(/[- ]/g) }));
 
   const searchComponents = map
     .toLowerCase()
     .replace(/[\[\]\-\_\(\)\<\>]/g, ' ')
     .replace('.tvm', '')
     .split(' ')
-    .filter(x => x);
+    .filter((x) => x);
 
-  const possibleMaps = mapImageComponentMap.filter(x => aIncludesB(x.components, searchComponents));
+  const possibleMaps = mapImageComponentMap.filter((x) => aIncludesB(x.components, searchComponents));
 
-  if (!possibleMaps.length) { return undefined; }
-  else { return possibleMaps.map(x => x.map).sort()[0]; }
+  if (!possibleMaps.length) {
+    return undefined;
+  } else {
+    return possibleMaps.map((x) => x.map).sort()[0];
+  }
 }
 
 export const handlebarsHelpers: Record<string, (...params: any[]) => string> = {
@@ -121,10 +126,17 @@ export const handlebarsHelpers: Record<string, (...params: any[]) => string> = {
     const span = new timespan.TimeSpan();
     span.addMinutes(parseInt(context, 10));
     let str = '';
-    if (span.days === 1) { str += span.days + ' day '; }
-    else if (span.days !== 0) { str += span.days + ' days '; }
-    if (span.hours !== 0) { str += span.hours + ' hours '; }
-    if (str !== '') { str += 'and '; }
+    if (span.days === 1) {
+      str += span.days + ' day ';
+    } else if (span.days !== 0) {
+      str += span.days + ' days ';
+    }
+    if (span.hours !== 0) {
+      str += span.hours + ' hours ';
+    }
+    if (str !== '') {
+      str += 'and ';
+    }
     str += span.minutes + ' minutes';
     return str;
   },
@@ -136,7 +148,9 @@ export const handlebarsHelpers: Record<string, (...params: any[]) => string> = {
   },
   translateStatName(context) {
     for (const i in StatNames) {
-      if (context === i) { return StatNames[i]; }
+      if (context === i) {
+        return StatNames[i];
+      }
     }
     return context;
   },
@@ -173,9 +187,7 @@ export const handlebarsHelpers: Record<string, (...params: any[]) => string> = {
   },
   mapImage(map, kind = 'loadscreens-chopped', thumbnail = true) {
     const baseUrl =
-      kind === 'loadscreens-chopped' && thumbnail === true
-        ? '/static'
-        : 'https://map-images.tribesrevengeance.net';
+      kind === 'loadscreens-chopped' && thumbnail === true ? '/static' : 'https://map-images.tribesrevengeance.net';
 
     return `${baseUrl}/${kind}${thumbnail ? '-thumbnails' : ''}/${map}.jpg`;
   },
@@ -230,10 +242,7 @@ export function stripFormating(name: string) {
 
 export function removeSpaces(name: string) {
   for (let i = 0; i < 10; i++) {
-    name = name
-      .replace(/  /g, ' ')
-      .replace(/^ /g, '')
-      .replace(/ $/g, '');
+    name = name.replace(/  /g, ' ').replace(/^ /g, '').replace(/ $/g, '');
   }
 
   return name;
@@ -267,21 +276,21 @@ function handleItem(key: string, player: IFullReportPlayer) {
 
 export function getStatAggregateForPlayer(statName: string, players: IFullReportPlayer[]) {
   return {
-    max: handleItem(statName, maxBy(players, x => x[statName])!),
-    min: handleItem(statName, minBy(players, x => x[statName])!),
+    max: handleItem(statName, maxBy(players, (x) => x[statName])!),
+    min: handleItem(statName, minBy(players, (x) => x[statName])!),
     sum: sumBy(players, statName),
     avg: meanBy(players, statName),
     key: statName,
   };
 }
 
-export function prepareStats(players: IFullReportPlayer[]): Array<ReturnType<typeof getStatAggregateForPlayer>> {
+export function prepareStats(players: IFullReportPlayer[]): ReturnType<typeof getStatAggregateForPlayer>[] {
   if (!players.length) {
     return [];
   }
 
   const keys = Object.keys(players[0]).filter(
-    x =>
+    (x) =>
       [
         'style',
         'defense',
@@ -300,7 +309,10 @@ export function prepareStats(players: IFullReportPlayer[]): Array<ReturnType<typ
   );
 
   const ret: Record<string, ReturnType<typeof getStatAggregateForPlayer>> = {};
-  keys.filter(k => players.find(p => !!p[k])).forEach(k => (ret[k] = getStatAggregateForPlayer(k, players)));
+  keys.filter((k) => players.find((p) => !!p[k])).forEach((k) => (ret[k] = getStatAggregateForPlayer(k, players)));
 
-  return sortBy(values(ret).filter(x => x.sum > 0), x => StatOrder[x.key] || '99' + x.key) as any;
+  return sortBy(
+    values(ret).filter((x) => x.sum > 0),
+    (x) => StatOrder[x.key] || '99' + x.key
+  ) as any;
 }

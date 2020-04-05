@@ -1,11 +1,11 @@
-import * as Events from 'events';
-import * as express from 'express';
+import { EventEmitter } from 'events';
+import express from 'express';
 import { Request } from 'express';
 import { IServerModel } from './db';
 import { IUploadedPlayer } from './types';
 
 export let router = express.Router();
-export let emitter = new Events();
+export let emitter = new EventEmitter();
 
 router.get('/ticker', (req, res) => {
   res.render('ticker');
@@ -20,11 +20,15 @@ export function handleWs(ws: any, req: Request) {
       player: data.player.player,
     };
 
-    if (ws && !ws.closed) { ws.send(JSON.stringify(wsData)); }
+    if (ws && !ws.closed) {
+      ws.send(JSON.stringify(wsData));
+    }
   }
 
   function ping() {
-    if (ws && !ws.closed) { ws.send('PING'); }
+    if (ws && !ws.closed) {
+      ws.send('PING');
+    }
   }
 
   emitter.addListener('join', listen.bind(null, 'join'));

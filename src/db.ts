@@ -1,7 +1,7 @@
 import { FieldType, InfluxDB } from 'influx';
-import * as mongoose from 'mongoose';
+import mongoose from 'mongoose';
 import { Document } from 'mongoose';
-import * as redis from 'redis';
+import redis from 'redis';
 import { IFullReport, ITribesServerQueryResponse } from './types';
 (mongoose as any).Promise = Promise;
 
@@ -176,7 +176,7 @@ async function connect() {
     },
   });
 
-  conn.connection.on('error', err => {
+  conn.connection.on('error', (err) => {
     console.error('MongoDB error', err);
   });
 
@@ -189,7 +189,7 @@ async function connect() {
 
 connect()
   .then(() => console.info('MongoDB connected'))
-  .catch(err => {
+  .catch((err) => {
     console.error('Error connecting to MongoDB', err);
     process.exit(1);
   });
@@ -202,7 +202,7 @@ if (redisEnv) {
   redisClient = redis.createClient(redisEnv);
   redisSubClient = redis.createClient(redisEnv);
 
-  redisClient.on('error', err => {
+  redisClient.on('error', (err) => {
     console.error('Redis error', err);
   });
 
@@ -216,7 +216,7 @@ if (redisEnv) {
 
   redisSubClient.on('warning', console.warn);
 
-  redisSubClient.on('error', err => {
+  redisSubClient.on('error', (err) => {
     console.error('Redis error', err);
   });
 

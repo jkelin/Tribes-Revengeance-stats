@@ -6,9 +6,7 @@ import * as Helpers from '../helpers';
 async function main() {
   console.info('Normalizing names');
 
-  const players = await Player.find()
-    .select({ _id: true })
-    .exec();
+  const players = await Player.find().select({ _id: true }).exec();
 
   for (const player of players) {
     console.debug('Normalizing', player._id, 'into', Helpers.cleanPlayerName(player._id));
@@ -22,7 +20,7 @@ main()
     console.info('All done');
     process.exit(0);
   })
-  .catch(ex => {
+  .catch((ex) => {
     console.error('Fatal in main');
     console.error(ex);
     process.exit(1);

@@ -1,8 +1,8 @@
 import { Dictionary, mapKeys, mapValues, max, mean, min, sum, values } from 'lodash';
-import * as _ from 'lodash';
+import _ from 'lodash';
 import { IUploadedData, IUploadedPlayer } from './types';
 
-import * as AnticheatStats from './data/anticheat-stats.json';
+import AnticheatStats from './data/anticheat-stats.json';
 
 export function isValidPreprocess(player: IUploadedPlayer, data: IUploadedData) {
   const trackedStats = {
