@@ -73,10 +73,11 @@
     "uuid": "^7.0.3"
   },
   "scripts": {
-    "start": "ts-node-dev --project tsconfig.json src/index.ts",
-    "start:prod": "node dist/index.js",
-    "start:web": "cross-env STATS_REPORT=false yarn start",
-    "start:report": "cross-env STATS_WEB=false yarn start",
+    "start": "node dist/index.js",
+    "dev": "ts-node-dev --project tsconfig.json src/index.ts",
+    "dev:prod": "node dist/index.js",
+    "dev:web": "cross-env STATS_REPORT=false yarn start",
+    "dev:report": "cross-env STATS_WEB=false yarn start",
     "script:recalculate_identities": "ts-node src/scripts/recalculate_identities.ts",
     "script:prod:recalculate_identities": "node src/scripts/recalculate_identities.js",
     "script:export_anticheat_data": "ts-node --files src/scripts/export_anticheat_data.ts",
