@@ -148,14 +148,15 @@ export const influx = new InfluxDB({
       tags: ['server'],
     },
   ],
-  pool: { 
+  pool: {
     maxRetries: Number.MAX_VALUE,
     requestTimeout: 5000,
-  }
+  },
 } as any);
 
 async function connect() {
-  const conn = await mongoose.connect(process.env.MONGODB || 'mongodb://localhost:3000/tribes', {
+  const mongoEnv = process.env.MONGODB || process.env.MONGODB_URI;
+  const conn = await mongoose.connect(mongoEnv || 'mongodb://localhost:3000/tribes', {
     useNewUrlParser: true,
     server: {
       socketOptions: {
@@ -175,7 +176,7 @@ async function connect() {
     },
   });
 
-  conn.connection.on('error', (err) => {
+  conn.connection.on('error', err => {
     console.error('MongoDB error', err);
   });
 
@@ -196,9 +197,10 @@ connect()
 export let redisClient: redis.RedisClient | undefined;
 export let redisSubClient: redis.RedisClient | undefined;
 
-if (process.env.REDIS) {
-  redisClient = redis.createClient(process.env.REDIS);
-  redisSubClient = redis.createClient(process.env.REDIS);
+const redisEnv = process.env.REDIS || process.env.REDIS_URL;
+if (redisEnv) {
+  redisClient = redis.createClient(redisEnv);
+  redisSubClient = redis.createClient(redisEnv);
 
   redisClient.on('error', err => {
     console.error('Redis error', err);
