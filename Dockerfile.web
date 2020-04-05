@@ -1,0 +1,29 @@
+FROM node:12-alpine AS build
+WORKDIR /app
+ENV NODE_ENV=production
+
+COPY package.json yarn.lock /app/
+
+RUN yarn install --production=false --frozen-lockfile
+
+COPY . /app/
+
+RUN yarn build
+
+FROM node:12-alpine AS runtime
+RUN apk add --no-cache curl
+
+WORKDIR /app
+ENV NODE_ENV=production
+EXPOSE 5000
+
+COPY package.json yarn.lock /app/
+RUN yarn install --production --frozen-lockfile
+
+COPY --from=build /app/dist /app/dist
+COPY --from=build /app/static /app/static
+COPY --from=build /app/views /app/views
+COPY --from=build /app/public /app/public
+
+USER node
+CMD ["node", "dist/index.js"]

@@ -6,7 +6,7 @@ ENV NODE_ENV=production
 EXPOSE 5000
 
 COPY package.json yarn.lock /app/
-RUN yarn install --production --pure-lockfile
+RUN yarn install --production --frozen-lockfile
 
 COPY dist /app/dist
 COPY static /app/static
