@@ -64,16 +64,15 @@ sentry:
     - sentry-cli releases set-commits $CI_COMMIT_SHA --commit $SENTRY_REPOSITORY@$CI_COMMIT_SHA
     - sentry-cli releases files $CI_COMMIT_SHA upload-sourcemaps ./dist
     - sentry-cli releases finalize $CI_COMMIT_SHA
-
-deploy:
-  stage: deploy
-  only:
-    - master
-  image:
-    name: byrnedo/alpine-curl
-    entrypoint: ['/bin/sh', '-c']
-  script:
-    - curl -vvv -X POST -d " " $DEPLOY_NOTIFICATION_URI
+# deploy:
+#   stage: deploy
+#   only:
+#     - master
+#   image:
+#     name: byrnedo/alpine-curl
+#     entrypoint: ['/bin/sh', '-c']
+#   script:
+#     - curl -vvv -X POST -d " " $DEPLOY_NOTIFICATION_URI
 # deploy:
 #   stage: deploy
 #   image: docker:git

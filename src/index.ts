@@ -1,6 +1,6 @@
 require('dotenv').config();
 
-import Sentry from '@sentry/node';
+import * as Sentry from '@sentry/node';
 import compression from 'compression';
 import cors from 'cors';
 import express from 'express';
@@ -143,4 +143,9 @@ const mainPromise: any = main()
   })
   .then(() => {
     console.info('All done');
+    process.exit(1);
+  })
+  .catch((err) => {
+    console.error(err);
+    process.exit(1);
   });
