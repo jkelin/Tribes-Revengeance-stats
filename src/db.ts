@@ -156,6 +156,7 @@ export const influx = new InfluxDB({
 
 async function connect() {
   const mongoEnv = process.env.MONGODB || process.env.MONGODB_URI;
+  mongoose.set('debug', true);
   const conn = await mongoose.connect(mongoEnv || 'mongodb://localhost:3000/tribes', {
     useNewUrlParser: true,
     server: {

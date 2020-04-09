@@ -14,7 +14,7 @@ function sha1(input: string) {
   return shasum.update(input).digest('hex');
 }
 
-const router = express.Router();
+export const router = express.Router();
 
 function getPlayersForTeam(data: IMatchModel, team: string) {
   return data.fullReport.players
@@ -78,11 +78,28 @@ router.get(
   })
 );
 
-async function getMatchesData(page: number, sort: string) {
-  const perPage = 50;
+export async function getMatchesData(
+  page: number,
+  sort: string,
+  filter: { server?: string; player?: string; players?: string[]; perPage?: number } = {}
+) {
+  const perPage = filter.perPage || 50;
+
+  const mongoFilter: any = { numplayers: { $gt: 0 } };
+  if (filter.server) {
+    mongoFilter.server = { $eq: filter.server };
+  }
+
+  if (filter.player) {
+    mongoFilter['basicReport.players.player'] = filter.player;
+  }
+
+  if (filter.players) {
+    mongoFilter['basicReport.players.player'] = { $in: filter.players };
+  }
 
   const [data, count] = await Promise.all([
-    Match.find({ numplayers: { $gt: 0 } })
+    Match.find(mongoFilter)
       .sort(sort)
       .select({
         basicReport: true,
@@ -91,9 +108,7 @@ async function getMatchesData(page: number, sort: string) {
       .skip((page - 1) * perPage)
       .limit(perPage)
       .exec(),
-    Match.find({ numplayers: { $gt: 0 } })
-      .countDocuments()
-      .exec(),
+    Match.find(mongoFilter).countDocuments().exec(),
   ]);
 
   const lastPage = Math.floor(count / perPage) + 1;
@@ -108,6 +123,9 @@ async function getMatchesData(page: number, sort: string) {
       teamonescore: m.basicReport.teamonescore,
       teamtwo: m.basicReport.teamtwo,
       teamtwoscore: m.basicReport.teamtwoscore,
+      player:
+        (filter.player || filter.players) &&
+        m.basicReport.players.find((p) => p.player === filter.player || (filter.players || []).includes(p.player + '')),
       gametype: m.basicReport.gametype,
       numplayers: m.basicReport.numplayers,
     })),
@@ -123,7 +141,7 @@ async function getMatchesData(page: number, sort: string) {
   };
 }
 
-function parseSort(sort: 'players' | 'time') {
+export function parseSort(sort: 'players' | 'time' | 'score') {
   switch (sort) {
     case 'players':
       return '-numplayers';
@@ -132,7 +150,7 @@ function parseSort(sort: 'players' | 'time') {
   }
 }
 
-function parsePage(page: string) {
+export function parsePage(page: string) {
   try {
     return parseInt((page || 1) + '', 10);
   } catch (ex) {
@@ -157,7 +175,3 @@ router.get(
     res.render('matches', { ...data, sort: req.query.sort });
   })
 );
-
-module.exports = {
-  router,
-};

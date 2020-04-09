@@ -2,39 +2,110 @@
 <h2>
   {{data._id}}
   {{#if persona}}
-    (<a href="/persona/{{urlencode persona}}">{{persona}}</a>)
+  (<a href="/persona/{{urlencode persona}}">{{persona}}</a>)
   {{/if}}
 </h2>
 
 {{#if relatedNicknames.length}}
-    <h4>
-        Related tribals:
-        {{#each relatedNicknames}}
-          {{#if @key}}<span style="display: inline-block; margin-left: -4px; margin-right: 5px">,</span>{{/if}}
-          <a href="/persona/{{urlencode this}}">{{this}}</a>
-        {{/each}}
-    </h4>
+<h4>
+  Related tribals:
+  {{#each relatedNicknames}}
+  {{#if @key}}<span style="display: inline-block; margin-left: -4px; margin-right: 5px">,</span>{{/if}}
+  <a href="/persona/{{urlencode this}}">{{this}}</a>
+  {{/each}}
+</h4>
 {{/if}}
 
 <table class="table table-striped">
-    <tr><td>Total score</td><td>{{data.score}}</td></tr>
-    <tr><td>Kills</td><td>{{data.kills}}</td></tr>
-    <tr><td>Deaths</td><td>{{data.deaths}}</td></tr>
-    <tr><td>Offense</td><td>{{data.offense}}</td></tr>
-    <tr><td>Defense</td><td>{{data.defense}}</td></tr>
-    <tr><td>Style</td><td>{{data.style}}</td></tr>
-    <tr><td>Time played</td><td>{{showHours data.minutesonline}} ({{showMinutes data.minutesonline}})</td></tr>
-    <tr><td>Last seen</td><td>{{showMoment data.lastseen}}</td></tr>
+  <tr>
+    <td>Total score</td>
+    <td>{{data.score}}</td>
+  </tr>
+  <tr>
+    <td>Kills</td>
+    <td>{{data.kills}}</td>
+  </tr>
+  <tr>
+    <td>Deaths</td>
+    <td>{{data.deaths}}</td>
+  </tr>
+  <tr>
+    <td>Offense</td>
+    <td>{{data.offense}}</td>
+  </tr>
+  <tr>
+    <td>Defense</td>
+    <td>{{data.defense}}</td>
+  </tr>
+  <tr>
+    <td>Style</td>
+    <td>{{data.style}}</td>
+  </tr>
+  <tr>
+    <td>Time played</td>
+    <td>{{showHours data.minutesonline}} ({{showMinutes data.minutesonline}})</td>
+  </tr>
+  <tr>
+    <td>Last seen</td>
+    <td>{{showMoment data.lastseen}}</td>
+  </tr>
 </table>
+
 <br>
+{{#if matches}}
+<div>
+  <h3>{{pagination.count}} matches</h3>
+  {{> pagination pagination=pagination}}
+
+  <table class="table table-bordered table-hover">
+    <thead>
+      <tr>
+        <th><a href="?page={{pagination.page}}&sort=time">Time</a></th>
+        <th class="hidden-xs">Server</th>
+        <th>Map</th>
+        <th class="hidden-xs">Mode</th>
+        <th><a href="?page={{pagination.page}}&sort=players">Players</a></th>
+        <th>Score</th>
+      </tr>
+    </thead>
+    <tbody>
+      {{#each matches}}
+      <tr class="clickable-row" id="{{id}}" data-href="/matches/{{id}}">
+        <td><a href="/matches/{{id}}">{{humanDate when}} {{humanTime when}}</a></td>
+        <td class="hidden-xs">{{hostname}}</td>
+        <td>{{map}}</td>
+        <td class="hidden-xs">{{gametype}}</td>
+        <td>{{numplayers}}</td>
+        <td style="display: flex; border-left: 0; border-right: 0; border-bottom: 0">
+          <div style="flex-grow: 1">
+            <strong>{{player.score}}</strong>
+          </div>
+          <div>
+            <strong class="team-{{teamone}}">{{teamonescore}}</strong>
+            /
+            <strong class="team-{{teamtwo}}">{{teamtwoscore}}</strong>
+          </div>
+        </td>
+      </tr>
+      {{/each}}
+    </tbody>
+  </table>
+</div>
+{{/if}}
+
+<br>
+
+<h3>Aggregated stats</h3>
 <table class="table table-striped">
-    {{#each stats}}
-        <tr>
-            <td>{{translateStatName key}}</td>
-            <td>{{sum}}</td>
-        </tr>
-    {{/each}}
+  {{#each stats}}
+  <tr>
+    <td>{{translateStatName key}}</td>
+    <td>{{sum}}</td>
+  </tr>
+  {{/each}}
 </table>
+
+
 {{else}}
 Alias not found
 {{/if}}

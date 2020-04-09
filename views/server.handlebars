@@ -1,7 +1,8 @@
 {{#if alerts}}
 {{#each alerts}}
 <div class="alert alert-warning alert-dismissible" role="alert">
-  <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+  <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span
+      aria-hidden="true">&times;</span></button>
   {{text}}
 </div>
 {{/each}}
@@ -40,7 +41,8 @@
     {{#if data.lastfullreport}}
     <td>{{showMoment data.lastfullreport}}</td>
     {{else}}
-    <td>Never (<a href="https://github.com/jkelin/TribesVengeanceServerStatus">server side mod</a> is not installed)</td>
+    <td>Never (<a href="https://github.com/jkelin/TribesVengeanceServerStatus">server side mod</a> is not installed)
+    </td>
     {{/if}}
   </tr>
   {{#if online}}
@@ -54,14 +56,16 @@
         {{#if data.lastdata.mapnamefull}}
         <span class="server-map-thumbnail hidden-xs">
           <a href="{{mapImage data.lastdata.mapnamefull "loadscreens-chopped" false}}" target="_blank">
-            <img width="91" height="44" src="{{mapImage data.lastdata.mapnamefull "loadscreens-chopped" true}}" alt="{{data.lastdata.mapname}}">
+            <img width="91" height="44" src="{{mapImage data.lastdata.mapnamefull "loadscreens-chopped" true}}"
+              alt="{{data.lastdata.mapname}}">
           </a>
         </span>
         {{/if}}
         {{#if data.lastdata.mapnamefull}}
         <span style="margin-left: 8px" class="server-map-thumbnail hidden-xs">
           <a href="{{mapImage data.lastdata.mapnamefull "maps" false}}" target="_blank">
-            <img width="44" height="44" src="{{mapImage data.lastdata.mapnamefull "maps" true}}" alt="{{data.lastdata.mapname}}">
+            <img width="44" height="44" src="{{mapImage data.lastdata.mapnamefull "maps" true}}"
+              alt="{{data.lastdata.mapname}}">
           </a>
         </span>
         {{/if}}
@@ -101,9 +105,9 @@
 </div>
 
 <script>
-  (function scrollChat(){
+  (function scrollChat() {
     var chat = document.getElementById('chat-container');
-    if(chat) {
+    if (chat) {
       chat.scrollTop = chat.scrollHeight;
     }
   })();
@@ -122,10 +126,12 @@
   </div>
   <div class="row">
     <div class="col-sm-2">
-      <input type="text" class="form-control input-sm" placeholder="Username" maxlength="29" required id="usr" pattern="^[A-Za-z0-9\| \-_\?\!\*\/:\.]{3,29}$">
+      <input type="text" class="form-control input-sm" placeholder="Username" maxlength="29" required id="usr"
+        pattern="^[A-Za-z0-9\| \-_\?\!\*\/:\.]{3,29}$">
     </div>
     <div class="col-sm-8">
-      <input type="text" class="form-control input-sm" placeholder="Message" required maxlength="196" id="msg" pattern="^[A-Za-z0-9\| \-_\?\!\*\/:\.]{1,196}$">
+      <input type="text" class="form-control input-sm" placeholder="Message" required maxlength="196" id="msg"
+        pattern="^[A-Za-z0-9\| \-_\?\!\*\/:\.]{1,196}$">
     </div>
     <div class="col-sm-2">
       <button type="submit" class="btn btn-block btn-sm btn-primary" disabled data-loading-text="Sending..." id="snd">
@@ -149,6 +155,44 @@
   <br>
   <br>
 </div>
+
+<br>
+{{#if matches}}
+<div>
+  <h3>Recent matches</h3>
+  {{> pagination pagination=pagination}}
+
+  <table class="table table-bordered table-hover">
+    <thead>
+      <tr>
+        <th><a href="?page={{pagination.page}}&sort=time">Time</a></th>
+        <th>Map</th>
+        <th class="hidden-xs">Mode</th>
+        <th><a href="?page={{pagination.page}}&sort=players">Players</a></th>
+        <th>Score</th>
+      </tr>
+    </thead>
+    <tbody>
+      {{#each matches}}
+      <tr class="clickable-row" id="{{id}}" data-href="/matches/{{id}}">
+        <td><a href="/matches/{{id}}">{{humanDate when}} {{humanTime when}}</a></td>
+        <td>{{map}}</td>
+        <td class="hidden-xs">{{gametype}}</td>
+        <td>{{numplayers}}</td>
+        <td>
+          <strong class="team-{{teamone}}">{{teamonescore}}</strong>
+          /
+          <strong class="team-{{teamtwo}}">{{teamtwoscore}}</strong>
+        </td>
+      </tr>
+      {{/each}}
+    </tbody>
+  </table>
+
+  {{> pagination }}
+</div>
+{{/if}}
+
 {{else}}
 Server not found
 {{/if}}

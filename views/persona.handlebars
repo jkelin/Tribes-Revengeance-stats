@@ -2,43 +2,109 @@
 <h2>{{name}}</h2>
 
 {{#if names}}
-    <h4>
-        Aliases:
-        {{#each names}}
-          {{#if @key}}<span style="display: inline-block; margin-left: -4px; margin-right: 5px">,</span>{{/if}}
-          <a href="/player/{{urlencode _id}}">{{_id}}</a>
-        {{/each}}
-    </h4>
+<h4>
+  Aliases:
+  {{#each names}}
+  {{#if @key}}<span style="display: inline-block; margin-left: -4px; margin-right: 5px">,</span>{{/if}}
+  <a href="/player/{{urlencode _id}}">{{_id}}</a>
+  {{/each}}
+</h4>
 {{/if}}
 
 {{#if relatedNicknames.length}}
-    <h4>
-        Related tribals:
-        {{#each relatedNicknames}}
-          {{#if @key}}<span style="display: inline-block; margin-left: -4px; margin-right: 5px">,</span>{{/if}}
-          <a href="/persona/{{urlencode this}}">{{this}}</a>
-        {{/each}}
-    </h4>
+<h4>
+  Related tribals:
+  {{#each relatedNicknames}}
+  {{#if @key}}<span style="display: inline-block; margin-left: -4px; margin-right: 5px">,</span>{{/if}}
+  <a href="/persona/{{urlencode this}}">{{this}}</a>
+  {{/each}}
+</h4>
 {{/if}}
 
 <table class="table table-striped">
-    <tr><td>Total score</td><td>{{score}}</td></tr>
-    <tr><td>Kills</td><td>{{kills}}</td></tr>
-    <tr><td>Deaths</td><td>{{deaths}}</td></tr>
-    <tr><td>Offense</td><td>{{offense}}</td></tr>
-    <tr><td>Defense</td><td>{{defense}}</td></tr>
-    <tr><td>Style</td><td>{{style}}</td></tr>
-    <tr><td>Time played</td><td>{{showHours minutesonline}} ({{showMinutes minutesonline}})</td></tr>
-    {{!-- <tr><td>Last seen</td><td>{{showMoment lastseen}}</td></tr> --}}
+  <tr>
+    <td>Total score</td>
+    <td>{{score}}</td>
+  </tr>
+  <tr>
+    <td>Kills</td>
+    <td>{{kills}}</td>
+  </tr>
+  <tr>
+    <td>Deaths</td>
+    <td>{{deaths}}</td>
+  </tr>
+  <tr>
+    <td>Offense</td>
+    <td>{{offense}}</td>
+  </tr>
+  <tr>
+    <td>Defense</td>
+    <td>{{defense}}</td>
+  </tr>
+  <tr>
+    <td>Style</td>
+    <td>{{style}}</td>
+  </tr>
+  <tr>
+    <td>Time played</td>
+    <td>{{showHours minutesonline}} ({{showMinutes minutesonline}})</td>
+  </tr>
+  {{!-- <tr><td>Last seen</td><td>{{showMoment lastseen}}</td></tr> --}}
 </table>
+
 <br>
+{{#if matches}}
+<div>
+  <h3>{{pagination.count}} matches</h3>
+  {{> pagination pagination=pagination}}
+
+  <table class="table table-bordered table-hover">
+    <thead>
+      <tr>
+        <th><a href="?page={{pagination.page}}&sort=time">Time</a></th>
+        <th class="hidden-xs">Server</th>
+        <th>Map</th>
+        <th class="hidden-xs">Mode</th>
+        <th><a href="?page={{pagination.page}}&sort=players">Players</a></th>
+        <th>Score</th>
+      </tr>
+    </thead>
+    <tbody>
+      {{#each matches}}
+      <tr class="clickable-row" id="{{id}}" data-href="/matches/{{id}}">
+        <td><a href="/matches/{{id}}">{{humanDate when}} {{humanTime when}}</a></td>
+        <td class="hidden-xs">{{hostname}}</td>
+        <td>{{map}}</td>
+        <td class="hidden-xs">{{gametype}}</td>
+        <td>{{numplayers}}</td>
+        <td style="display: flex; border-left: 0; border-right: 0; border-bottom: 0">
+          <div style="flex-grow: 1">
+            <strong>{{player.score}}</strong>
+          </div>
+          <div>
+            <strong class="team-{{teamone}}">{{teamonescore}}</strong>
+            /
+            <strong class="team-{{teamtwo}}">{{teamtwoscore}}</strong>
+          </div>
+        </td>
+      </tr>
+      {{/each}}
+    </tbody>
+  </table>
+</div>
+{{/if}}
+
+<br>
+
+<h3>Aggregated stats</h3>
 <table class="table table-striped">
-    {{#each stats}}
-        <tr>
-            <td>{{translateStatName key}}</td>
-            <td>{{sum}}</td>
-        </tr>
-    {{/each}}
+  {{#each stats}}
+  <tr>
+    <td>{{translateStatName key}}</td>
+    <td>{{sum}}</td>
+  </tr>
+  {{/each}}
 </table>
 {{else}}
 Tribal not found

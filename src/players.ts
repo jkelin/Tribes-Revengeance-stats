@@ -6,6 +6,7 @@ import { cleanPlayerName, prepareStats } from './helpers';
 import { IFullReportPlayer } from './types';
 
 import asyncHandler from 'express-async-handler';
+import { getMatchesData, parsePage, parseSort } from './matches';
 
 const router = express.Router();
 
@@ -103,6 +104,10 @@ router.get(
     const name = decodeURIComponent(req.params.name);
     const similar = await findRelatedNicknames(name);
     const data: IPlayerModel = await Player.where('_id').equals(name).findOne().exec();
+    const matches = await getMatchesData(parsePage(req.query.page), parseSort(req.query.sort), {
+      player: name,
+      perPage: 10,
+    });
 
     const personaCount = await Player.where('normalizedName')
       .equals(cleanPlayerName(name))
@@ -115,6 +120,8 @@ router.get(
     res.render('player', {
       data,
       stats,
+      matches: matches.matches,
+      pagination: matches.pagination,
       persona: data && personaCount > 0 ? data.normalizedName : null,
       relatedNicknames: similar,
       relatedNicknamesString: similar && similar.join(', '),
@@ -182,6 +189,11 @@ router.get(
       names.map((x) => (x.ip || '').split(':')[0])
     );
 
+    const matches = await getMatchesData(parsePage(req.query.page), parseSort(req.query.sort), {
+      players: names.map((x) => x._id),
+      perPage: 10,
+    });
+
     res.render('persona', {
       name: cleanPlayerName(name),
       score: sumBy(names, 'score'),
@@ -195,6 +207,8 @@ router.get(
       names: sortBy(names, 'minutesonline').reverse(),
       stats,
       relatedNicknames,
+      matches: matches.matches,
+      pagination: matches.pagination,
     });
   })
 );

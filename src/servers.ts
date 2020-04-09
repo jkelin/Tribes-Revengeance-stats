@@ -5,6 +5,7 @@ import { getChatFor } from './chat';
 import { influx, IPlayerModel, IServerModel, Player, Server } from './db';
 
 import asyncHandler from 'express-async-handler';
+import { getMatchesData, parsePage, parseSort } from './matches';
 
 const router = express.Router();
 
@@ -44,6 +45,7 @@ router.get(
       const data = await Promise.all([
         Server.where('_id', id).findOne().exec() as Promise<IServerModel>,
         getServerChartData(id, numDays),
+        getMatchesData(parsePage(req.query.page), parseSort(req.query.sort), { server: id }),
       ]);
 
       const compDate = new Date();
@@ -51,6 +53,8 @@ router.get(
 
       res.render('server', {
         data: data[0],
+        matches: (data[2] as any).matches,
+        pagination: (data[2] as any).pagination,
         tracks: data[1],
         chatOk: data[0].chat && data[0].chat.ok,
         chat: getChatFor(data[0]._id),
