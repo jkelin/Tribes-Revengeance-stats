@@ -1,34 +1,34 @@
-<h2 id="servers">Recent matches</h2>
+<h2 id="servers">{{pagination.count}} matches</h2>
 
 {{> pagination pagination=pagination}}
 
 <table class="table table-bordered table-hover">
-	<thead>
-		<tr>
-			<th><a href="?page={{pagination.page}}&sort=time">Time</a></th>
-			<th class="hidden-xs">Server</th>
-			<th>Map</th>
-			<th class="hidden-xs">Mode</th>
-			<th><a href="?page={{pagination.page}}&sort=players">Players</a></th>
-			<th>Score</th>
-		</tr>
-	</thead>
-	<tbody>
-	{{#each matches}}
-		<tr class="clickable-row" id="{{id}}" data-href="/matches/{{id}}">
-			<td><a href="/matches/{{id}}">{{humanDate when}} {{humanTime when}}</a></td>
-            <td class="hidden-xs">{{hostname}}</td>
-            <td>{{map}}</td>
-            <td class="hidden-xs">{{gametype}}</td>
-            <td>{{numplayers}}</td>
-            <td>
-                <strong class="team-{{teamone}}">{{teamonescore}}</strong>
-                /
-                <strong class="team-{{teamtwo}}">{{teamtwoscore}}</strong>
-            </td>
-		</tr>
-	{{/each}}
-	</tbody>
+  <thead>
+    <tr>
+      <th><a href="?page={{pagination.page}}&sort=time">Time</a></th>
+      <th class="hidden-xs">Server</th>
+      <th>Map</th>
+      <th class="hidden-xs">Mode</th>
+      <th><a href="?page={{pagination.page}}&sort=players">Players</a></th>
+      <th>Score</th>
+    </tr>
+  </thead>
+  <tbody>
+    {{#each matches}}
+    <tr class="clickable-row" id="{{id}}" data-href="/matches/{{id}}">
+      <td><a href="/matches/{{id}}">{{humanDate when}} {{humanTime when}}</a></td>
+      <td class="hidden-xs">{{hostname}}</td>
+      <td>{{map}}</td>
+      <td class="hidden-xs">{{gametype}}</td>
+      <td>{{numplayers}}</td>
+      <td>
+        <strong class="team-{{teamone}}">{{teamonescore}}</strong>
+        /
+        <strong class="team-{{teamtwo}}">{{teamtwoscore}}</strong>
+      </td>
+    </tr>
+    {{/each}}
+  </tbody>
 </table>
 
 {{> pagination }}
