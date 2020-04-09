@@ -164,17 +164,6 @@ router.get(
     const names: IPlayerModel[] = (await Player.where('normalizedName')
       .equals(cleanPlayerName(name))
       .find()
-      .select({
-        _id: 1,
-        kills: 1,
-        deaths: 1,
-        style: 1,
-        score: 1,
-        minutesonline: 1,
-        lastseen: 1,
-        captures: 1,
-        'stats.flagCaptureStat': 1,
-      })
       .lean()
       .exec()) as any;
 
