@@ -7,18 +7,18 @@
     <li><a href="#kills">Greatest killers</a></li>
     <li><a href="#time">Most addicted</a></li>
     <li><a href="#about">About</a></li>
-    <li><a href="#news">News</a></li>
+    <li><a href="#news">Code changes</a></li>
   </ul>
 </div>
 <div class="col-lg-10 col-lg-offset-2 main">
-    {{#if warnings}}
-      {{#each warnings}}
-          <br>
-          <div class="alert alert-warning alert-dismissible" role="alert">
-              {{!-- <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button> --}}
-              {{{text}}}
-          </div>
-      {{/each}}
+  {{#if warnings}}
+  {{#each warnings}}
+  <br>
+  <div class="alert alert-warning alert-dismissible" role="alert">
+    {{!-- <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button> --}}
+    {{{text}}}
+  </div>
+  {{/each}}
   {{/if}}
 
   {{#if servers}}
@@ -45,7 +45,8 @@
             {{#if lastdata.mapnamefull}}
             <span class="server-map-thumbnail hidden-xs">
               <a href="{{mapImage lastdata.mapnamefull "loadscreens-chopped" false}}" target="_blank">
-                <img width="91" height="44" src="{{mapImage lastdata.mapnamefull "loadscreens-chopped" true}}" alt="{{lastdata.mapname}}">
+                <img width="91" height="44" src="{{mapImage lastdata.mapnamefull "loadscreens-chopped" true}}"
+                  alt="{{lastdata.mapname}}">
               </a>
             </span>
             {{/if}}
@@ -71,11 +72,10 @@
   <p>
     <a href="http://tribesrevengeance.net">Tribes Revengeance</a> stats page. <br>
     Made by Fireant with the help of Cobra and HighDive. <br>
-    Source code available on <a href="https://github.com/jkelin/Tribes-Revengeance-stats">Github</a>.
+    Source code available on <a href="https://github.com/jkelin/Tribes-Revengeance-stats">GitHub</a>.
   </p>
 
-  <h2 id="news">News</h2>
-  <h3>Code changes</h3>
+  <h2 id="news">Code changes</h2>
   <table class="table table-striped">
     <tr>
       <th>When</th>
