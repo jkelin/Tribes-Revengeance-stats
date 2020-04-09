@@ -113,6 +113,8 @@ async function main() {
     server.listen(process.env.PORT || 5000, () => {
       console.info('App listening', { port: process.env.PORT || 5000 });
     });
+    // tslint:disable-next-line: no-empty
+    promises.push(new Promise((resolve) => {}));
   }
 
   if (RUN_CHAT_QUERY) {
