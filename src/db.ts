@@ -1,8 +1,9 @@
 import { FieldType, InfluxDB } from 'influx';
 import mongoose from 'mongoose';
 import { Document } from 'mongoose';
-import redis from 'redis';
+import redis from 'async-redis';
 import { IFullReport, ITribesServerQueryResponse } from './types';
+
 (mongoose as any).Promise = Promise;
 
 export interface IServerChat {
@@ -154,82 +155,79 @@ export const influx = new InfluxDB({
   },
 } as any);
 
-async function connect() {
+export async function connectMongo() {
   const mongoEnv = process.env.MONGODB || process.env.MONGODB_URI;
+  if (!mongoEnv) {
+    throw new Error('MONGODB or MONGODB_URI env variables not set');
+  }
+
   mongoose.set('debug', true);
-  const conn = await mongoose.connect(mongoEnv || 'mongodb://localhost:3000/tribes', {
+
+  console.debug('Connecting to MongoDB');
+  const conn = await mongoose.connect(mongoEnv, {
     useNewUrlParser: true,
-    server: {
-      socketOptions: {
-        keepAlive: 1,
-        connectTimeoutMS: 5000,
-        reconnectTries: Number.MAX_VALUE,
-        reconnectInterval: 1000,
-      },
-    },
-    replset: {
-      socketOptions: {
-        keepAlive: 1,
-        connectTimeoutMS: 5000,
-        reconnectTries: Number.MAX_VALUE,
-        reconnectInterval: 1000,
-      },
-    },
+    // server: {
+    //   socketOptions: {
+    //     keepAlive: 1,
+    //     connectTimeoutMS: 5000,
+    //     reconnectTries: Number.MAX_VALUE,
+    //     reconnectInterval: 1000,
+    //   },
+    // },
+    // replset: {
+    //   socketOptions: {
+    //     keepAlive: 1,
+    //     connectTimeoutMS: 5000,
+    //     reconnectTries: Number.MAX_VALUE,
+    //     reconnectInterval: 1000,
+    //   },
+    // },
   });
 
-  conn.connection.on('error', (err) => {
-    console.error('MongoDB error', err);
-  });
+  conn.connection.on('error', console.error.bind(console, 'MongoDB error:'));
+  conn.connection.on('disconnected', console.error.bind(console, 'MongoDB disconnect:'));
 
-  conn.connection.on('disconnected', () => {
-    console.error('MongoDB disconnected');
-  });
+  console.info('MongoDB connected');
 
   return conn;
 }
 
-connect()
-  .then(() => console.info('MongoDB connected'))
-  .catch((err) => {
-    console.error('Error connecting to MongoDB', err);
-    process.exit(1);
-  });
-
 export let redisClient: redis.RedisClient | undefined;
 export let redisSubClient: redis.RedisClient | undefined;
 
-const redisEnv = process.env.REDIS || process.env.REDIS_URL;
-if (redisEnv) {
-  redisClient = redis.createClient(redisEnv);
-  redisSubClient = redis.createClient(redisEnv);
+function createRedisClient(url: string) {
+  return new Promise<redis.RedisClient>((resolve, reject) => {
+    const client = redis.createClient(url);
 
-  redisClient.on('error', (err) => {
-    console.error('Redis error', err);
+    client.on('error', reject);
+
+    client.on('error', console.error.bind(console, 'Redis error:'));
+
+    client.on('warning', console.warn.bind(console, 'Redis warning:'));
+
+    client.on('connect', () => resolve(client));
+
+    client.on('end', () => {
+      console.info('Redis disconnected');
+    });
   });
+}
 
-  redisClient.on('connect', () => {
+export async function connectRedis() {
+  console.info('Connecting to redis');
+
+  const redisEnv = process.env.REDIS || process.env.REDIS_URL;
+  if (redisEnv) {
+    redisClient = await createRedisClient(redisEnv);
+    redisSubClient = await createRedisClient(redisEnv);
+
+    await redisClient.ping();
+    await redisSubClient.ping();
+
     console.info('Redis connected');
-  });
 
-  redisClient.on('end', () => {
-    console.info('Redis disconnected');
-  });
-
-  redisSubClient.on('warning', console.warn);
-
-  redisSubClient.on('error', (err) => {
-    console.error('Redis error', err);
-  });
-
-  redisSubClient.on('connect', () => {
-    console.info('Redis connected');
-  });
-
-  redisSubClient.on('end', () => {
-    console.info('Redis disconnected');
-  });
-
-  redisSubClient.on('warning', console.warn);
-} else {
-  console.info('REDIS env variable not specified');
+    return { redisClient, redisSubClient };
+  } else {
+    throw new Error('REDIS env variable not specified');
+  }
 }

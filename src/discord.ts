@@ -13,23 +13,7 @@ const serverId = process.env.DISCORD_SERVER_ID || '45.32.157.166:8777';
 
 const RUN_DISCORD = process.env.RUN_DISCORD === 'true';
 
-if (RUN_DISCORD && webhookId && webhookToken) {
-  const client = Axios.create({
-    httpsAgent: new https.Agent({ keepAlive: true }),
-  });
-
-  Events.filter((x) => x.type === 'chat-message' && x.data.origin === selfEventId).subscribe((e: IEventChatMessage) => {
-    console.debug('Posting chat-message to discord', e);
-    if (e.data && e.data.user && e.data.messageFriendly) {
-      client.post(`https://discordapp.com/api/webhooks/${webhookId}/${webhookToken}`, {
-        content: e.data.messageFriendly,
-        username: e.data.user,
-      });
-    }
-  });
-}
-
-export async function readDiscord(discordToken: string) {
+async function readDiscord(discordToken: string) {
   const client = new Discord.Client();
   client.listenerCount = () => 0;
   await client.login(discordToken);
@@ -46,4 +30,28 @@ export async function readDiscord(discordToken: string) {
       });
     }
   });
+}
+
+export async function setupDiscord() {
+  if (RUN_DISCORD && webhookId && webhookToken) {
+    const client = Axios.create({
+      httpsAgent: new https.Agent({ keepAlive: true }),
+    });
+
+    Events.filter((x) => x.type === 'chat-message' && x.data.origin === selfEventId).subscribe(
+      (e: IEventChatMessage) => {
+        console.debug('Posting chat-message to discord', e);
+        if (e.data && e.data.user && e.data.messageFriendly) {
+          client.post(`https://discordapp.com/api/webhooks/${webhookId}/${webhookToken}`, {
+            content: e.data.messageFriendly,
+            username: e.data.user,
+          });
+        }
+      }
+    );
+
+    if (token) {
+      await readDiscord(token);
+    }
+  }
 }

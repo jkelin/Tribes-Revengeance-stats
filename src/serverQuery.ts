@@ -7,6 +7,7 @@ import net from 'net';
 import { Server } from './db';
 import { handleTribesServerData } from './tracker';
 import { ITribesServerQueryResponse } from './types';
+import { CronJob } from 'cron';
 
 const masterClient = axios.create({
   timeout: 5000,
@@ -127,4 +128,13 @@ export async function queryLiveServers() {
       )
       .forEach((server) => queryTribesServer(server.ip, server.port));
   }
+}
+
+export function setupQueryLiveServers() {
+  return new CronJob({
+    cronTime: '*/12 * * * * *',
+    onTick: queryLiveServers,
+    start: true,
+    runOnInit: true,
+  });
 }

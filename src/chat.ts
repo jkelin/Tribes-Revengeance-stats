@@ -10,7 +10,6 @@ import url from 'url';
 import iconv from 'iconv-lite';
 import { range, sortBy, sum, uniq, values } from 'lodash';
 import moment from 'moment';
-import { promisify } from 'util';
 import { v4 } from 'uuid';
 import QcMappings from './data/qcmappings.json';
 import { IServerModel, redisClient, redisSubClient, Server } from './db';
@@ -26,6 +25,7 @@ const axiosInstance = axios.create({
 });
 
 import 'rxjs/operator/debounceTime';
+import { CronJob } from 'cron';
 
 const chatCache: Record<string, IChatMessage[]> = {};
 const activeChatRequests: Record<string, Promise<IChatMessage[]>> = {};
@@ -35,13 +35,12 @@ function createRedisBucket(date: Date | moment.Moment) {
 }
 
 export async function loadChatCacheFromRedis() {
-  const lrangeAsync = promisify(redisClient!.LRANGE).bind(redisClient);
-
+  console.info('Loading chat cache from redis');
   const buckets = uniq(range(0, 180).map((m) => createRedisBucket(moment().subtract(180 - m, 'minutes'))));
 
   for (const bucket of uniq(buckets)) {
     console.debug('Reading message cache from redis bucket', bucket);
-    const data = await lrangeAsync(bucket, 0, 1000);
+    const data = await redisClient!.LRANGE(bucket, 0, 1000);
 
     for (const item of data) {
       const message: IChatMessage = JSON.parse(item);
@@ -213,12 +212,15 @@ async function queryServersForChat() {
   return Promise.all(promises);
 }
 
-export async function startQueryingServersForChat() {
-  while (true) {
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    await queryServersForChat();
-  }
+export function startQueryingServersForChat() {
+  return new CronJob({
+    cronTime: '* * * * * *',
+    onTick: queryServersForChat,
+    start: true,
+    runOnInit: true,
+  });
 }
+
 export function getChatFor(server: string) {
   return (chatCache[server] || []).filter((x) => x.when.getTime() > Date.now() - 2 * 60 * 60 * 1000);
 }
@@ -307,25 +309,21 @@ sayMessages$
   .subscribe();
 
 export function publishMessagesToRedis() {
-  const lpushAsync = promisify<string, string>(redisClient!.lpush).bind(redisClient);
-  const expireatAsync = promisify(redisClient!.expireat).bind(redisClient);
-  const publishAsync = promisify(redisClient!.publish).bind(redisClient);
-
   async function handleMsg(msg: IEventChatMessage) {
     const now = moment();
     const bucket = createRedisBucket(now);
     const data = JSON.stringify(msg.data);
 
-    await lpushAsync(bucket, data);
-    await expireatAsync(bucket, moment(bucket).add(2, 'hours').unix());
-    await publishAsync('chat-message', data);
+    await redisClient!.lpush(bucket, data);
+    await redisClient!.expireat(bucket, moment(bucket).add(2, 'hours').unix());
+    await redisClient!.publish('chat-message', data);
   }
 
   const sub1 = Events.filter((x) => x.type === 'chat-message' && x.data.origin === selfEventId).subscribe(handleMsg);
 
   const sub2 = Events.filter(
     (x) => x.type === 'player-count-change' && x.data.origin === selfEventId
-  ).subscribe((msg: IPlayerCountChange) => publishAsync('player-count-change', JSON.stringify(msg.data)));
+  ).subscribe((msg: IPlayerCountChange) => redisClient!.publish('player-count-change', JSON.stringify(msg.data)));
 
   return [sub1, sub2];
 }
@@ -349,4 +347,8 @@ export function subscribeToMessagesFromRedis() {
       Events.next({ type: 'player-count-change', data: message });
     }
   });
+
+  return () => {
+    redisSubClient?.UNSUBSCRIBE('chat-message', 'player-count-change');
+  };
 }

@@ -1,4 +1,6 @@
-require('dotenv').config();
+require('dotenv-safe').config({
+  allowEmptyValues: true,
+});
 
 import * as Sentry from '@sentry/node';
 import compression from 'compression';
@@ -8,13 +10,14 @@ import { Request, Response } from 'express';
 import Handlebars from 'handlebars';
 import exphbs from 'express-handlebars';
 import { allowInsecurePrototypeAccess } from '@handlebars/allow-prototype-access';
+import { createTerminus } from '@godaddy/terminus';
 
 import http from 'http';
 import morgan from 'morgan';
 import path from 'path';
 
-import { handlebarsHelpers } from './helpers';
-import { queryLiveServers } from './serverQuery';
+import { handlebarsHelpers, setupNewsFetch as setupNewsFetchJob } from './helpers';
+import { queryLiveServers, setupQueryLiveServers } from './serverQuery';
 
 import './discord';
 
@@ -24,83 +27,60 @@ import {
   startQueryingServersForChat,
   subscribeToMessagesFromRedis,
 } from './chat';
-import { redisClient } from './db';
+import { connectMongo, connectRedis } from './db';
 import { initSocketIO } from './socketio';
+import { CronJob } from 'cron';
+import { setupDiscord } from './discord';
 
-const RUN_WEB = process.env.RUN_WEB === 'true';
 const RUN_SERVER_QUERY = process.env.RUN_SERVER_QUERY === 'true';
 const RUN_CHAT_QUERY = process.env.RUN_CHAT_QUERY === 'true';
 
-async function main() {
-  const promises: Promise<unknown>[] = [];
-
+function configureApp() {
   const app = express();
 
   app.use(morgan('tiny'));
+  app.use(Sentry.Handlers.requestHandler());
+  app.use(compression());
+  app.use(
+    cors({
+      credentials: true,
+      origin: '*',
+    })
+  );
 
-  if (process.env.SENTRY_DSN) {
-    Sentry.init({
-      dsn: process.env.SENTRY_DSN,
-      release: process.env.SENTRY_RELEASE,
-    });
+  app.set('views', path.join(__dirname, '../views'));
+  app.engine(
+    'handlebars',
+    exphbs({
+      defaultLayout: 'main',
+      helpers: handlebarsHelpers,
+      handlebars: allowInsecurePrototypeAccess(Handlebars),
+    })
+  );
 
-    app.use(Sentry.Handlers.requestHandler());
-  }
+  app.set('view engine', 'handlebars');
+  // app.use(bodyParser.json());
+  // app.use(bodyParser.urlencoded({extended: true}));
+  app.use('/public', express.static(path.join(__dirname, '../public'), { maxAge: '365d' }));
+  app.use('/static', express.static(path.join(__dirname, '../static'), { maxAge: '365d' }));
 
-  const server = new http.Server(app);
+  const ticker = require('./ticker');
+  const servers = require('./servers');
+  const players = require('./players');
+  const matches = require('./matches');
+  const pages = require('./pages');
+  const search = require('./search');
+  const tracker = require('./tracker');
 
-  if (RUN_WEB) {
-    app.use(compression());
-    app.use(
-      cors({
-        credentials: true,
-        origin: '*',
-      })
-    );
+  app.use('/', players.router);
+  app.use('/', servers.router);
+  app.use('/', ticker.router);
+  app.use('/', matches.router);
+  app.use('/', pages.router);
+  app.use('/', search.router);
+  app.use('/', tracker.router);
 
-    initSocketIO(server);
-
-    app.set('views', path.join(__dirname, '../views'));
-    app.engine(
-      'handlebars',
-      exphbs({
-        defaultLayout: 'main',
-        helpers: handlebarsHelpers,
-        handlebars: allowInsecurePrototypeAccess(Handlebars),
-      })
-    );
-    app.set('view engine', 'handlebars');
-
-    // app.use(bodyParser.json());
-    // app.use(bodyParser.urlencoded({extended: true}));
-
-    app.use('/public', express.static(path.join(__dirname, '../public'), { maxAge: '365d' }));
-    app.use('/static', express.static(path.join(__dirname, '../static'), { maxAge: '365d' }));
-
-    const ticker = require('./ticker');
-    const servers = require('./servers');
-    const players = require('./players');
-    const matches = require('./matches');
-    const pages = require('./pages');
-    const search = require('./search');
-    const tracker = require('./tracker');
-
-    app.use('/', players.router);
-    app.use('/', servers.router);
-    app.use('/', ticker.router);
-    app.use('/', matches.router);
-    app.use('/', pages.router);
-    app.use('/', search.router);
-    app.use('/', tracker.router);
-  }
-
-  if (RUN_SERVER_QUERY) {
-    setInterval(queryLiveServers, 5 * 1000);
-  }
-
-  if (process.env.SENTRY_DSN) {
-    app.use(Sentry.Handlers.errorHandler());
-  }
+  app.use(Sentry.Handlers.errorHandler());
 
   app.use((err: Error, req: Request, res: Response, next: () => void) => {
     console.error('App error:', err);
@@ -109,45 +89,75 @@ async function main() {
     res.end(err);
   });
 
-  if (RUN_WEB || RUN_SERVER_QUERY) {
-    server.listen(process.env.PORT || 5000, () => {
-      console.info('App listening', { port: process.env.PORT || 5000 });
-    });
-    // tslint:disable-next-line: no-empty
-    promises.push(new Promise((resolve) => {}));
+  return app;
+}
+
+async function main() {
+  Sentry.init();
+  const cronJobs: CronJob[] = [];
+
+  const mongo = await connectMongo();
+  const { redisClient, redisSubClient } = await connectRedis();
+  await setupDiscord();
+
+  cronJobs.push(setupNewsFetchJob());
+
+  if (RUN_SERVER_QUERY) {
+    cronJobs.push(setupQueryLiveServers());
   }
 
   if (RUN_CHAT_QUERY) {
-    promises.push(startQueryingServersForChat());
+    cronJobs.push(startQueryingServersForChat());
   }
 
   if (redisClient) {
-    promises.push(loadChatCacheFromRedis());
+    await loadChatCacheFromRedis();
     subscribeToMessagesFromRedis();
     publishMessagesToRedis();
   }
 
-  await Promise.all(promises);
+  const app = configureApp();
+
+  let server = new http.Server(app);
+
+  initSocketIO(server);
+  server = createTerminus(server, {
+    signals: ['SIGINT', 'SIGTERM', 'SIGQUIT'],
+    healthChecks: {
+      '/status.json': async () => {
+        return true;
+      },
+    },
+    beforeShutdown: async () => {
+      console.info('Shutting down');
+
+      console.debug('Stopping cron jobs');
+      cronJobs.forEach((x) => x.stop());
+
+      console.debug('Disconnecting from mongo');
+      await mongo.disconnect();
+
+      console.debug('Disconnecting from redis');
+      await redisClient.quit();
+      await redisSubClient.quit();
+
+      console.debug('Flusing sentry');
+      await Sentry.flush();
+    },
+    onShutdown: async () => console.info('Shutdown'),
+  });
+
+  await new Promise((resolve) => server.listen(process.env.PORT || 5000, resolve));
+
+  console.info('App initialized', { address: server.address(), RUN_SERVER_QUERY, RUN_CHAT_QUERY });
 }
 
-const mainPromise: any = main()
-  .catch(async (error) => {
-    if (process.env.SENTRY_DSN) {
-      const id = Sentry.captureException(error);
-      console.info('Sentry error captured as', id);
-      console.info(error);
+main().catch(async (error) => {
+  const id = Sentry.captureException(error);
+  await Sentry.flush();
 
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-    } else {
-      console.info('An error has occured but sentry is not connected');
-      console.error(error);
-    }
-  })
-  .then(() => {
-    console.info('All done');
-    process.exit(1);
-  })
-  .catch((err) => {
-    console.error(err);
-    process.exit(1);
-  });
+  console.info('Sentry error captured as', id);
+  console.error(error);
+
+  process.exit(1);
+});

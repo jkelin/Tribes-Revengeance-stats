@@ -63,12 +63,15 @@ export function getNews() {
 }
 
 export let tribesNews: Promise<INews[]>;
-const cronJob = new CronJob({
-  cronTime: '0 0 * * * *',
-  onTick: () => (tribesNews = getNews()),
-  start: true,
-  runOnInit: true,
-});
+
+export function setupNewsFetch() {
+  return new CronJob({
+    cronTime: '0 0 * * * *',
+    onTick: () => (tribesNews = getNews()),
+    start: true,
+    runOnInit: true,
+  });
+}
 
 export function getClientIp(req: Request) {
   let ipAddress;

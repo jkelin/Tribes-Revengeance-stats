@@ -5,37 +5,33 @@
   "version": "0.2.0",
   "configurations": [
     {
+      "name": "start:web",
       "type": "node",
       "request": "launch",
-      "name": "start:web",
       "args": ["${workspaceRoot}/src/index.ts"],
-      "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
-      "sourceMaps": true,
+      "runtimeArgs": ["-r", "ts-node/register", "-r", "tsconfig-paths/register"],
       "cwd": "${workspaceRoot}",
       "protocol": "inspector",
-      "console": "integratedTerminal",
+      "internalConsoleOptions": "openOnSessionStart",
       "env": {
-        "RUN_WEB": "true",
-        "TS_NODE_TRANSPILE_ONLY": "true"
-      },
-      "outputCapture": "std"
+        "TS_NODE_IGNORE": "false",
+        "RUN_WEB": "true"
+      }
     },
     {
+      "name": "launch",
       "type": "node",
       "request": "launch",
-      "name": "start",
       "args": ["${workspaceRoot}/src/index.ts"],
-      "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
-      "sourceMaps": true,
+      "runtimeArgs": ["-r", "ts-node/register", "-r", "tsconfig-paths/register"],
       "cwd": "${workspaceRoot}",
       "protocol": "inspector",
+      "internalConsoleOptions": "openOnSessionStart",
       "env": {
-        "TS_NODE_TRANSPILE_ONLY": "true",
-        "RUN_WEB": "true",
+        "TS_NODE_IGNORE": "false",
         "RUN_SERVER_QUERY": "true",
         "RUN_CHAT_QUERY": "true"
-      },
-      "outputCapture": "std"
+      }
     }
   ]
 }
