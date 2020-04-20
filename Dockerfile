@@ -13,6 +13,7 @@ COPY static /app/static
 COPY views /app/views
 COPY public /app/public
 COPY .env.example /app/.env.example
+RUN touch /app/.env
 
 USER node
 CMD ["node", "dist/index.js"]
