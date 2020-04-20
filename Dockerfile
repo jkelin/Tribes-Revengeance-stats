@@ -12,6 +12,7 @@ COPY dist /app/dist
 COPY static /app/static
 COPY views /app/views
 COPY public /app/public
+COPY .env.example /app/.env.example
 
 USER node
 CMD ["node", "dist/index.js"]
