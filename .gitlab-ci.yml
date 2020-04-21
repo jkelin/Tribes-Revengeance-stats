@@ -74,6 +74,7 @@ deploy:
   environment: production
   before_script:
     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN registry.gitlab.com
+    - chmod 600 "$DEPLOY_KEY_FILE"
   script:
     - docker pull $CONTAINER_IMAGE:$CI_COMMIT_SHA
     - docker tag  $CONTAINER_IMAGE:$CI_COMMIT_SHA $CONTAINER_IMAGE:latest
