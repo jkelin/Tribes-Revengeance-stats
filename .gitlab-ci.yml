@@ -50,9 +50,10 @@ docker-build:
     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN registry.gitlab.com
   script:
     # - docker pull $CONTAINER_IMAGE:latest || exit 0
-    - docker build -t $CONTAINER_IMAGE:$CI_COMMIT_SHA -t $CONTAINER_IMAGE:latest .
+    # - docker build -t $CONTAINER_IMAGE:$CI_COMMIT_SHA -t $CONTAINER_IMAGE:latest .
+    - docker build -t $CONTAINER_IMAGE:$CI_COMMIT_SHA .
     - docker push $CONTAINER_IMAGE:$CI_COMMIT_SHA
-    - docker push $CONTAINER_IMAGE:latest
+    # - docker push $CONTAINER_IMAGE:latest
 
 sentry:
   stage: release
@@ -64,6 +65,20 @@ sentry:
     - sentry-cli releases set-commits $CI_COMMIT_SHA --commit $SENTRY_REPOSITORY@$CI_COMMIT_SHA
     - sentry-cli releases files $CI_COMMIT_SHA upload-sourcemaps ./dist
     - sentry-cli releases finalize $CI_COMMIT_SHA
+
+deploy:
+  stage: deploy
+  image: docker:stable
+  only:
+    - master
+  environment: production
+  before_script:
+    - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN registry.gitlab.com
+  script:
+    - docker pull $CONTAINER_IMAGE:$CI_COMMIT_SHA
+    - docker tag  $CONTAINER_IMAGE:$CI_COMMIT_SHA $CONTAINER_IMAGE:latest
+    - docker push $CONTAINER_IMAGE:latest
+    - ssh -i "$DEPLOY_KEY_FILE" -o StrictHostKeyChecking=no "$DEPLOY_HOST" "$DEPLOY_COMMAND"
 # deploy:
 #   stage: deploy
 #   only:
