@@ -6,7 +6,7 @@ Tribes Revengeance stats website available at http://stats.tribesrevengeance.net
 
 - Tracks player and server stats
 - Tracks server population
-- Integrates ingame chat and allows bidirectional communication between game == stats == discord
+- Integrates in-game chat and allows bidirectional communication between Game == Stats == Discord
 - Associates players using their IP addresses to identify players hiding their true identity (smurfing)
 - Provides a [browser extension](http://stats.tribesrevengeance.net/extension) which spells out current player count
 
@@ -16,7 +16,7 @@ Tribes Revengeance stats website available at http://stats.tribesrevengeance.net
 
 Uses Node.js, Express, Typescript and Handlebars for views.
 
-### Persistance
+### Persistence
 
 Primary datastore is MongoDB. Historical population is stored in InfluxDB, this has been migrated from MongoDB because Mongo did not perform adequately. Chat data is stored in Redis without persistance, this is also synchronized into all running instances to enable scaling.
 
@@ -29,10 +29,10 @@ In the future it would be great to migrate onto a database with a strict schema,
   - This happens periodically every second for each active server
   - This data is used for server detail screen to see who is online
   - Player total play time is also accumulated from this query
-  - However this data is extremely rudimentary for a game like Tribes which has custom stats that are much more interresting than just score
+  - However this data is extremely rudimentary for a game like Tribes which has custom stats that are much more interesting than just score
   - This data is also fed into the event system which in the end sends a WebSocket notification into the [browser extension](http://stats.tribesrevengeance.net/extension)
 - Servers that have [Tribes Vengeance Server Status mod](https://github.com/jkelin/TribesVengeanceServerStatus) installed and correctly configured report match details on match end
-  - This data includes full player stats and their IP addreses
+  - This data includes full player stats and their IP addresses
   - Each match result is saved so it can be looked up in the future (including on the website)
   - This data is also used for player pairing (by IPs)
 
