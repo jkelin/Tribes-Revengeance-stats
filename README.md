@@ -36,6 +36,19 @@ In the future it would be great to migrate onto a database with a strict schema,
   - Each match result is saved so it can be looked up in the future (including on the website)
   - This data is also used for player pairing (by IPs)
 
+### Chat integration
+
+- Game servers, when configured properly, expose a HTTP WebAdmin, which Stats poll periodically for chat updates. New chat messages are also sent through here
+  - WebAdmin is protected by Basic HTTP Auth, which needs to be configured in a database for every server
+  - Specifically game console screen located at `/ServerAdmin/current_console` is requested
+  - Chat extracted this way does not show correct player names when using QuickChat commands
+  - `iso-8859-1` encoding is used throughout the WebAdmin component
+  - Messages are also deduplicated and stored in Redis, from which they are synchronized into all Stats instances
+  - New chat messages are also sent through here.
+    - Because Stats are basically injecting commands (`say` command to be exact), it would be possible to create and integration with other systems, like map switching
+- Webhooks are used to send chat messages into Discord IM platform
+- Discord SDK is used to read messages from Discord, show them on the website and publish subsequently publish them through WebAdmin into the game
+
 ### API
 
 - `/status.json` - Status endpoint
