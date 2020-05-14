@@ -7,7 +7,7 @@ import { influx, IPlayerModel, IServerModel, Player, Server } from './db';
 import asyncHandler from 'express-async-handler';
 import { getMatchesData, parsePage, parseSort } from './matches';
 
-const router = express.Router();
+export const router = express.Router();
 
 function getServerChartData(id: string, days: number) {
   return influx
@@ -25,6 +25,17 @@ function getServerChartData(id: string, days: number) {
 
       return map;
     });
+}
+
+export async function getServerPlayerCount() {
+  const data = await Server.find().sort({ lastseen: -1 }).select({ lastdata: 1, lastseen: 1, name: 1 }).lean().exec();
+
+  const players = data
+    .filter((x) => x.lastdata)
+    .filter((x) => Date.now() - 60 * 1000 < x.lastseen.getTime())
+    .map((x) => ({ id: x._id, name: x.name, players: x.lastdata.players }));
+
+  return players;
 }
 
 router.get(
@@ -121,17 +132,8 @@ router.get(
 router.get(
   '/servers.players.json',
   asyncHandler(async (req, res) => {
-    const data = await Server.find().sort({ lastseen: -1 }).select({ lastdata: 1, lastseen: 1, name: 1 }).lean().exec();
-
-    const players = data
-      .filter((x) => x.lastdata)
-      .filter((x) => Date.now() - 60 * 1000 < x.lastseen.getTime())
-      .map((x) => ({ id: x._id, name: x.name, players: x.lastdata.players }));
+    const players = await getServerPlayerCount();
 
     res.json(players);
   })
 );
-
-module.exports = {
-  router,
-};

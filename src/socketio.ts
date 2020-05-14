@@ -1,11 +1,12 @@
 import { Server } from 'http';
 import SocketIO from 'socket.io';
 import Events from './events';
+import { getServerPlayerCount } from './servers';
 
 export function initSocketIO(server: Server) {
   const io = SocketIO(server, { origins: '*:*' });
 
-  io.on('connection', (socket) => {
+  io.on('connection', async (socket) => {
     socket.on('say', (data) => {
       const nameRegex = /^[A-Za-z0-9\| \-_\?\!\*\/:\.]{3,29}$/;
       const messageRegex = /^[A-Za-z0-9\| \-_\?\!\*\/:\.]{1,196}$/;
@@ -13,10 +14,18 @@ export function initSocketIO(server: Server) {
         Events.next({ type: 'say', data: { server: data.server, usr: data.usr, message: data.message } });
       }
     });
+
+    socket.on('get-player-count', async () => {
+      const players = await getServerPlayerCount();
+      socket.emit('full-player-count', players);
+    });
   });
 
   Events.filter((x) => x.type === 'chat-message').subscribe((e) => io.emit(e.type, e.data));
-  Events.filter((x) => x.type === 'player-count-change').subscribe((e) => io.emit(e.type, e.data));
+  Events.filter((x) => x.type === 'player-count-change').subscribe(async (e) => {
+    io.emit(e.type, e.data);
+    io.emit('full-player-count', await getServerPlayerCount());
+  });
 
   Events.subscribe((e) => console.info('EVENT:', e));
 }

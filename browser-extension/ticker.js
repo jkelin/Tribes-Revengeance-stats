@@ -2,8 +2,7 @@ var isChrome = typeof chrome !== 'undefined';
 
 var browser_action = isChrome ? chrome.browserAction : browser.browserAction;
 var browser_tabs = isChrome ? chrome.tabs : browser.tabs;
-var serverPlayerCountMap = {};
-var lastFullResponse = [];
+var browser_idle = isChrome ? chrome.idle : browser.idle;
 
 function countToFgColor(cnt) {
   if (cnt < 4) {
@@ -29,35 +28,27 @@ function countToBgColor(cnt) {
   return '#B22222';
 }
 
-function calculatePlayerList() {
-  if (
-    _(serverPlayerCountMap)
-      .values()
-      .sum()
-  ) {
-    var str = '';
+function calculatePlayerList(lastFullResponse) {
+  var str = '';
 
-    for (var server of _.sortBy(lastFullResponse, x => x.name)) {
-      if (server.players.length) {
-        str += server.name + (server.players.length > 0 ? ` (${server.players.length})` : '') + '\n';
-      }
-
-      for (var player of server.players) {
-        str += '  ' + player.player + '\n';
-      }
+  for (var server of lastFullResponse) {
+    if (server.players.length) {
+      str += server.name + (server.players.length > 0 ? ` (${server.players.length})` : '') + '\n';
     }
 
-    return str;
-  } else {
-    return 'Servers are empty';
+    for (var player of server.players) {
+      str += '  ' + player.player + '\n';
+    }
   }
+
+  return str;
 }
 
-function updateIcon() {
+function updateIcon(lastFullResponse) {
   var numPlayers = 0;
 
-  for (var i in serverPlayerCountMap) {
-    numPlayers += serverPlayerCountMap[i];
+  for (var i in lastFullResponse) {
+    numPlayers += lastFullResponse[i].players.length;
   }
 
   if (browser_action.setBadgeTextColor) {
@@ -67,7 +58,7 @@ function updateIcon() {
   }
 
   browser_action.setTitle({
-    title: calculatePlayerList(),
+    title: numPlayers ? calculatePlayerList(lastFullResponse) : 'Servers are empty',
   });
 
   browser_action.setBadgeBackgroundColor({
@@ -91,35 +82,26 @@ function addListeners() {
 function initSocketIo() {
   var socket = io('https://stats.tribesrevengeance.net/');
 
-  socket.on('connect', function() {
+  socket.on('connect', function () {
     console.info('Connected');
+    socket.send('get-player-count');
   });
 
-  socket.on('player-count-change', function(data) {
-    console.debug('player-count-change', data);
-    serverPlayerCountMap[data.server] = data.players;
-    updateIcon();
-    manualUpdate();
+  socket.on('full-player-count', function (data) {
+    console.debug('full-player-count', data);
+    updateIcon(data);
   });
 
-  socket.on('reconnect', manualUpdate);
-}
+  socket.on('reconnect', () => {
+    console.info('Reconnected');
+    socket.send('get-player-count');
+  });
 
-function manualUpdate() {
-  return axios.get('https://stats.tribesrevengeance.net/servers.players.json').then(response => {
-    console.debug('Manual update', response);
-    serverPlayerCountMap = {};
-    lastFullResponse = response.data;
-    response.data.forEach(x => {
-      serverPlayerCountMap[x.id] = x.players.length;
-    });
-
-    updateIcon();
+  browser_idle.onStateChanged.addListener(() => {
+    console.info('Idle state changed');
+    socket.send('get-player-count');
   });
 }
 
 addListeners();
-manualUpdate();
 initSocketIo();
-
-setInterval(manualUpdate, 10 * 60 * 1000);
