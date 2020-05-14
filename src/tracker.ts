@@ -69,7 +69,7 @@ export async function handleTribesServerData(data: ITribesServerQueryResponse) {
       type: 'player-count-change',
       data: {
         server: `${server.ip}:${server.port}`,
-        players: data.players.length,
+        players: data.players,
         origin: selfEventId,
       },
     });

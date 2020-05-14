@@ -84,7 +84,7 @@ function initSocketIo() {
 
   socket.on('connect', function () {
     console.info('Connected');
-    socket.send('get-player-count');
+    socket.emit('get-player-count');
   });
 
   socket.on('full-player-count', function (data) {
@@ -94,12 +94,12 @@ function initSocketIo() {
 
   socket.on('reconnect', () => {
     console.info('Reconnected');
-    socket.send('get-player-count');
+    socket.emit('get-player-count');
   });
 
   browser_idle.onStateChanged.addListener(() => {
     console.info('Idle state changed');
-    socket.send('get-player-count');
+    socket.emit('get-player-count');
   });
 }
 

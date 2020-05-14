@@ -1,7 +1,5 @@
-export interface IFullReportPlayer extends Record<string, number | string> {
-  ip: string;
+export interface IPlayerData {
   name: string;
-  team: string;
   score: number;
   kills: number;
   deaths: number;
@@ -9,6 +7,10 @@ export interface IFullReportPlayer extends Record<string, number | string> {
   defense: number;
   style: number;
 }
+
+export type IFullReportPlayer = (IPlayerData & Record<string, number | string>) & {
+  ip: string;
+};
 
 export interface IFullReport {
   players: IFullReportPlayer[];
@@ -51,7 +53,7 @@ export interface IChatMessage {
 
 export interface IPlayerCountChangeMessage {
   server: string;
-  players: number;
+  players: IUploadedPlayer[];
   origin: string;
 }
 
@@ -61,18 +63,11 @@ export interface INews {
   date: Date;
 }
 
-export interface IUploadedPlayer extends Record<string, undefined | string | number | boolean> {
-  ip?: string;
-  name: string;
-  score: number;
-  kills: number;
-  deaths: number;
-  offense: number;
-  defense: number;
-  style: number;
-
-  isUntracked?: boolean;
-}
+export type IUploadedPlayer = IPlayerData &
+  Record<string, undefined | string | number | boolean> & {
+    ip?: string;
+    isUntracked?: boolean;
+  };
 
 export interface IUploadedData {
   players: IUploadedPlayer[];
