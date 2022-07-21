@@ -21,46 +21,7 @@
   {{/each}}
   {{/if}}
 
-  {{#if servers}}
-  <h2 id="servers">Online servers</h2>
-  <table class="table table-bordered servertable">
-    <thead>
-      <tr>
-        <th>Name</th>
-        <th class="hidden-xs">Address</th>
-        <th>Map</th>
-        <th>Players</th>
-      </tr>
-    </thead>
-    <tbody>
-      {{#each servers}}
-      <tr class="server-map-row">
-        <td><a href="/server/{{urlencode _id}}">{{name}}</a> {{> flag country=country}}</td>
-        <td class="hidden-xs">{{_id}}</td>
-        <td class="server-map-td">
-          <div class="server-map">
-            <span class="server-map-description">
-              [{{lastdata.gametype}}] {{mapName lastdata.mapname}}
-            </span>
-            {{#if lastdata.mapnamefull}}
-            <span class="server-map-thumbnail hidden-xs">
-              <a href="{{mapImage lastdata.mapnamefull "loadscreens-chopped" false}}" target="_blank">
-                <img width="91" height="44" src="{{mapImage lastdata.mapnamefull "loadscreens-chopped" true}}"
-                  alt="{{lastdata.mapname}}">
-              </a>
-            </span>
-            {{/if}}
-          </div>
-        </td>
-        <td>{{lastdata.numplayers}}</td>
-      </tr>
-      {{/each}}
-    </tbody>
-  </table>
-  <div id="oldDiv"></div>
-  {{else}}
-  <a href="https://qtracker.com/server_list_details.php?game=tribesvengeance">No servers online :(</a>
-  {{/if}}
+  <a href="http://beta.openspy.net/en/server-list/tribesv">Server List - OpenSpy</a>
 
   <h2 id="kills">Greatest killers</h2>
   {{> playerstable data=playersKills}}
